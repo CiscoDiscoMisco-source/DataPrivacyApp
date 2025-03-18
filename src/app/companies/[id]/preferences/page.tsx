@@ -149,16 +149,9 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
   const getDataTypes = (): string[] => {
     if (!company) return [];
     
-    // Get unique data types from company policies
-    const dataTypesFromPolicies = company.dataSharingPolicies.map(
-      policy => policy.dataType
-    );
-    
-    // Get data types from global preferences
-    const dataTypesFromGlobal = globalPreferences.map(pref => pref.dataType);
-    
-    // Combine and make unique
-    return Array.from(new Set([...dataTypesFromPolicies, ...dataTypesFromGlobal]));
+    // Only get data types from this company's policies
+    // This ensures we only show preferences for data categories the company actually uses
+    return company.dataSharingPolicies.map(policy => policy.dataType);
   };
 
   const getEffectivePreference = (dataType: string): {allowed: boolean, isGlobal: boolean} => {

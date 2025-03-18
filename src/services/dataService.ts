@@ -195,18 +195,30 @@ export const dataService = {
     const preferences = dataService.getPreferences();
     const sourcePreferences = preferences.filter(pref => pref.companyId === sourceCompanyId);
     
+    // Get target company to ensure we clone only relevant data types
+    const targetCompany = dataService.getCompany(targetCompanyId);
+    if (!targetCompany) return;
+    
+    // Get the list of data types actually used by the target company
+    const targetCompanyDataTypes = targetCompany.dataSharingPolicies.map(
+      policy => policy.dataType
+    );
+    
     if (sourcePreferences.length === 0) {
       // If no source preferences found, check if we should use global preferences
       const globalPrefs = preferences.filter(pref => !pref.companyId);
       
       if (globalPrefs.length > 0) {
         // Create new preferences for target company based on global preferences
-        const targetPreferences = globalPrefs.map(pref => ({
-          id: `${targetCompanyId}-${pref.dataType.replace(/\s+/g, '-').toLowerCase()}`,
-          dataType: pref.dataType,
-          allowed: pref.allowed,
-          companyId: targetCompanyId
-        }));
+        // But only for data types that are actually used by the target company
+        const targetPreferences = globalPrefs
+          .filter(pref => targetCompanyDataTypes.includes(pref.dataType))
+          .map(pref => ({
+            id: `${targetCompanyId}-${pref.dataType.replace(/\s+/g, '-').toLowerCase()}`,
+            dataType: pref.dataType,
+            allowed: pref.allowed,
+            companyId: targetCompanyId
+          }));
         
         // Remove any existing preferences for the target company
         const filteredPreferences = preferences.filter(pref => pref.companyId !== targetCompanyId);
@@ -223,17 +235,13 @@ export const dataService = {
       return;
     }
     
-    // Get target company to ensure we clone all relevant data types
-    const targetCompany = dataService.getCompany(targetCompanyId);
-    if (!targetCompany) return;
-    
     // Create a map of source preferences for quick lookup
     const sourcePrefsMap = new Map<string, Preference>();
     sourcePreferences.forEach(pref => {
       sourcePrefsMap.set(pref.dataType, pref);
     });
     
-    // Create new preferences for target company
+    // Create new preferences for target company, but only for data types they use
     const targetPreferences: Preference[] = [];
     
     // Ensure we create a preference for each data type in the target company

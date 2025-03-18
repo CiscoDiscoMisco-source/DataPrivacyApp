@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Preference } from '@/models/preference';
+import { Company } from '@/models/company';
 import dataService from '@/services/dataService';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,18 +14,21 @@ import { NavBar } from '@/components/nav-bar';
 
 export default function GlobalPreferences() {
   const [preferences, setPreferences] = useState<Preference[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load global preferences
-    const loadPreferences = () => {
+    // Load global preferences and companies
+    const loadData = () => {
       const prefs = dataService.getGlobalPreferences();
+      const allCompanies = dataService.getCompanies();
       setPreferences(prefs);
+      setCompanies(allCompanies);
       setLoading(false);
     };
 
-    loadPreferences();
+    loadData();
     
     // Subscribe to preference changes
     const unsubscribe = dataService.subscribeToPreferenceChanges(() => {
@@ -53,6 +57,27 @@ export default function GlobalPreferences() {
     });
   };
 
+  // Get data types used by at least one company
+  const getUsedDataTypes = (): string[] => {
+    if (!companies.length) return [];
+    
+    // Extract all data types from all companies
+    const dataTypes = new Set<string>();
+    companies.forEach(company => {
+      company.dataSharingPolicies.forEach(policy => {
+        dataTypes.add(policy.dataType);
+      });
+    });
+    
+    return Array.from(dataTypes);
+  };
+
+  // Filter preferences to only show ones for data types that are actually used
+  const getRelevantPreferences = (): Preference[] => {
+    const usedDataTypes = getUsedDataTypes();
+    return preferences.filter(pref => usedDataTypes.includes(pref.dataType));
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto p-4 flex justify-center items-center min-h-screen">
@@ -62,6 +87,8 @@ export default function GlobalPreferences() {
       </div>
     );
   }
+
+  const relevantPreferences = getRelevantPreferences();
 
   return (
     <>
@@ -89,25 +116,31 @@ export default function GlobalPreferences() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {preferences.map(preference => (
-                <div 
-                  key={preference.id} 
-                  className="flex items-center justify-between p-4 border rounded-md"
-                >
-                  <div>
-                    <h3 className="font-medium">{preference.dataType}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {preference.allowed 
-                        ? 'Currently allowed for all companies' 
-                        : 'Currently disallowed for all companies'}
-                    </p>
+              {relevantPreferences.length > 0 ? (
+                relevantPreferences.map(preference => (
+                  <div 
+                    key={preference.id} 
+                    className="flex items-center justify-between p-4 border rounded-md"
+                  >
+                    <div>
+                      <h3 className="font-medium">{preference.dataType}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {preference.allowed 
+                          ? 'Currently allowed for all companies' 
+                          : 'Currently disallowed for all companies'}
+                      </p>
+                    </div>
+                    <Switch
+                      checked={preference.allowed}
+                      onCheckedChange={() => handleTogglePreference(preference)}
+                    />
                   </div>
-                  <Switch
-                    checked={preference.allowed}
-                    onCheckedChange={() => handleTogglePreference(preference)}
-                  />
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-muted-foreground text-center py-4">
+                  No data types are currently used by any companies.
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
