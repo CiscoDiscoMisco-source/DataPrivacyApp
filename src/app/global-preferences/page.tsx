@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react';
 import { Preference } from '@/models/preference';
 import { Company } from '@/models/company';
+import { User } from '@/models/user';
 import dataService from '@/services/dataService';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Coins } from 'lucide-react';
 import { NavBar } from '@/components/nav-bar';
 import { 
   Dialog,
@@ -26,9 +27,11 @@ export default function GlobalPreferences() {
   const [preferences, setPreferences] = useState<Preference[]>([]);
   const [pendingChanges, setPendingChanges] = useState<Preference[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasChanges, setHasChanges] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [tokenCost, setTokenCost] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -36,11 +39,14 @@ export default function GlobalPreferences() {
     const loadData = () => {
       const prefs = dataService.getGlobalPreferences();
       const allCompanies = dataService.getCompanies();
+      const userData = dataService.getUser();
       setPreferences(prefs);
-      setPendingChanges([]);
       setCompanies(allCompanies);
+      setUser(userData);
+      setPendingChanges([]);
       setLoading(false);
       setHasChanges(false);
+      setTokenCost(0);
     };
 
     loadData();
@@ -52,11 +58,22 @@ export default function GlobalPreferences() {
       setPreferences(updatedPrefs);
       setPendingChanges([]);
       setHasChanges(false);
+      setTokenCost(0);
     });
     
     // Cleanup subscription when component unmounts
     return () => unsubscribe();
   }, []);
+
+  // Recalculate token cost whenever pending changes are updated
+  useEffect(() => {
+    if (pendingChanges.length > 0) {
+      const cost = dataService.calculatePreferenceCost(pendingChanges);
+      setTokenCost(cost);
+    } else {
+      setTokenCost(0);
+    }
+  }, [pendingChanges]);
 
   const handleTogglePreference = (preference: Preference) => {
     const updatedPreference = {
@@ -85,20 +102,43 @@ export default function GlobalPreferences() {
   };
   
   const handleSubmitChanges = () => {
-    // Save all pending changes
-    pendingChanges.forEach(preference => {
-      dataService.savePreference(preference);
-    });
+    // Check if user has enough tokens
+    if (!user || user.tokens < tokenCost) {
+      toast({
+        title: 'Not Enough Tokens',
+        description: `You need ${tokenCost} tokens to make these changes. Visit the Token Store to purchase more.`,
+        variant: 'destructive'
+      });
+      setShowConfirmDialog(false);
+      return;
+    }
     
-    // Show toast notification
-    toast({
-      title: 'Preferences Updated',
-      description: `${pendingChanges.length} global preference(s) have been updated.`,
-    });
+    // Save all pending changes with token deduction
+    const success = dataService.savePreferencesWithTokens(pendingChanges);
     
-    // Reset pending changes
-    setPendingChanges([]);
-    setHasChanges(false);
+    if (success) {
+      // Update user data
+      const updatedUser = dataService.getUser();
+      setUser(updatedUser);
+      
+      // Show toast notification
+      toast({
+        title: 'Preferences Updated',
+        description: `${pendingChanges.length} global preference(s) have been updated. ${tokenCost} tokens spent.`,
+      });
+      
+      // Reset pending changes
+      setPendingChanges([]);
+      setHasChanges(false);
+      setTokenCost(0);
+    } else {
+      toast({
+        title: 'Update Failed',
+        description: 'There was an error updating your preferences.',
+        variant: 'destructive'
+      });
+    }
+    
     setShowConfirmDialog(false);
   };
   
@@ -108,6 +148,7 @@ export default function GlobalPreferences() {
     setPreferences(originalPrefs);
     setPendingChanges([]);
     setHasChanges(false);
+    setTokenCost(0);
   };
 
   // Get data types used by at least one company
@@ -143,6 +184,7 @@ export default function GlobalPreferences() {
 
   const relevantPreferences = getRelevantPreferences();
   const changedPreferences = pendingChanges.length;
+  const hasEnoughTokens = user ? user.tokens >= tokenCost : false;
 
   return (
     <>
@@ -161,6 +203,37 @@ export default function GlobalPreferences() {
           </p>
         </div>
 
+        {hasChanges && (
+          <div className="mb-6 p-4 border rounded-lg bg-muted/30 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-medium">Pending Changes</h2>
+              <p className="text-muted-foreground">
+                You have {changedPreferences} unsaved preference change{changedPreferences !== 1 ? 's' : ''}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className={`flex items-center gap-1 ${hasEnoughTokens ? 'text-green-600' : 'text-red-500'}`}>
+                <Coins className="h-5 w-5" />
+                <span className="font-bold">{tokenCost} Tokens</span>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={handleDiscardChanges}
+                >
+                  Discard
+                </Button>
+                <Button 
+                  onClick={() => setShowConfirmDialog(true)}
+                  disabled={!hasEnoughTokens}
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle>Manage Global Preferences</CardTitle>
@@ -178,11 +251,16 @@ export default function GlobalPreferences() {
                   >
                     <div>
                       <h3 className="font-medium">{preference.dataType}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {preference.allowed 
-                          ? 'Currently allowed for all companies' 
-                          : 'Currently disallowed for all companies'}
-                      </p>
+                      <div className="flex flex-col">
+                        <p className="text-sm text-muted-foreground">
+                          {preference.allowed 
+                            ? 'Currently allowed for all companies' 
+                            : 'Currently disallowed for all companies'}
+                        </p>
+                        <p className="text-xs text-primary">
+                          Cost: {companies.length} token{companies.length !== 1 ? 's' : ''}
+                        </p>
+                      </div>
                     </div>
                     <Switch
                       checked={preference.allowed}
@@ -194,22 +272,6 @@ export default function GlobalPreferences() {
                 <p className="text-muted-foreground text-center py-4">
                   No data types are currently used by any companies.
                 </p>
-              )}
-              
-              {hasChanges && (
-                <div className="flex justify-end space-x-2 mt-6">
-                  <Button 
-                    variant="outline" 
-                    onClick={handleDiscardChanges}
-                  >
-                    Discard Changes
-                  </Button>
-                  <Button 
-                    onClick={() => setShowConfirmDialog(true)}
-                  >
-                    Save Changes
-                  </Button>
-                </div>
               )}
             </div>
           </CardContent>
@@ -224,19 +286,49 @@ export default function GlobalPreferences() {
                 This will affect how your data is shared with all companies.
               </DialogDescription>
             </DialogHeader>
-            <div className="py-4">
+            <div className="py-4 space-y-4">
+              <div className="flex items-center justify-between p-4 border rounded-md">
+                <div>
+                  <h3 className="font-medium">Token Cost</h3>
+                  <p className="text-sm text-muted-foreground">
+                    This change will cost {tokenCost} token{tokenCost !== 1 ? 's' : ''}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Coins className="h-5 w-5 text-primary" />
+                  <span className="font-bold">{tokenCost} / {user?.tokens || 0}</span>
+                </div>
+              </div>
+              
               <p className="text-sm text-muted-foreground">
                 These changes will apply immediately and may affect how your data is processed.
                 Please review your changes carefully before proceeding.
               </p>
+              
+              {!hasEnoughTokens && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+                  <p className="font-medium">Not enough tokens</p>
+                  <p>Visit the Token Store to purchase more tokens.</p>
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleSubmitChanges}>
+              <Button 
+                onClick={handleSubmitChanges}
+                disabled={!hasEnoughTokens}
+              >
                 Confirm Changes
               </Button>
+              {!hasEnoughTokens && (
+                <Button asChild>
+                  <Link href="/tokens">
+                    Buy Tokens
+                  </Link>
+                </Button>
+              )}
             </DialogFooter>
           </DialogContent>
         </Dialog>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Company } from '@/models/company';
 import { Preference } from '@/models/preference';
+import { User } from '@/models/user';
 import dataService from '@/services/dataService';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Coins } from 'lucide-react';
 import { NavBar } from '@/components/nav-bar';
 import { 
   Dialog,
@@ -29,10 +30,13 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
   const [preferences, setPreferences] = useState<Preference[]>([]);
   const [pendingChanges, setPendingChanges] = useState<Preference[]>([]);
   const [globalPreferences, setGlobalPreferences] = useState<Preference[]>([]);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
   const [hasChanges, setHasChanges] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [tokenCost, setTokenCost] = useState(0);
+  const [cloneCost, setCloneCost] = useState(0);
   const { toast } = useToast();
 
   const loadData = () => {
@@ -40,16 +44,20 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
     const companiesData = dataService.getCompanies().filter(c => c.id !== params.id);
     const preferencesData = dataService.getCompanyPreferences(params.id);
     const globalPrefs = dataService.getGlobalPreferences();
+    const userData = dataService.getUser();
     
     if (companyData) {
       setCompany(companyData);
       setCompanies(companiesData);
       setPreferences(preferencesData);
       setGlobalPreferences(globalPrefs);
+      setUser(userData);
     }
     
     setPendingChanges([]);
     setHasChanges(false);
+    setTokenCost(0);
+    setCloneCost(0);
     setLoading(false);
   };
 
@@ -62,15 +70,40 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
       // Reload preferences when they change
       const updatedPreferences = dataService.getCompanyPreferences(params.id);
       const updatedGlobalPrefs = dataService.getGlobalPreferences();
+      const updatedUser = dataService.getUser();
       setPreferences(updatedPreferences);
       setGlobalPreferences(updatedGlobalPrefs);
+      setUser(updatedUser);
       setPendingChanges([]);
       setHasChanges(false);
+      setTokenCost(0);
     });
     
     // Cleanup subscription when component unmounts
     return () => unsubscribe();
   }, [params.id]);
+
+  // Recalculate token cost whenever pending changes are updated
+  useEffect(() => {
+    if (pendingChanges.length > 0) {
+      const cost = dataService.calculatePreferenceCost(pendingChanges);
+      setTokenCost(cost);
+    } else {
+      setTokenCost(0);
+    }
+  }, [pendingChanges]);
+
+  // Calculate clone cost when selected company changes
+  useEffect(() => {
+    if (selectedCompanyId && company) {
+      // For simplicity, calculate based on data types count of the company
+      const dataTypes = getDataTypes();
+      const cost = dataTypes.length;
+      setCloneCost(cost);
+    } else {
+      setCloneCost(0);
+    }
+  }, [selectedCompanyId, company]);
 
   const handleTogglePreference = (preference: Preference) => {
     const updatedPreference = {
@@ -99,20 +132,43 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
   };
   
   const handleSubmitChanges = () => {
-    // Save all pending changes
-    pendingChanges.forEach(preference => {
-      dataService.savePreference(preference);
-    });
+    // Check if user has enough tokens
+    if (!user || user.tokens < tokenCost) {
+      toast({
+        title: 'Not Enough Tokens',
+        description: `You need ${tokenCost} tokens to make these changes. Visit the Token Store to purchase more.`,
+        variant: 'destructive'
+      });
+      setShowConfirmDialog(false);
+      return;
+    }
     
-    // Show toast notification
-    toast({
-      title: 'Preferences Updated',
-      description: `${pendingChanges.length} preference(s) have been updated for ${company?.name}.`,
-    });
+    // Save all pending changes with token deduction
+    const success = dataService.savePreferencesWithTokens(pendingChanges);
     
-    // Reset pending changes
-    setPendingChanges([]);
-    setHasChanges(false);
+    if (success) {
+      // Update user data
+      const updatedUser = dataService.getUser();
+      setUser(updatedUser);
+      
+      // Show toast notification
+      toast({
+        title: 'Preferences Updated',
+        description: `${pendingChanges.length} preference(s) have been updated for ${company?.name}. ${tokenCost} tokens spent.`,
+      });
+      
+      // Reset pending changes
+      setPendingChanges([]);
+      setHasChanges(false);
+      setTokenCost(0);
+    } else {
+      toast({
+        title: 'Update Failed',
+        description: 'There was an error updating your preferences.',
+        variant: 'destructive'
+      });
+    }
+    
     setShowConfirmDialog(false);
   };
   
@@ -163,6 +219,34 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
   };
   
   const confirmClonePreferences = () => {
+    // Check if user has enough tokens
+    if (!user || user.tokens < cloneCost) {
+      toast({
+        title: 'Not Enough Tokens',
+        description: `You need ${cloneCost} tokens to clone these preferences. Visit the Token Store to purchase more.`,
+        variant: 'destructive'
+      });
+      setShowConfirmDialog(false);
+      return;
+    }
+    
+    // Spend tokens
+    const success = dataService.spendTokens(cloneCost);
+    
+    if (!success) {
+      toast({
+        title: 'Not Enough Tokens',
+        description: 'Failed to deduct tokens for the preference clone operation.',
+        variant: 'destructive'
+      });
+      setShowConfirmDialog(false);
+      return;
+    }
+    
+    // Update user data
+    const updatedUser = dataService.getUser();
+    setUser(updatedUser);
+    
     if (selectedCompanyId === 'global') {
       // Handle cloning from global preferences
       const globalPrefs = dataService.getGlobalPreferences();
@@ -181,7 +265,7 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
       
       toast({
         title: 'Global Preferences Applied',
-        description: `Global preferences have been applied to ${company?.name}.`,
+        description: `Global preferences have been applied to ${company?.name}. ${cloneCost} tokens spent.`,
       });
     } else {
       // Clone preferences from another company
@@ -191,7 +275,7 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
       const sourceCompany = companies.find(c => c.id === selectedCompanyId);
       toast({
         title: 'Preferences Cloned',
-        description: `Preferences from ${sourceCompany?.name} have been applied to ${company?.name}.`,
+        description: `Preferences from ${sourceCompany?.name} have been applied to ${company?.name}. ${cloneCost} tokens spent.`,
       });
     }
     
@@ -254,6 +338,8 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
   
   const changedPreferences = pendingChanges.length;
   const dataTypes = getDataTypes();
+  const hasEnoughTokens = user ? user.tokens >= tokenCost : false;
+  const hasEnoughTokensForClone = user ? user.tokens >= cloneCost : false;
 
   return (
     <>
@@ -271,6 +357,37 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
             Manage data sharing preferences specific to this company
           </p>
         </div>
+
+        {hasChanges && (
+          <div className="mb-6 p-4 border rounded-lg bg-muted/30 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-medium">Pending Changes</h2>
+              <p className="text-muted-foreground">
+                You have {changedPreferences} unsaved preference change{changedPreferences !== 1 ? 's' : ''}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className={`flex items-center gap-1 ${hasEnoughTokens ? 'text-green-600' : 'text-red-500'}`}>
+                <Coins className="h-5 w-5" />
+                <span className="font-bold">{tokenCost} Tokens</span>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={handleDiscardChanges}
+                >
+                  Discard
+                </Button>
+                <Button 
+                  onClick={() => setShowConfirmDialog(true)}
+                  disabled={!hasEnoughTokens}
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2">
@@ -295,15 +412,20 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
                         >
                           <div>
                             <h3 className="font-medium">{dataType}</h3>
-                            {effectivePref.isGlobal && !companyPref ? (
-                              <p className="text-sm text-muted-foreground">
-                                Using global preference: {effectivePref.allowed ? 'Allowed' : 'Disallowed'}
+                            <div className="flex flex-col">
+                              {effectivePref.isGlobal && !companyPref ? (
+                                <p className="text-sm text-muted-foreground">
+                                  Using global preference: {effectivePref.allowed ? 'Allowed' : 'Disallowed'}
+                                </p>
+                              ) : (
+                                <p className="text-sm text-muted-foreground">
+                                  Company specific: {effectivePref.allowed ? 'Allowed' : 'Disallowed'}
+                                </p>
+                              )}
+                              <p className="text-xs text-primary">
+                                Cost: 1 token
                               </p>
-                            ) : (
-                              <p className="text-sm text-muted-foreground">
-                                Company specific: {effectivePref.allowed ? 'Allowed' : 'Disallowed'}
-                              </p>
-                            )}
+                            </div>
                           </div>
                           <div className="flex items-center gap-2">
                             {effectivePref.isGlobal && !companyPref && (
@@ -333,22 +455,6 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
                     <p className="text-muted-foreground text-center py-4">
                       No data types available for this company.
                     </p>
-                  )}
-                  
-                  {hasChanges && (
-                    <div className="flex justify-end space-x-2 mt-6">
-                      <Button 
-                        variant="outline" 
-                        onClick={handleDiscardChanges}
-                      >
-                        Discard Changes
-                      </Button>
-                      <Button 
-                        onClick={() => setShowConfirmDialog(true)}
-                      >
-                        Save Changes
-                      </Button>
-                    </div>
                   )}
                 </div>
               </CardContent>
@@ -382,12 +488,53 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
                     </SelectContent>
                   </Select>
                   
+                  {selectedCompanyId && (
+                    <div className="flex items-center justify-between p-3 border rounded-md">
+                      <span className="text-sm">Clone cost:</span>
+                      <div className={`flex items-center gap-1 ${hasEnoughTokensForClone ? 'text-green-600' : 'text-red-500'}`}>
+                        <Coins className="h-4 w-4" />
+                        <span className="font-medium">{cloneCost} Tokens</span>
+                      </div>
+                    </div>
+                  )}
+                  
                   <Button 
                     className="w-full" 
                     onClick={handleClonePreferences}
-                    disabled={!selectedCompanyId}
+                    disabled={!selectedCompanyId || !hasEnoughTokensForClone}
                   >
                     Apply Preferences
+                  </Button>
+                  
+                  {selectedCompanyId && !hasEnoughTokensForClone && (
+                    <Button asChild className="w-full">
+                      <Link href="/tokens">
+                        Buy Tokens
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>About Tokens</CardTitle>
+                <CardDescription>How tokens work for preferences</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 text-sm">
+                  <p>
+                    <span className="font-medium">Company preferences:</span> 1 token per data type
+                  </p>
+                  <p>
+                    <span className="font-medium">Cloning preferences:</span> 1 token per data type
+                  </p>
+                  <Button asChild size="sm" className="mt-2 w-full">
+                    <Link href="/tokens">
+                      <Coins className="mr-2 h-4 w-4" />
+                      Buy More Tokens
+                    </Link>
                   </Button>
                 </div>
               </CardContent>
@@ -410,19 +557,60 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
                 )}
               </DialogDescription>
             </DialogHeader>
-            <div className="py-4">
+            <div className="py-4 space-y-4">
+              <div className="flex items-center justify-between p-4 border rounded-md">
+                <div>
+                  <h3 className="font-medium">Token Cost</h3>
+                  <p className="text-sm text-muted-foreground">
+                    This change will cost {pendingChanges.length > 0 ? tokenCost : cloneCost} token{(pendingChanges.length > 0 ? tokenCost : cloneCost) !== 1 ? 's' : ''}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Coins className="h-5 w-5 text-primary" />
+                  <span className="font-bold">{pendingChanges.length > 0 ? tokenCost : cloneCost} / {user?.tokens || 0}</span>
+                </div>
+              </div>
+              
               <p className="text-sm text-muted-foreground">
                 These changes will apply immediately and may affect how your data is processed by {company.name}.
                 Please review your changes carefully before proceeding.
               </p>
+              
+              {(pendingChanges.length > 0 && !hasEnoughTokens) || 
+                (pendingChanges.length === 0 && !hasEnoughTokensForClone) ? (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+                  <p className="font-medium">Not enough tokens</p>
+                  <p>Visit the Token Store to purchase more tokens.</p>
+                </div>
+              ) : null}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
                 Cancel
               </Button>
-              <Button onClick={pendingChanges.length > 0 ? handleSubmitChanges : confirmClonePreferences}>
-                Confirm Changes
-              </Button>
+              {pendingChanges.length > 0 ? (
+                <Button 
+                  onClick={handleSubmitChanges}
+                  disabled={!hasEnoughTokens}
+                >
+                  Confirm Changes
+                </Button>
+              ) : (
+                <Button 
+                  onClick={confirmClonePreferences}
+                  disabled={!hasEnoughTokensForClone}
+                >
+                  Confirm Clone
+                </Button>
+              )}
+              {((pendingChanges.length > 0 && !hasEnoughTokens) || 
+                (pendingChanges.length === 0 && !hasEnoughTokensForClone)) && (
+                <Button asChild>
+                  <Link href="/tokens">
+                    Buy Tokens
+                  </Link>
+                </Button>
+              )}
             </DialogFooter>
           </DialogContent>
         </Dialog>

@@ -1,7 +1,6 @@
 {
   "/page": "app/page.js",
   "/login/page": "app/login/page.js",
-  "/profile/page": "app/profile/page.js",
-  "/companies/[id]/preferences/page": "app/companies/[id]/preferences/page.js",
-  "/companies/[id]/page": "app/companies/[id]/page.js"
+  "/global-preferences/page": "app/global-preferences/page.js",
+  "/companies/[id]/preferences/page": "app/companies/[id]/preferences/page.js"
 }

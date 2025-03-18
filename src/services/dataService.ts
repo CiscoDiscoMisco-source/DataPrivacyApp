@@ -2,6 +2,7 @@
 
 import { Company, DataSharingPolicy } from '@/models/company';
 import { Preference } from '@/models/preference';
+import { User, TokenPackage } from '@/models/user';
 
 // Sample company data
 const COMPANIES: Company[] = [
@@ -108,9 +109,43 @@ const defaultPreferences: Preference[] = [
   { id: 'g6', dataType: 'Insurance Info', allowed: false }
 ];
 
+// Default user
+const DEFAULT_USER: User = {
+  id: 'user1',
+  email: 'user@example.com',
+  name: 'Demo User',
+  tokens: 10
+};
+
+// Token packages
+const TOKEN_PACKAGES: TokenPackage[] = [
+  {
+    id: 'basic',
+    name: 'Basic Pack',
+    amount: 10,
+    price: 4.99,
+    description: 'Basic token pack with 10 tokens'
+  },
+  {
+    id: 'standard',
+    name: 'Standard Pack',
+    amount: 50,
+    price: 19.99,
+    description: 'Standard token pack with 50 tokens'
+  },
+  {
+    id: 'premium',
+    name: 'Premium Pack',
+    amount: 200,
+    price: 49.99,
+    description: 'Premium token pack with 200 tokens, best value'
+  }
+];
+
 // Local storage keys
 const COMPANIES_KEY = 'data-privacy-companies';
 const PREFERENCES_KEY = 'data-privacy-preferences';
+const USER_KEY = 'data-privacy-user';
 
 // Event emitter for preference changes
 type PreferenceChangeListener = () => void;
@@ -315,6 +350,102 @@ export const dataService = {
   // Notify all listeners of preference changes
   notifyPreferenceChange: (): void => {
     preferenceChangeListeners.forEach(listener => listener());
+  },
+
+  // User and token methods
+  getUser: (): User => {
+    if (typeof window === 'undefined') return DEFAULT_USER;
+    
+    const storedUser = localStorage.getItem(USER_KEY);
+    if (!storedUser) {
+      localStorage.setItem(USER_KEY, JSON.stringify(DEFAULT_USER));
+      return DEFAULT_USER;
+    }
+    
+    return JSON.parse(storedUser);
+  },
+  
+  getTokenPackages: (): TokenPackage[] => {
+    return TOKEN_PACKAGES;
+  },
+  
+  purchaseTokens: (packageId: string): boolean => {
+    const tokenPackage = TOKEN_PACKAGES.find(pkg => pkg.id === packageId);
+    if (!tokenPackage) return false;
+    
+    const user = dataService.getUser();
+    user.tokens += tokenPackage.amount;
+    
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    return true;
+  },
+  
+  hasEnoughTokens: (amount: number): boolean => {
+    const user = dataService.getUser();
+    return user.tokens >= amount;
+  },
+  
+  spendTokens: (amount: number): boolean => {
+    if (!dataService.hasEnoughTokens(amount)) return false;
+    
+    const user = dataService.getUser();
+    user.tokens -= amount;
+    
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    return true;
+  },
+  
+  // Calculate token cost for preference changes
+  calculatePreferenceCost: (preferences: Preference[]): number => {
+    // Group preferences by whether they're global or company-specific
+    const globalPrefs: Preference[] = [];
+    const companyPrefs: Record<string, Preference[]> = {};
+    
+    preferences.forEach(pref => {
+      if (!pref.companyId) {
+        globalPrefs.push(pref);
+      } else {
+        if (!companyPrefs[pref.companyId]) {
+          companyPrefs[pref.companyId] = [];
+        }
+        companyPrefs[pref.companyId].push(pref);
+      }
+    });
+    
+    // Calculate cost
+    let totalCost = 0;
+    
+    // Company-specific preferences: 1 token per data type
+    Object.values(companyPrefs).forEach(prefs => {
+      totalCost += prefs.length;
+    });
+    
+    // Global preferences: 1 token per data type × number of companies
+    if (globalPrefs.length > 0) {
+      const companies = dataService.getCompanies();
+      totalCost += globalPrefs.length * companies.length;
+    }
+    
+    return totalCost;
+  },
+  
+  savePreferencesWithTokens: (preferences: Preference[]): boolean => {
+    const cost = dataService.calculatePreferenceCost(preferences);
+    
+    // Check if user has enough tokens
+    if (!dataService.hasEnoughTokens(cost)) {
+      return false;
+    }
+    
+    // Spend tokens
+    dataService.spendTokens(cost);
+    
+    // Save preferences
+    preferences.forEach(preference => {
+      dataService.savePreference(preference);
+    });
+    
+    return true;
   }
 };
 
