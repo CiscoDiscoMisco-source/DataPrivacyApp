@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, UserCircle, KeyRound, Trash, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { NavBar } from '@/components/nav-bar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -184,15 +184,15 @@ export default function ProfilePage() {
   return (
     <>
       <NavBar />
-      <main className="container mx-auto p-4">
-        <div className="mb-6">
-          <Button asChild variant="ghost" size="sm" className="mb-4">
+      <main className="container mx-auto p-4 max-w-5xl">
+        <div className="mb-8">
+          <Button asChild variant="ghost" size="sm" className="mb-4 text-primary hover:text-primary/70 hover:bg-secondary">
             <Link href="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Home
             </Link>
           </Button>
-          <h1 className="text-3xl font-bold">Profile Settings</h1>
+          <h1 className="text-3xl font-bold text-primary">Profile Settings</h1>
           <p className="text-muted-foreground mt-2">
             Manage your account settings and preferences
           </p>
@@ -201,27 +201,34 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2">
             <Tabs defaultValue="account" className="w-full">
-              <TabsList className="mb-4">
-                <TabsTrigger value="account">Account Info</TabsTrigger>
-                <TabsTrigger value="password">Password</TabsTrigger>
+              <TabsList className="mb-4 bg-secondary/70 p-1">
+                <TabsTrigger value="account" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+                  <UserCircle className="mr-2 h-4 w-4" />
+                  Account Info
+                </TabsTrigger>
+                <TabsTrigger value="password" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+                  <KeyRound className="mr-2 h-4 w-4" />
+                  Password
+                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="account">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Account Information</CardTitle>
+                <Card className="border-none shadow-md">
+                  <CardHeader className="border-b bg-secondary/30 pb-4">
+                    <CardTitle className="text-primary text-xl">Account Information</CardTitle>
                     <CardDescription>
                       Update your account details
                     </CardDescription>
                   </CardHeader>
                   <form onSubmit={handleUpdateProfile}>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 pt-6">
                       <div className="space-y-2">
                         <Label htmlFor="username">Username</Label>
                         <Input 
                           id="username" 
                           value={profileData.username}
                           onChange={(e) => setProfileData({ ...profileData, username: e.target.value })}
+                          className="rounded-lg"
                         />
                         {errors.username && <p className="text-sm text-red-500">{errors.username}</p>}
                       </div>
@@ -231,13 +238,13 @@ export default function ProfilePage() {
                           id="email" 
                           value={profileData.email}
                           disabled
-                          className="bg-gray-100"
+                          className="bg-secondary/50 rounded-lg"
                         />
                         <p className="text-xs text-muted-foreground">Email cannot be changed</p>
                       </div>
                     </CardContent>
-                    <CardFooter>
-                      <Button type="submit" disabled={isLoading}>
+                    <CardFooter className="border-t pt-6 bg-secondary/10">
+                      <Button type="submit" disabled={isLoading} className="rounded-lg bg-primary hover:bg-primary/90">
                         {isLoading ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -253,15 +260,15 @@ export default function ProfilePage() {
               </TabsContent>
               
               <TabsContent value="password">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Change Password</CardTitle>
+                <Card className="border-none shadow-md">
+                  <CardHeader className="border-b bg-secondary/30 pb-4">
+                    <CardTitle className="text-primary text-xl">Change Password</CardTitle>
                     <CardDescription>
                       Update your password
                     </CardDescription>
                   </CardHeader>
                   <form onSubmit={handleUpdatePassword}>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 pt-6">
                       <div className="space-y-2">
                         <Label htmlFor="currentPassword">Current Password</Label>
                         <Input 
@@ -269,6 +276,7 @@ export default function ProfilePage() {
                           type="password"
                           value={passwordData.currentPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                          className="rounded-lg"
                         />
                         {errors.currentPassword && <p className="text-sm text-red-500">{errors.currentPassword}</p>}
                       </div>
@@ -279,6 +287,7 @@ export default function ProfilePage() {
                           type="password"
                           value={passwordData.newPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                          className="rounded-lg"
                         />
                         {errors.newPassword && <p className="text-sm text-red-500">{errors.newPassword}</p>}
                       </div>
@@ -289,12 +298,13 @@ export default function ProfilePage() {
                           type="password"
                           value={passwordData.confirmPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                          className="rounded-lg"
                         />
                         {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword}</p>}
                       </div>
                     </CardContent>
-                    <CardFooter>
-                      <Button type="submit" disabled={isLoading}>
+                    <CardFooter className="border-t pt-6 bg-secondary/10">
+                      <Button type="submit" disabled={isLoading} className="rounded-lg bg-primary hover:bg-primary/90">
                         {isLoading ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -312,22 +322,23 @@ export default function ProfilePage() {
           </div>
           
           <div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Account Actions</CardTitle>
+            <Card className="border-none shadow-md">
+              <CardHeader className="border-b bg-secondary/30 pb-4">
+                <CardTitle className="text-primary text-xl">Account Actions</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 pt-6">
                 <Button 
                   onClick={handleLogout} 
                   variant="outline" 
-                  className="w-full"
+                  className="w-full rounded-lg border-primary/20 text-primary hover:bg-primary/10"
                 >
+                  <LogOut className="w-4 h-4 mr-2" />
                   Log Out
                 </Button>
                 
                 <Button 
                   variant="destructive" 
-                  className="w-full"
+                  className="w-full rounded-lg"
                   onClick={() => {
                     toast({
                       title: 'Account deletion',
@@ -335,20 +346,21 @@ export default function ProfilePage() {
                     });
                   }}
                 >
+                  <Trash className="w-4 h-4 mr-2" />
                   Delete Account
                 </Button>
               </CardContent>
             </Card>
             
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>Privacy Settings</CardTitle>
+            <Card className="mt-6 border-none shadow-md">
+              <CardHeader className="border-b bg-secondary/30 pb-4">
+                <CardTitle className="text-primary text-xl">Privacy Settings</CardTitle>
                 <CardDescription>
                   Manage your data sharing preferences
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <Button asChild className="w-full">
+              <CardContent className="pt-6">
+                <Button asChild className="w-full rounded-lg bg-primary hover:bg-primary/90">
                   <Link href="/global-preferences">
                     Global Preferences
                   </Link>

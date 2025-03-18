@@ -3,6 +3,7 @@ import { Company } from '@/models/company';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import dataService from '@/services/dataService';
+import { Eye, Sliders } from 'lucide-react';
 
 interface CompanyListProps {
   companies: Company[];
@@ -16,15 +17,16 @@ export default function CompanyList({ companies }: CompanyListProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {companies.map(company => (
-        <Card key={company.id} className="hover:shadow-lg transition-shadow">
-          <CardHeader>
+        <Card key={company.id} className="overflow-hidden group hover:shadow-lg transition-all duration-300 border-none">
+          <div className="h-2 w-full bg-primary"></div>
+          <CardHeader className="relative">
             <div className="flex justify-between items-start">
               <div>
-                <CardTitle>{company.name}</CardTitle>
-                <CardDescription className="mt-1">{company.industry}</CardDescription>
+                <CardTitle className="text-xl font-bold text-primary">{company.name}</CardTitle>
+                <CardDescription className="mt-1 opacity-75">{company.industry}</CardDescription>
               </div>
               {company.logo && (
-                <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center">
+                <div className="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center shadow-sm">
                   <img 
                     src={company.logo} 
                     alt={`${company.name} logo`} 
@@ -35,17 +37,32 @@ export default function CompanyList({ companies }: CompanyListProps) {
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-sm mb-4">{company.description}</p>
-            <p className="text-sm text-muted-foreground mb-2">
-              Data sharing policies: <strong>{company.dataSharingPolicies.length}</strong>
-            </p>
-            <div className="flex gap-2 mt-4">
-              <Button asChild size="sm" variant="default">
-                <Link href={`/companies/${company.id}`}>View Details</Link>
-              </Button>
-              <Button asChild size="sm" variant="outline">
-                <Link href={`/companies/${company.id}/preferences`}>Manage Preferences</Link>
-              </Button>
+            <p className="text-sm mb-4 line-clamp-2">{company.description}</p>
+            <div className="flex flex-col space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm opacity-75">
+                  Data sharing policies: <strong>{company.dataSharingPolicies.length}</strong>
+                </p>
+                <div className="text-xs px-2 py-1 rounded-full bg-secondary">
+                  {company.dataSharingPolicies.filter(p => 
+                    getPreferenceStatus(company.id, p.dataType)
+                  ).length} / {company.dataSharingPolicies.length} allowed
+                </div>
+              </div>
+              <div className="flex gap-2 mt-2">
+                <Button asChild size="sm" variant="default" className="flex-1 gap-1 rounded-full">
+                  <Link href={`/companies/${company.id}`}>
+                    <Eye className="w-4 h-4" />
+                    <span>Details</span>
+                  </Link>
+                </Button>
+                <Button asChild size="sm" variant="outline" className="flex-1 gap-1 rounded-full">
+                  <Link href={`/companies/${company.id}/preferences`}>
+                    <Sliders className="w-4 h-4" />
+                    <span>Preferences</span>
+                  </Link>
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
