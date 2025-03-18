@@ -754,11 +754,11 @@ video {
 .h-\[var\(--radix-select-trigger-height\)\] {
   height: var(--radix-select-trigger-height);
 }
-.h-px {
-  height: 1px;
-}
 .h-auto {
   height: auto;
+}
+.h-px {
+  height: 1px;
 }
 .max-h-full {
   max-height: 100%;
