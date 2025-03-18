@@ -1,0 +1,15 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Technical Stack
+
+- Python for backend
+- html/js for the frontend
+- SQL databases, never JSON file storage
+- Separate databeses for dev, test, and prod
+- Elasticsearch for search, using elastic.co hosting
+- Elastic.co will have dev and prod indexes
+- Python tests

@@ -1,0 +1,13 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Coding worflow preferences
+
+- Focus on the areas of code relevante to the task
+- Do not touch code that is unrelated to the task
+- Write thorough tests for all major funcionality
+- Avoid making mayor changes to the patterns or architecture of how a feature works, after it has shown to work well, unless explicitly instructred
+- Awlays thik about what other methods and areas of code might be affected by code changes
