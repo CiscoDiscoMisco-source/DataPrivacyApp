@@ -11,11 +11,24 @@ import { useToast } from '@/components/ui/use-toast';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { NavBar } from '@/components/nav-bar';
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose
+} from '@/components/ui/dialog';
 
 export default function GlobalPreferences() {
   const [preferences, setPreferences] = useState<Preference[]>([]);
+  const [pendingChanges, setPendingChanges] = useState<Preference[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -24,8 +37,10 @@ export default function GlobalPreferences() {
       const prefs = dataService.getGlobalPreferences();
       const allCompanies = dataService.getCompanies();
       setPreferences(prefs);
+      setPendingChanges([]);
       setCompanies(allCompanies);
       setLoading(false);
+      setHasChanges(false);
     };
 
     loadData();
@@ -35,6 +50,8 @@ export default function GlobalPreferences() {
       // Reload preferences when they change
       const updatedPrefs = dataService.getGlobalPreferences();
       setPreferences(updatedPrefs);
+      setPendingChanges([]);
+      setHasChanges(false);
     });
     
     // Cleanup subscription when component unmounts
@@ -47,14 +64,50 @@ export default function GlobalPreferences() {
       allowed: !preference.allowed
     };
 
-    // Save the updated preference
-    dataService.savePreference(updatedPreference);
-
+    // Add to pending changes
+    const existingIndex = pendingChanges.findIndex(p => p.id === preference.id);
+    const newPendingChanges = [...pendingChanges];
+    
+    if (existingIndex >= 0) {
+      newPendingChanges[existingIndex] = updatedPreference;
+    } else {
+      newPendingChanges.push(updatedPreference);
+    }
+    
+    setPendingChanges(newPendingChanges);
+    setHasChanges(true);
+    
+    // Update local state for immediate feedback
+    const updatedPreferences = preferences.map(p => 
+      p.id === preference.id ? updatedPreference : p
+    );
+    setPreferences(updatedPreferences);
+  };
+  
+  const handleSubmitChanges = () => {
+    // Save all pending changes
+    pendingChanges.forEach(preference => {
+      dataService.savePreference(preference);
+    });
+    
     // Show toast notification
     toast({
-      title: `${updatedPreference.allowed ? 'Allowed' : 'Disallowed'} ${updatedPreference.dataType}`,
-      description: `Global preference for ${updatedPreference.dataType} has been updated.`,
+      title: 'Preferences Updated',
+      description: `${pendingChanges.length} global preference(s) have been updated.`,
     });
+    
+    // Reset pending changes
+    setPendingChanges([]);
+    setHasChanges(false);
+    setShowConfirmDialog(false);
+  };
+  
+  const handleDiscardChanges = () => {
+    // Reload preferences to discard changes
+    const originalPrefs = dataService.getGlobalPreferences();
+    setPreferences(originalPrefs);
+    setPendingChanges([]);
+    setHasChanges(false);
   };
 
   // Get data types used by at least one company
@@ -89,6 +142,7 @@ export default function GlobalPreferences() {
   }
 
   const relevantPreferences = getRelevantPreferences();
+  const changedPreferences = pendingChanges.length;
 
   return (
     <>
@@ -141,9 +195,51 @@ export default function GlobalPreferences() {
                   No data types are currently used by any companies.
                 </p>
               )}
+              
+              {hasChanges && (
+                <div className="flex justify-end space-x-2 mt-6">
+                  <Button 
+                    variant="outline" 
+                    onClick={handleDiscardChanges}
+                  >
+                    Discard Changes
+                  </Button>
+                  <Button 
+                    onClick={() => setShowConfirmDialog(true)}
+                  >
+                    Save Changes
+                  </Button>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
+        
+        <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Preference Changes</DialogTitle>
+              <DialogDescription>
+                You are about to update {changedPreferences} global preference setting{changedPreferences !== 1 ? 's' : ''}.
+                This will affect how your data is shared with all companies.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <p className="text-sm text-muted-foreground">
+                These changes will apply immediately and may affect how your data is processed.
+                Please review your changes carefully before proceeding.
+              </p>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSubmitChanges}>
+                Confirm Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
     </>
   );

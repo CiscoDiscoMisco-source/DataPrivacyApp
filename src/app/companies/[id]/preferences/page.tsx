@@ -12,14 +12,27 @@ import { useToast } from '@/components/ui/use-toast';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { NavBar } from '@/components/nav-bar';
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose
+} from '@/components/ui/dialog';
 
 export default function CompanyPreferences({ params }: { params: { id: string } }) {
   const [company, setCompany] = useState<Company | null>(null);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [preferences, setPreferences] = useState<Preference[]>([]);
+  const [pendingChanges, setPendingChanges] = useState<Preference[]>([]);
   const [globalPreferences, setGlobalPreferences] = useState<Preference[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
+  const [hasChanges, setHasChanges] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const { toast } = useToast();
 
   const loadData = () => {
@@ -35,6 +48,8 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
       setGlobalPreferences(globalPrefs);
     }
     
+    setPendingChanges([]);
+    setHasChanges(false);
     setLoading(false);
   };
 
@@ -49,6 +64,8 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
       const updatedGlobalPrefs = dataService.getGlobalPreferences();
       setPreferences(updatedPreferences);
       setGlobalPreferences(updatedGlobalPrefs);
+      setPendingChanges([]);
+      setHasChanges(false);
     });
     
     // Cleanup subscription when component unmounts
@@ -61,14 +78,47 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
       allowed: !preference.allowed
     };
 
-    // Save the updated preference
-    dataService.savePreference(updatedPreference);
-
+    // Add to pending changes
+    const existingIndex = pendingChanges.findIndex(p => p.id === preference.id);
+    const newPendingChanges = [...pendingChanges];
+    
+    if (existingIndex >= 0) {
+      newPendingChanges[existingIndex] = updatedPreference;
+    } else {
+      newPendingChanges.push(updatedPreference);
+    }
+    
+    setPendingChanges(newPendingChanges);
+    setHasChanges(true);
+    
+    // Update local state for immediate feedback
+    const updatedPreferences = preferences.map(p => 
+      p.id === preference.id ? updatedPreference : p
+    );
+    setPreferences(updatedPreferences);
+  };
+  
+  const handleSubmitChanges = () => {
+    // Save all pending changes
+    pendingChanges.forEach(preference => {
+      dataService.savePreference(preference);
+    });
+    
     // Show toast notification
     toast({
-      title: `${updatedPreference.allowed ? 'Allowed' : 'Disallowed'} ${updatedPreference.dataType}`,
-      description: `Preference for ${updatedPreference.dataType} has been updated for ${company?.name}.`,
+      title: 'Preferences Updated',
+      description: `${pendingChanges.length} preference(s) have been updated for ${company?.name}.`,
     });
+    
+    // Reset pending changes
+    setPendingChanges([]);
+    setHasChanges(false);
+    setShowConfirmDialog(false);
+  };
+  
+  const handleDiscardChanges = () => {
+    // Reload preferences to discard changes
+    loadData();
   };
 
   const createOrUpdatePreference = (dataType: string, allowed: boolean) => {
@@ -90,14 +140,13 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
       companyId: params.id
     };
     
-    // Save the new preference
-    dataService.savePreference(newPreference);
+    // Add to pending changes
+    const newPendingChanges = [...pendingChanges, newPreference];
+    setPendingChanges(newPendingChanges);
+    setHasChanges(true);
     
-    // Show toast notification
-    toast({
-      title: `${allowed ? 'Allowed' : 'Disallowed'} ${dataType}`,
-      description: `New preference for ${dataType} has been set for ${company?.name}.`,
-    });
+    // Update local state for immediate feedback
+    setPreferences([...preferences, newPreference]);
   };
 
   const handleClonePreferences = () => {
@@ -110,6 +159,10 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
       return;
     }
 
+    setShowConfirmDialog(true);
+  };
+  
+  const confirmClonePreferences = () => {
     if (selectedCompanyId === 'global') {
       // Handle cloning from global preferences
       const globalPrefs = dataService.getGlobalPreferences();
@@ -144,6 +197,10 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
     
     // Clear selection
     setSelectedCompanyId('');
+    setShowConfirmDialog(false);
+    
+    // Reload data
+    loadData();
   };
 
   const getDataTypes = (): string[] => {
@@ -194,6 +251,9 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
       </div>
     );
   }
+  
+  const changedPreferences = pendingChanges.length;
+  const dataTypes = getDataTypes();
 
   return (
     <>
@@ -223,113 +283,149 @@ export default function CompanyPreferences({ params }: { params: { id: string } 
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {getDataTypes().map(dataType => {
-                    const effectivePref = getEffectivePreference(dataType);
-                    const companyPref = preferences.find(p => p.dataType === dataType);
-                    
-                    return (
-                      <div 
-                        key={dataType} 
-                        className="flex items-center justify-between p-4 border rounded-md"
+                  {dataTypes.length > 0 ? (
+                    dataTypes.map(dataType => {
+                      const effectivePref = getEffectivePreference(dataType);
+                      const companyPref = preferences.find(p => p.dataType === dataType);
+                      
+                      return (
+                        <div 
+                          key={dataType} 
+                          className="flex items-center justify-between p-4 border rounded-md"
+                        >
+                          <div>
+                            <h3 className="font-medium">{dataType}</h3>
+                            {effectivePref.isGlobal && !companyPref ? (
+                              <p className="text-sm text-muted-foreground">
+                                Using global preference: {effectivePref.allowed ? 'Allowed' : 'Disallowed'}
+                              </p>
+                            ) : (
+                              <p className="text-sm text-muted-foreground">
+                                Company specific: {effectivePref.allowed ? 'Allowed' : 'Disallowed'}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {effectivePref.isGlobal && !companyPref && (
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => createOrUpdatePreference(dataType, effectivePref.allowed)}
+                              >
+                                Override
+                              </Button>
+                            )}
+                            <Switch
+                              checked={effectivePref.allowed}
+                              onCheckedChange={() => {
+                                if (companyPref) {
+                                  handleTogglePreference(companyPref);
+                                } else {
+                                  createOrUpdatePreference(dataType, !effectivePref.allowed);
+                                }
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-muted-foreground text-center py-4">
+                      No data types available for this company.
+                    </p>
+                  )}
+                  
+                  {hasChanges && (
+                    <div className="flex justify-end space-x-2 mt-6">
+                      <Button 
+                        variant="outline" 
+                        onClick={handleDiscardChanges}
                       >
-                        <div>
-                          <h3 className="font-medium">{dataType}</h3>
-                          {effectivePref.isGlobal && !companyPref ? (
-                            <p className="text-sm text-muted-foreground">
-                              Using global preference: {effectivePref.allowed ? 'Allowed' : 'Disallowed'}
-                            </p>
-                          ) : (
-                            <p className="text-sm text-muted-foreground">
-                              Company specific: {effectivePref.allowed ? 'Allowed' : 'Disallowed'}
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {effectivePref.isGlobal && !companyPref && (
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => createOrUpdatePreference(dataType, effectivePref.allowed)}
-                            >
-                              Override Global
-                            </Button>
-                          )}
-                          <Switch
-                            checked={effectivePref.allowed}
-                            onCheckedChange={() => {
-                              if (companyPref) {
-                                handleTogglePreference(companyPref);
-                              } else {
-                                createOrUpdatePreference(dataType, !effectivePref.allowed);
-                              }
-                            }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
+                        Discard Changes
+                      </Button>
+                      <Button 
+                        onClick={() => setShowConfirmDialog(true)}
+                      >
+                        Save Changes
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
           </div>
-
+          
           <div>
             <Card>
               <CardHeader>
                 <CardTitle>Clone Preferences</CardTitle>
                 <CardDescription>
-                  Copy preferences from another company or from global settings
+                  Copy preferences from another source
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Source</label>
-                    <Select
-                      value={selectedCompanyId}
-                      onValueChange={setSelectedCompanyId}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a source" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="global">Global Preferences</SelectItem>
-                        {companies.map(company => (
-                          <SelectItem key={company.id} value={company.id}>
-                            {company.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <Select
+                    value={selectedCompanyId}
+                    onValueChange={setSelectedCompanyId}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select preference source" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="global">Global Preferences</SelectItem>
+                      {companies.map(company => (
+                        <SelectItem key={company.id} value={company.id}>
+                          {company.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
                   <Button 
+                    className="w-full" 
                     onClick={handleClonePreferences}
                     disabled={!selectedCompanyId}
-                    className="w-full"
                   >
-                    Clone Preferences
+                    Apply Preferences
                   </Button>
                 </div>
               </CardContent>
             </Card>
-
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>Manage Global Preferences</CardTitle>
-                <CardDescription>
-                  Edit preferences for all companies
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild className="w-full">
-                  <Link href="/global-preferences">
-                    Global Preferences
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
           </div>
         </div>
+        
+        <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Preference Changes</DialogTitle>
+              <DialogDescription>
+                {pendingChanges.length > 0 ? (
+                  `You are about to update ${changedPreferences} preference setting(s) for ${company.name}.`
+                ) : (
+                  `You are about to apply preferences from ${
+                    selectedCompanyId === 'global' ? 'global settings' : 
+                    companies.find(c => c.id === selectedCompanyId)?.name
+                  } to ${company.name}.`
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <p className="text-sm text-muted-foreground">
+                These changes will apply immediately and may affect how your data is processed by {company.name}.
+                Please review your changes carefully before proceeding.
+              </p>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={pendingChanges.length > 0 ? handleSubmitChanges : confirmClonePreferences}>
+                Confirm Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
     </>
   );

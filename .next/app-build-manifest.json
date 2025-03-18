@@ -16,20 +16,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/login/page.js"
     ],
-    "/companies/[id]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/companies/[id]/page.js"
-    ],
     "/companies/[id]/preferences/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/companies/[id]/preferences/page.js"
     ],
-    "/global-preferences/page": [
+    "/companies/[id]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/global-preferences/page.js"
+      "static/chunks/app/companies/[id]/page.js"
     ]
   }
 }
