@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
-import { LogOut, Shield } from 'lucide-react';
+import { LogOut, Shield, User } from 'lucide-react';
 
 export function NavBar() {
   const { user, logout } = useAuth();
@@ -31,6 +31,17 @@ export function NavBar() {
           <span className="text-sm text-muted-foreground hidden md:inline-block">
             Signed in as <span className="font-medium text-foreground">{user.username}</span>
           </span>
+          
+          <Link href="/profile">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <User className="w-4 h-4 mr-2" />
+              Profile
+            </Button>
+          </Link>
           
           <Button 
             variant="ghost" 
