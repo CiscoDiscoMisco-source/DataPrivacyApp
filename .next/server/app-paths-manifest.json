@@ -1,7 +1,6 @@
 {
+  "/not-found": "app/not-found.js",
   "/page": "app/page.js",
   "/login/page": "app/login/page.js",
-  "/companies/[id]/page": "app/companies/[id]/page.js",
-  "/companies/[id]/preferences/page": "app/companies/[id]/preferences/page.js",
-  "/global-preferences/page": "app/global-preferences/page.js"
+  "/profile/page": "app/profile/page.js"
 }

@@ -757,6 +757,9 @@ video {
 .h-px {
   height: 1px;
 }
+.h-auto {
+  height: auto;
+}
 .max-h-full {
   max-height: 100%;
 }
