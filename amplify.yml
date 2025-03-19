@@ -10,6 +10,13 @@ backend:
         - echo "Checking for Amplify CLI tools..."
         - which amplify || echo "amplify not found"
         - which ampx || echo "ampx not found"
+        # Set up AWS credentials
+        - if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+          echo "Setting up AWS credentials from environment variables";
+          mkdir -p ~/.aws;
+          echo -e "[default]\naws_access_key_id = $AWS_ACCESS_KEY_ID\naws_secret_access_key = $AWS_SECRET_ACCESS_KEY\nregion = ${AWS_REGION:-us-east-1}" > ~/.aws/credentials;
+          echo -e "[default]\nregion = ${AWS_REGION:-us-east-1}" > ~/.aws/config;
+          else echo "AWS credentials not found in environment variables"; fi
     build:
       commands:
         - echo "Running Amplify backend build..."
@@ -17,6 +24,7 @@ backend:
         - which ampx && (ampx -v || echo "ampx version command failed")
         - export DEBUG=*
         - node -e "console.log('Environment variables:', JSON.stringify({AMPLIFY_APP_ID: process.env.AMPLIFY_APP_ID, AMPLIFY_ENV_NAME: process.env.AMPLIFY_ENV_NAME}))"
+        - aws sts get-caller-identity || echo "AWS CLI not configured properly"
         - npm run generate-outputs || echo "Failed to generate outputs, but continuing build"
         - ls -la
         - if [ -f "./amplify_outputs.json" ]; then echo "amplify_outputs.json exists"; else echo "WARNING: amplify_outputs.json does not exist"; fi
