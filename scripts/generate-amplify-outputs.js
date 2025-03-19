@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { execSync } = require('child_process');
+const { execSync, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -15,16 +15,46 @@ const colors = {
 
 console.log(`${colors.blue}Generating Amplify outputs...${colors.reset}`);
 
+// Check if we should use ampx or amplify CLI
+function getAmplifyCommand() {
+  try {
+    // Try to run amplify version
+    const amplifyResult = spawnSync('amplify', ['--version'], { stdio: 'ignore' });
+    if (amplifyResult.status === 0) {
+      return 'amplify';
+    }
+  } catch (e) {
+    // Ignore errors
+  }
+  
+  try {
+    // Try to run ampx version
+    const ampxResult = spawnSync('ampx', ['--version'], { stdio: 'ignore' });
+    if (ampxResult.status === 0) {
+      return 'ampx';
+    }
+  } catch (e) {
+    // Ignore errors
+  }
+  
+  // Default to amplify if neither command works
+  console.log(`${colors.yellow}Could not determine if amplify or ampx CLI is installed. Defaulting to amplify${colors.reset}`);
+  return 'amplify';
+}
+
+const amplifyCmd = getAmplifyCommand();
+console.log(`${colors.green}Using ${amplifyCmd} CLI command${colors.reset}`);
+
 try {
   // Run amplify pull first to ensure we have the latest backend configuration
-  console.log(`${colors.yellow}Running amplify pull...${colors.reset}`);
+  console.log(`${colors.yellow}Running ${amplifyCmd} pull...${colors.reset}`);
   
   // Check if the user provided specific environment params
   const hasEnvArgs = process.argv.slice(2).some(arg => 
     arg.startsWith('--appId') || arg.startsWith('--envName')
   );
   
-  let pullCommand = 'amplify pull';
+  let pullCommand = `${amplifyCmd} pull`;
   
   if (hasEnvArgs) {
     // Use provided args
@@ -44,12 +74,25 @@ try {
     }
   }
   
+  // Check environment variables
+  const appId = process.env.AMPLIFY_APP_ID;
+  const envName = process.env.AMPLIFY_ENV_NAME;
+  
+  if (appId && envName && !pullCommand.includes('--appId')) {
+    console.log(`${colors.green}Using environment variables AMPLIFY_APP_ID and AMPLIFY_ENV_NAME${colors.reset}`);
+    pullCommand += ` --appId ${appId} --envName ${envName}`;
+  }
+  
   pullCommand += ' --yes';
+  console.log(`${colors.blue}Executing: ${pullCommand}${colors.reset}`);
   execSync(pullCommand, { stdio: 'inherit' });
 
   // Generate the amplify outputs file
   console.log(`${colors.yellow}Generating outputs file...${colors.reset}`);
-  execSync('amplify generate outputs --allow-destructive-graphql-schema-updates', { stdio: 'inherit' });
+  
+  const generateCmd = `${amplifyCmd} generate outputs --allow-destructive-graphql-schema-updates`;
+  console.log(`${colors.blue}Executing: ${generateCmd}${colors.reset}`);
+  execSync(generateCmd, { stdio: 'inherit' });
 
   // Verify the file exists
   if (fs.existsSync('./amplify_outputs.json')) {

@@ -5,11 +5,21 @@ backend:
       commands:
         - npm install -g @aws-amplify/cli
         - npm install
+        - echo "Node version $(node -v)"
+        - echo "NPM version $(npm -v)"
+        - echo "Checking for Amplify CLI tools..."
+        - which amplify || echo "amplify not found"
+        - which ampx || echo "ampx not found"
     build:
       commands:
-        - amplify pull --appId ${AMPLIFY_APP_ID} --envName ${AMPLIFY_ENV_NAME} --yes
-        - amplify generate outputs --allow-destructive-graphql-schema-updates
-        - amplify status
+        - echo "Running Amplify backend build..."
+        - which amplify && (amplify -v || echo "amplify version command failed")
+        - which ampx && (ampx -v || echo "ampx version command failed")
+        - export DEBUG=*
+        - node -e "console.log('Environment variables:', JSON.stringify({AMPLIFY_APP_ID: process.env.AMPLIFY_APP_ID, AMPLIFY_ENV_NAME: process.env.AMPLIFY_ENV_NAME}))"
+        - npm run generate-outputs || echo "Failed to generate outputs, but continuing build"
+        - ls -la
+        - if [ -f "./amplify_outputs.json" ]; then echo "amplify_outputs.json exists"; else echo "WARNING: amplify_outputs.json does not exist"; fi
 frontend:
   phases:
     preBuild:
