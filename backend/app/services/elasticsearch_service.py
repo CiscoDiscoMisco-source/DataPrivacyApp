@@ -2,6 +2,7 @@ import os
 import logging
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import NotFoundError
+from app.services.elasticsearch_index_manager import create_company_index, get_index_name
 
 logger = logging.getLogger(__name__)
 
@@ -38,23 +39,11 @@ class ElasticsearchService:
             logger.warning("Cannot create indexes: Elasticsearch client not initialized")
             return False
         
-        companies_index = f"{self.index_prefix}_companies"
+        companies_index = get_index_name(self.index_prefix, 'companies')
         
         # Check if the companies index exists
         if not self.client.indices.exists(index=companies_index):
-            # Create the companies index with appropriate mappings
-            self.client.indices.create(
-                index=companies_index,
-                body={
-                    "mappings": {
-                        "properties": {
-                            "company_id": {"type": "integer"},
-                            "name": {"type": "text", "analyzer": "standard"},
-                            "domain": {"type": "keyword"}
-                        }
-                    }
-                }
-            )
+            create_company_index(self.client, companies_index)
             logger.info(f"Created {companies_index} index")
         
         return True
@@ -65,7 +54,7 @@ class ElasticsearchService:
             logger.warning("Cannot index company: Elasticsearch client not initialized")
             return False
         
-        companies_index = f"{self.index_prefix}_companies"
+        companies_index = get_index_name(self.index_prefix, 'companies')
         
         # Prepare the document
         doc = company.to_search_dict()
@@ -89,7 +78,7 @@ class ElasticsearchService:
             logger.warning("Cannot delete company: Elasticsearch client not initialized")
             return False
         
-        companies_index = f"{self.index_prefix}_companies"
+        companies_index = get_index_name(self.index_prefix, 'companies')
         
         try:
             self.client.delete(
@@ -111,7 +100,7 @@ class ElasticsearchService:
             logger.warning("Cannot search companies: Elasticsearch client not initialized")
             return []
         
-        companies_index = f"{self.index_prefix}_companies"
+        companies_index = get_index_name(self.index_prefix, 'companies')
         
         try:
             # Build the search query

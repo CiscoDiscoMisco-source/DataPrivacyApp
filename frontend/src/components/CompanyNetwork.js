@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
+import { prepareNetworkData, setupForceSimulation } from '../utils/networkVisualization';
 
 const CompanyNetwork = ({ companies, selectedCompany, preferences }) => {
   const d3Container = useRef(null);
@@ -23,123 +24,65 @@ const CompanyNetwork = ({ companies, selectedCompany, preferences }) => {
         .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
       
-      // Prepare data for network visualization
-      // Create a network of companies with data sharing relationships
-      const nodes = [];
-      const links = [];
+      // Prepare data
+      const { nodes, links } = prepareNetworkData(companies, selectedCompany, preferences);
       
-      // Add user node at the center
-      nodes.push({
-        id: 'user',
-        name: 'You',
-        type: 'user',
-        radius: 30
-      });
+      // Setup simulation
+      const simulation = setupForceSimulation(nodes, links, width, height);
       
-      // Add company nodes
-      companies.forEach(companyData => {
-        const company = companyData.company || companyData;
-        const terms = companyData.terms || [];
-        
-        nodes.push({
-          id: company.company_id,
-          name: company.name,
-          type: 'company',
-          domain: company.domain,
-          radius: 20,
-          terms: terms.length,
-          selected: selectedCompany && parseInt(selectedCompany) === company.company_id
-        });
-        
-        // Link from user to company
-        links.push({
-          source: 'user',
-          target: company.company_id,
-          value: 1
-        });
-        
-        // Find related companies for data sharing (simplified model)
-        // In a real app, this would use actual data sharing relationships
-        companies.forEach(otherCompanyData => {
-          const otherCompany = otherCompanyData.company || otherCompanyData;
-          
-          // Skip self-links and already created links
-          if (company.company_id === otherCompany.company_id) return;
-          
-          // Create link based on domain similarity (simplified model)
-          // In a real app, use actual data sharing connections
-          const companyDomain = company.domain.split('.').slice(-2).join('.');
-          const otherDomain = otherCompany.domain.split('.').slice(-2).join('.');
-          
-          if (companyDomain === otherDomain) {
-            links.push({
-              source: company.company_id,
-              target: otherCompany.company_id,
-              value: 0.5
-            });
-          }
-        });
-      });
-      
-      // Create scales
-      const color = d3.scaleOrdinal()
-        .domain(['user', 'company'])
-        .range(['#e74c3c', '#3498db']);
-      
-      // Create force simulation
-      const simulation = d3.forceSimulation(nodes)
-        .force('link', d3.forceLink(links).id(d => d.id).distance(100))
-        .force('charge', d3.forceManyBody().strength(-300))
-        .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('collision', d3.forceCollide().radius(d => d.radius + 10));
-      
-      // Add links
+      // Create links
       const link = svg.append('g')
-        .attr('class', 'links')
         .selectAll('line')
         .data(links)
         .enter()
         .append('line')
-        .attr('stroke-width', d => d.value * 2)
-        .attr('stroke', '#999')
+        .attr('stroke-width', d => d.value)
+        .attr('stroke', d => d.allowed ? '#4caf50' : '#f44336')
         .attr('stroke-opacity', 0.6);
       
-      // Add nodes
+      // Create nodes
       const node = svg.append('g')
-        .attr('class', 'nodes')
-        .selectAll('g')
+        .selectAll('circle')
         .data(nodes)
         .enter()
-        .append('g');
-      
-      // Add circles to nodes
-      node.append('circle')
+        .append('circle')
         .attr('r', d => d.radius)
-        .attr('fill', d => color(d.type))
-        .attr('stroke', d => d.selected ? '#e74c3c' : '#fff')
-        .attr('stroke-width', d => d.selected ? 3 : 1)
+        .attr('fill', d => {
+          if (d.type === 'user') return '#2196f3';
+          if (d.id === selectedCompany) return '#ff9800';
+          return '#9e9e9e';
+        })
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 1.5)
         .call(d3.drag()
           .on('start', dragstarted)
           .on('drag', dragged)
           .on('end', dragended));
       
-      // Add text labels to nodes
-      node.append('text')
+      // Add labels
+      const label = svg.append('g')
+        .selectAll('text')
+        .data(nodes)
+        .enter()
+        .append('text')
         .text(d => d.name)
-        .attr('x', 0)
-        .attr('y', d => d.radius + 15)
-        .attr('text-anchor', 'middle')
-        .attr('fill', '#333')
-        .style('font-size', '12px');
+        .attr('font-size', 10)
+        .attr('dx', 12)
+        .attr('dy', 4)
+        .attr('fill', '#333');
       
-      // Add titles for tooltips
-      node.append('title')
-        .text(d => {
-          if (d.type === 'user') return 'You';
-          return `${d.name}\nDomain: ${d.domain}\nData Sharing Terms: ${d.terms}`;
-        });
+      // Add tooltips for links
+      const linkTooltip = svg.append('g')
+        .selectAll('text')
+        .data(links)
+        .enter()
+        .append('text')
+        .text(d => d.data_type)
+        .attr('font-size', 8)
+        .attr('fill', d => d.allowed ? '#4caf50' : '#f44336')
+        .attr('opacity', 0);
       
-      // Update positions on each tick
+      // Update positions on tick
       simulation.on('tick', () => {
         link
           .attr('x1', d => d.source.x)
@@ -148,8 +91,34 @@ const CompanyNetwork = ({ companies, selectedCompany, preferences }) => {
           .attr('y2', d => d.target.y);
         
         node
-          .attr('transform', d => `translate(${d.x},${d.y})`);
+          .attr('cx', d => d.x)
+          .attr('cy', d => d.y);
+        
+        label
+          .attr('x', d => d.x)
+          .attr('y', d => d.y);
+        
+        linkTooltip
+          .attr('x', d => (d.source.x + d.target.x) / 2)
+          .attr('y', d => (d.source.y + d.target.y) / 2);
       });
+      
+      // Show tooltips on hover
+      link
+        .on('mouseover', function(event, d) {
+          d3.select(this).attr('stroke-width', d.value * 1.5);
+          
+          // Find and show the corresponding tooltip
+          linkTooltip
+            .filter(tooltip => tooltip === d)
+            .attr('opacity', 1);
+        })
+        .on('mouseout', function(event, d) {
+          d3.select(this).attr('stroke-width', d.value);
+          
+          // Hide the tooltip
+          linkTooltip.attr('opacity', 0);
+        });
       
       // Drag functions
       function dragstarted(event, d) {
@@ -168,43 +137,39 @@ const CompanyNetwork = ({ companies, selectedCompany, preferences }) => {
         d.fx = null;
         d.fy = null;
       }
-      
-      // Add a legend
-      const legend = svg.append('g')
-        .attr('class', 'legend')
-        .attr('transform', `translate(${width - 120}, 20)`);
-      
-      // Legend for user node
-      legend.append('circle')
-        .attr('r', 8)
-        .attr('fill', color('user'))
-        .attr('cx', 10)
-        .attr('cy', 10);
-      
-      legend.append('text')
-        .attr('x', 25)
-        .attr('y', 15)
-        .text('You')
-        .style('font-size', '12px');
-      
-      // Legend for company nodes
-      legend.append('circle')
-        .attr('r', 8)
-        .attr('fill', color('company'))
-        .attr('cx', 10)
-        .attr('cy', 40);
-      
-      legend.append('text')
-        .attr('x', 25)
-        .attr('y', 45)
-        .text('Companies')
-        .style('font-size', '12px');
     }
   }, [companies, selectedCompany, preferences]);
   
   return (
-    <div className="company-network-container">
-      <div ref={d3Container} className="company-network-visualization" />
+    <div className="company-network-container mt-4">
+      <h3>Data Sharing Network</h3>
+      <div className="network-legend mb-3">
+        <div className="legend-item">
+          <span className="legend-color" style={{ backgroundColor: '#2196f3' }}></span>
+          <span>You</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-color" style={{ backgroundColor: '#ff9800' }}></span>
+          <span>Selected Company</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-color" style={{ backgroundColor: '#9e9e9e' }}></span>
+          <span>Other Companies</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-line" style={{ backgroundColor: '#4caf50' }}></span>
+          <span>Allowed Data Flow</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-line" style={{ backgroundColor: '#f44336' }}></span>
+          <span>Denied Data Flow</span>
+        </div>
+      </div>
+      <div 
+        className="network-visualization border rounded p-2" 
+        ref={d3Container}
+        style={{ width: '100%', height: '500px' }}
+      ></div>
     </div>
   );
 };

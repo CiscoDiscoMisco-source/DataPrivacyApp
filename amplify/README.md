@@ -8,55 +8,97 @@ The following data models have been defined in `amplify/data/resource.ts`:
 
 ### User
 
-Represents an application user with tokens for making preference changes.
+Represents an application user with authentication capabilities.
 
 - `email`: String (required) - User's email address
-- `name`: String (required) - User's name
-- `tokens`: Integer (required) - User's token balance
-
-### TokenPackage
-
-Represents token packages that can be purchased.
-
-- `name`: String (required) - Package name
-- `amount`: Integer (required) - Number of tokens
-- `price`: Float (required) - Price of the package
-- `description`: String - Description of the package
+- `firstName`: String (required) - User's first name
+- `lastName`: String (required) - User's last name
+- `passwordHash`: String (required) - Hashed password
+- `isActive`: Boolean - User account status
+- `isAdmin`: Boolean - Administrator status
+- `createdAt`: DateTime - Account creation timestamp
+- `updatedAt`: DateTime - Last update timestamp
 
 ### Company
 
-Represents a company that collects user data.
+Represents a company that collects and manages user data.
 
 - `name`: String (required) - Company name
-- `logo`: String - URL to company logo
-- `industry`: String (required) - Industry category
 - `description`: String - Company description
+- `website`: String - Company website
+- `industry`: String - Industry category
+- `sizeRange`: String - Company size range
+- `country`: String - Country
+- `state`: String - State/province
+- `city`: String - City
+- `address`: String - Street address
+- `postalCode`: String - Postal code
+- `phone`: String - Contact phone number
+- `isActive`: Boolean - Company status
+- `ownerId`: String (required) - Reference to the owner user
+- `createdAt`: DateTime - Creation timestamp
+- `updatedAt`: DateTime - Last update timestamp
 
-### DataSharingPolicy
+### DataType
 
-Represents a data sharing policy for a company.
+Represents different types of data that companies collect.
 
-- `dataType`: String (required) - Type of data being shared
-- `purpose`: String (required) - Purpose of data collection
-- `thirdParties`: String[] - List of third parties data is shared with
-- `description`: String - Detailed description of the policy
+- `name`: String (required) - Name of the data type
+- `description`: String - Detailed description
+- `category`: Enum (required) - Category of data
+- `isSensitive`: Boolean - Whether the data is sensitive
+- `retentionPeriod`: Integer - Retention period in days
+- `isRequired`: Boolean - Whether the data is required
+- `validationRules`: JSON - Validation rules
+- `isActive`: Boolean - Status of the data type
 - `companyId`: String (required) - Reference to the company
+- `createdAt`: DateTime - Creation timestamp
+- `updatedAt`: DateTime - Last update timestamp
 
-### Preference
+### DataSharingTerm
 
-Represents a user's preference for data sharing.
+Represents data sharing agreements between companies.
 
-- `dataType`: String (required) - Type of data
-- `allowed`: Boolean (required) - Whether sharing is allowed
-- `isGlobal`: Boolean (required) - Whether this is a global preference
-- `companyId`: String - Reference to the company (null for global preferences)
+- `purpose`: String (required) - Purpose of data sharing
+- `duration`: Integer - Duration in days
+- `conditions`: JSON - Sharing conditions
+- `status`: Enum - Status of the agreement
+- `startDate`: DateTime - Start date of sharing
+- `endDate`: DateTime - End date of sharing
+- `terminationReason`: String - Reason for termination
+- `isActive`: Boolean - Status of the agreement
+- `companyId`: String (required) - Reference to the company
+- `dataTypeId`: String (required) - Reference to the data type
+- `sharedById`: String (required) - Reference to the user sharing data
+- `sharedWithId`: String (required) - Reference to the user receiving data
+- `createdAt`: DateTime - Creation timestamp
+- `updatedAt`: DateTime - Last update timestamp
+
+### UserPreferences
+
+Represents user preferences and settings.
+
 - `userId`: String (required) - Reference to the user
+- `emailNotifications`: Boolean - Whether to send email notifications
+- `notificationFrequency`: Enum - Frequency of notifications
+- `notificationTypes`: JSON - Types of notifications to receive
+- `dataSharingPreferences`: JSON - Data sharing preferences
+- `privacyLevel`: String - Privacy level setting
+- `theme`: String - UI theme preference
+- `language`: String - Language preference
+- `timezone`: String - Timezone preference
+- `dataRetentionPeriod`: Integer - Data retention period in days
+- `autoDeleteData`: Boolean - Whether to auto-delete data
+- `createdAt`: DateTime - Creation timestamp
+- `updatedAt`: DateTime - Last update timestamp
 
 ## Authorization
 
-- Public data access: Companies and data sharing policies are readable by everyone
-- Private user data: Preferences are owner-controlled with authenticated read access
-- Token packages: Can be read by authenticated users, managed by owners
+- User data: Accessible by owner with authenticated read access
+- Company data: Accessible by owner with public read access
+- DataType: Accessible by owner with public read access
+- DataSharingTerm: Accessible by owner with authenticated read access
+- UserPreferences: Accessible by owner with authenticated read access
 
 ## Connecting to the API
 

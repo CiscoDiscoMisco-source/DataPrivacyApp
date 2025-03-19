@@ -6,17 +6,51 @@ adding a new "isDone" field as a boolean. The authorization rule below
 specifies that any unauthenticated user can "create", "read", "update", 
 and "delete" any "Todo" records.
 =========================================================================*/
+
+// Define enums outside of the schema
+const DataCategory = {
+  PERSONAL: 'PERSONAL',
+  CONTACT: 'CONTACT',
+  FINANCIAL: 'FINANCIAL',
+  HEALTH: 'HEALTH',
+  LOCATION: 'LOCATION',
+  BEHAVIORAL: 'BEHAVIORAL',
+  TECHNICAL: 'TECHNICAL',
+  OTHER: 'OTHER'
+};
+
+const SharingStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  EXPIRED: 'EXPIRED',
+  TERMINATED: 'TERMINATED'
+};
+
+const NotificationFrequency = {
+  IMMEDIATE: 'IMMEDIATE',
+  DAILY: 'DAILY',
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY',
+  NEVER: 'NEVER'
+};
+
 const schema = a.schema({
   // User model
   User: a
     .model({
       email: a.string().required(),
-      name: a.string().required(),
-      tokens: a.integer().required(),
+      firstName: a.string().required(),
+      lastName: a.string().required(),
+      passwordHash: a.string().required(),
+      isActive: a.boolean().default(true),
+      isAdmin: a.boolean().default(false),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime(),
     })
     .authorization((allow) => [
       allow.owner(),
-      allow.publicApiKey().to(['read']),
+      allow.authenticated().to(['read']),
     ]),
 
   // Token package model
@@ -36,35 +70,87 @@ const schema = a.schema({
   Company: a
     .model({
       name: a.string().required(),
-      logo: a.string(),
-      industry: a.string().required(),
       description: a.string(),
+      website: a.string(),
+      industry: a.string(),
+      sizeRange: a.string(),
+      country: a.string(),
+      state: a.string(),
+      city: a.string(),
+      address: a.string(),
+      postalCode: a.string(),
+      phone: a.string(),
+      isActive: a.boolean().default(true),
+      ownerId: a.string().required(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime(),
     })
     .authorization((allow) => [
+      allow.owner(),
+      allow.authenticated().to(['read']),
       allow.publicApiKey().to(['read']),
     ]),
 
-  // Data sharing policy model
-  DataSharingPolicy: a
+  // DataType model
+  DataType: a
     .model({
-      dataType: a.string().required(),
-      purpose: a.string().required(),
-      thirdParties: a.string().array(),
+      name: a.string().required(),
       description: a.string(),
+      category: a.string().required(),  // We'll validate against DataCategory values
+      isSensitive: a.boolean().default(false),
+      retentionPeriod: a.integer(),
+      isRequired: a.boolean().default(false),
+      validationRules: a.json(),
+      isActive: a.boolean().default(true),
       companyId: a.string().required(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime(),
     })
     .authorization((allow) => [
+      allow.owner(),
+      allow.authenticated().to(['read']),
       allow.publicApiKey().to(['read']),
     ]),
 
-  // Preference model
-  Preference: a
+  // DataSharingTerm model
+  DataSharingTerm: a
     .model({
-      dataType: a.string().required(),
-      allowed: a.boolean().required(),
-      isGlobal: a.boolean().required(),
-      companyId: a.string(),
+      purpose: a.string().required(),
+      duration: a.integer(),
+      conditions: a.json(),
+      status: a.string().default('PENDING'),  // We'll validate against SharingStatus values
+      startDate: a.datetime(),
+      endDate: a.datetime(),
+      terminationReason: a.string(),
+      isActive: a.boolean().default(true),
+      companyId: a.string().required(),
+      dataTypeId: a.string().required(),
+      sharedById: a.string().required(),
+      sharedWithId: a.string().required(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime(),
+    })
+    .authorization((allow) => [
+      allow.owner(),
+      allow.authenticated().to(['read']),
+    ]),
+
+  // UserPreferences model
+  UserPreferences: a
+    .model({
       userId: a.string().required(),
+      emailNotifications: a.boolean().default(true),
+      notificationFrequency: a.string().default('IMMEDIATE'),  // We'll validate against NotificationFrequency values
+      notificationTypes: a.json(),
+      dataSharingPreferences: a.json(),
+      privacyLevel: a.string().default('balanced'),
+      theme: a.string().default('light'),
+      language: a.string().default('en'),
+      timezone: a.string(),
+      dataRetentionPeriod: a.integer(),
+      autoDeleteData: a.boolean().default(false),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime(),
     })
     .authorization((allow) => [
       allow.owner(),
@@ -73,6 +159,9 @@ const schema = a.schema({
 });
 
 export type Schema = ClientSchema<typeof schema>;
+
+// Export the enum constants for client-side validation
+export { DataCategory, SharingStatus, NotificationFrequency };
 
 export const data = defineData({
   schema,
