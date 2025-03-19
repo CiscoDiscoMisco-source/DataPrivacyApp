@@ -11,14 +11,48 @@ backend:
         - which amplify || echo "amplify not found"
         - which ampx || echo "ampx not found"
         - |
-          # Set up AWS credentials
-          if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
-            echo "Setting up AWS credentials from environment variables"
-            mkdir -p ~/.aws
-            echo -e "[default]\naws_access_key_id = $AWS_ACCESS_KEY_ID\naws_secret_access_key = $AWS_SECRET_ACCESS_KEY\nregion = ${AWS_REGION:-us-east-1}" > ~/.aws/credentials
-            echo -e "[default]\nregion = ${AWS_REGION:-us-east-1}" > ~/.aws/config
-          else 
-            echo "AWS credentials not found in environment variables"
+          # Set up AWS credentials using Amplify Secrets
+          echo "Setting up AWS credentials from Amplify Secrets"
+          mkdir -p ~/.aws
+          
+          # Access the secrets from process.env.secrets which Amplify automatically sets up
+          # Create a small script to extract secrets
+          cat > extract-secrets.js << 'EOF'
+          const fs = require('fs');
+          try {
+            const secrets = JSON.parse(process.env.secrets || '{}');
+            console.log('Found secrets:', Object.keys(secrets).join(', '));
+            
+            const accessKey = secrets.AWS_ACCESS_KEY_ID || '';
+            const secretKey = secrets.AWS_SECRET_ACCESS_KEY || '';
+            const region = secrets.AWS_REGION || process.env.AWS_REGION || 'us-east-1';
+            
+            if (accessKey && secretKey) {
+              fs.writeFileSync('./aws-credentials.txt', 
+                `[default]\naws_access_key_id = ${accessKey}\naws_secret_access_key = ${secretKey}\nregion = ${region}`);
+              fs.writeFileSync('./aws-config.txt', 
+                `[default]\nregion = ${region}`);
+              console.log('AWS credential files created successfully');
+            } else {
+              console.log('AWS credentials not found in secrets');
+            }
+          } catch (error) {
+            console.error('Error extracting secrets:', error.message);
+          }
+          EOF
+          
+          # Run the extraction script
+          node extract-secrets.js
+          
+          # Use the generated files if they exist
+          if [ -f "./aws-credentials.txt" ]; then
+            mv ./aws-credentials.txt ~/.aws/credentials
+            mv ./aws-config.txt ~/.aws/config
+            chmod 600 ~/.aws/credentials
+            chmod 600 ~/.aws/config
+            echo "AWS credentials configured successfully"
+          else
+            echo "WARNING: Could not configure AWS credentials"
           fi
     build:
       commands:
