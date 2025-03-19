@@ -1,0 +1,78 @@
+.users {
+  padding: 20px;
+}
+
+.users h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.users-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.user-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out;
+}
+
+.user-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.user-header h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.3rem;
+}
+
+.status {
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.status.active {
+  background-color: #e6f7ed;
+  color: #2ecc71;
+}
+
+.status.inactive {
+  background-color: #fceaea;
+  color: #e74c3c;
+}
+
+.user-details {
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.user-details p {
+  margin: 5px 0;
+  color: #666;
+}
+
+.admin-badge {
+  display: inline-block;
+  background-color: #3498db;
+  color: white !important;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+  margin-bottom: 10px !important;
+} 

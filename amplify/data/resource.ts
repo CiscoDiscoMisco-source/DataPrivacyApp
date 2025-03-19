@@ -54,8 +54,7 @@ const schema = a.schema({
     ]),
 
   // Token package model
-  TokenPackage: a
-    .model({
+  TokenPackage: a.model({
       name: a.string().required(),
       amount: a.integer().required(),
       price: a.float().required(),
@@ -67,8 +66,7 @@ const schema = a.schema({
     ]),
 
   // Company model
-  Company: a
-    .model({
+  Company: a.model({
       name: a.string().required(),
       description: a.string(),
       website: a.string(),
@@ -92,8 +90,7 @@ const schema = a.schema({
     ]),
 
   // DataType model
-  DataType: a
-    .model({
+  DataType: a.model({
       name: a.string().required(),
       description: a.string(),
       category: a.string().required(),  // We'll validate against DataCategory values
@@ -113,8 +110,7 @@ const schema = a.schema({
     ]),
 
   // DataSharingTerm model
-  DataSharingTerm: a
-    .model({
+  DataSharingTerm: a.model({
       purpose: a.string().required(),
       duration: a.integer(),
       conditions: a.json(),
@@ -136,8 +132,7 @@ const schema = a.schema({
     ]),
 
   // UserPreferences model
-  UserPreferences: a
-    .model({
+  UserPreferences: a.model({
       userId: a.string().required(),
       emailNotifications: a.boolean().default(true),
       notificationFrequency: a.string().default('IMMEDIATE'),  // We'll validate against NotificationFrequency values

@@ -1,0 +1,93 @@
+.user-preferences {
+  padding: 20px;
+}
+
+.user-preferences h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.preferences-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 20px;
+}
+
+.preference-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out;
+}
+
+.preference-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.preference-header {
+  margin-bottom: 15px;
+}
+
+.preference-header h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.3rem;
+}
+
+.preference-details {
+  padding-top: 10px;
+}
+
+.preference-section {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.preference-section:last-of-type {
+  border-bottom: none;
+}
+
+.preference-section h4 {
+  margin: 0 0 10px 0;
+  color: #3498db;
+  font-size: 1.1rem;
+}
+
+.preference-section h5 {
+  margin: 10px 0 5px 0;
+  color: #2c3e50;
+  font-size: 0.95rem;
+}
+
+.preference-section p {
+  margin: 5px 0;
+  color: #666;
+}
+
+.notification-types,
+.data-sharing-prefs {
+  margin-top: 10px;
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.notification-types pre,
+.data-sharing-prefs pre {
+  margin: 0;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: #34495e;
+}
+
+.preference-meta {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+  font-size: 0.9rem;
+  color: #95a5a6;
+} 
