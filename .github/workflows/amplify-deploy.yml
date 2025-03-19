@@ -1,0 +1,54 @@
+name: Amplify Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build_and_deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Amplify CLI
+        run: npm install -g @aws-amplify/cli
+
+      - name: Generate Amplify outputs
+        run: |
+          amplify pull --appId ${{ secrets.AMPLIFY_APP_ID }} --envName ${{ secrets.AMPLIFY_ENV_NAME }} --yes
+          amplify generate outputs --allow-destructive-graphql-schema-updates
+
+      - name: Build application
+        run: npm run build
+
+      # If you're using Amplify Hosting, add this step:
+      - name: Deploy to Amplify
+        if: github.event_name == 'push'
+        run: |
+          # The amplify_outputs.json file should be generated at this point
+          # If you're using Amplify Hosting, you can trigger a build or use the AWS CLI
+          aws amplify start-job --app-id ${{ secrets.AMPLIFY_APP_ID }} --branch-name ${{ github.ref_name }} --job-type RELEASE 

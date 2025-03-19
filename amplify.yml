@@ -1,0 +1,27 @@
+version: 1
+backend:
+  phases:
+    preBuild:
+      commands:
+        - npm install -g @aws-amplify/cli
+        - npm install
+    build:
+      commands:
+        - amplify pull --appId ${AMPLIFY_APP_ID} --envName ${AMPLIFY_ENV_NAME} --yes
+        - amplify generate outputs --allow-destructive-graphql-schema-updates
+        - amplify status
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm install
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/* 

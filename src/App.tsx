@@ -1,6 +1,5 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Amplify } from 'aws-amplify';
 import './App.css';
 import Navbar from './components/Navbar';
 import Dashboard from './components/Dashboard';
@@ -19,18 +18,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { LoadingProvider } from './contexts/LoadingContext';
-import { client } from './amplifyconfiguration';
-
-// Initialize Amplify
-Amplify.configure({
-  API: {
-    GraphQL: {
-      endpoint: 'http://localhost:20002/graphql',
-      region: 'us-east-1',
-      apiKey: 'da2-fakeApiId123456'
-    }
-  }
-});
+import { client } from './amplify-config';
 
 function App() {
   return (
