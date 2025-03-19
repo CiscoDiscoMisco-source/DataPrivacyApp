@@ -4,6 +4,7 @@ import './globals.css'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/context/auth-context'
 import { ProtectedRoute } from '@/components/protected-route'
+import { AmplifyProvider } from '@/components/amplify-provider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,12 +21,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider>
-          <ProtectedRoute>
-            {children}
-          </ProtectedRoute>
-          <Toaster />
-        </AuthProvider>
+        <AmplifyProvider>
+          <AuthProvider>
+            <ProtectedRoute>
+              {children}
+            </ProtectedRoute>
+            <Toaster />
+          </AuthProvider>
+        </AmplifyProvider>
       </body>
     </html>
   )
