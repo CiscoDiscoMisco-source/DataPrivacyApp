@@ -16,6 +16,8 @@ class User(BaseModel, TimestampMixin):
     password_hash = db.Column(db.String(256), nullable=False)
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
+    birth_date = db.Column(db.Date, nullable=False)
+    national_id = db.Column(db.String(50), nullable=False, unique=True)
     is_active = db.Column(db.Boolean, default=True)
     is_admin = db.Column(db.Boolean, default=False)
     
@@ -23,7 +25,7 @@ class User(BaseModel, TimestampMixin):
     companies = db.relationship('Company', backref='owner', lazy=True)
     preferences = db.relationship('UserPreferences', backref='user', uselist=False, lazy=True)
     
-    def __init__(self, email, password, first_name, last_name, **kwargs):
+    def __init__(self, email, password, first_name, last_name, birth_date, national_id, **kwargs):
         """
         Initialize a new User instance.
         
@@ -32,6 +34,8 @@ class User(BaseModel, TimestampMixin):
             password (str): User's password (will be hashed)
             first_name (str): User's first name
             last_name (str): User's last name
+            birth_date (date): User's birth date
+            national_id (str): User's national ID number
             **kwargs: Additional keyword arguments
         """
         super().__init__(**kwargs)
@@ -39,6 +43,8 @@ class User(BaseModel, TimestampMixin):
         self.set_password(password)
         self.first_name = first_name.strip()
         self.last_name = last_name.strip()
+        self.birth_date = birth_date
+        self.national_id = national_id.strip()
     
     def set_password(self, password):
         """
@@ -121,6 +127,8 @@ class User(BaseModel, TimestampMixin):
             'email': self.email,
             'first_name': self.first_name,
             'last_name': self.last_name,
+            'birth_date': self.birth_date.isoformat() if self.birth_date else None,
+            'national_id': self.national_id,
             'is_active': self.is_active,
             'is_admin': self.is_admin,
             'created_at': self.created_at.isoformat(),

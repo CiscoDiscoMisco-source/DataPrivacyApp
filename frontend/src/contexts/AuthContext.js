@@ -29,9 +29,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Login function
-  const login = async (username, password) => {
+  const login = async (email, password) => {
     try {
-      const response = await api.post('/api/login', { username, password });
+      const response = await api.post('/api/login', { email, password });
       const { user, access_token } = response.data.data;
       
       // Save auth data
@@ -51,9 +51,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Register function
-  const register = async (username, email, password) => {
+  const register = async (username, email, name, lastName, birthDate, nationalId, password) => {
     try {
-      const response = await api.post('/api/register', { username, email, password });
+      const response = await api.post('/api/register', { 
+        username, 
+        email, 
+        name, 
+        lastName, 
+        birthDate, 
+        nationalId, 
+        password 
+      });
       const { user, access_token } = response.data.data;
       
       // Save auth data

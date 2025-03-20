@@ -5,6 +5,10 @@ import { useAuth } from '../contexts/AuthContext';
 const Register = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [nationalId, setNationalId] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -41,6 +45,22 @@ const Register = () => {
       errors.email = 'Email address is invalid';
     }
     
+    if (!name) {
+      errors.name = 'Name is required';
+    }
+    
+    if (!lastName) {
+      errors.lastName = 'Last name is required';
+    }
+    
+    if (!birthDate) {
+      errors.birthDate = 'Birth date is required';
+    }
+    
+    if (!nationalId) {
+      errors.nationalId = 'National ID number is required';
+    }
+    
     if (!password) {
       errors.password = 'Password is required';
     } else if (password.length < 8) {
@@ -60,7 +80,7 @@ const Register = () => {
       setLoading(true);
       
       // Attempt registration
-      const result = await register(username, email, password);
+      const result = await register(username, email, name, lastName, birthDate, nationalId, password);
       
       if (result.success) {
         navigate('/');
@@ -108,6 +128,62 @@ const Register = () => {
           />
           {fieldErrors.email && (
             <div className="error-message">{fieldErrors.email}</div>
+          )}
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="name">Name</label>
+          <input
+            type="text"
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="form-control"
+          />
+          {fieldErrors.name && (
+            <div className="error-message">{fieldErrors.name}</div>
+          )}
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="lastName">Last Name</label>
+          <input
+            type="text"
+            id="lastName"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            className="form-control"
+          />
+          {fieldErrors.lastName && (
+            <div className="error-message">{fieldErrors.lastName}</div>
+          )}
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="birthDate">Birth Date</label>
+          <input
+            type="date"
+            id="birthDate"
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
+            className="form-control"
+          />
+          {fieldErrors.birthDate && (
+            <div className="error-message">{fieldErrors.birthDate}</div>
+          )}
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="nationalId">National ID Number</label>
+          <input
+            type="text"
+            id="nationalId"
+            value={nationalId}
+            onChange={(e) => setNationalId(e.target.value)}
+            className="form-control"
+          />
+          {fieldErrors.nationalId && (
+            <div className="error-message">{fieldErrors.nationalId}</div>
           )}
         </div>
         
