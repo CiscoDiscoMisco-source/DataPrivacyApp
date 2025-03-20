@@ -113,6 +113,15 @@ export default function Home() {
             </TabsContent>
           ))}
         </Tabs>
+
+        <div className="mt-6">
+          <Link 
+            href="/register" 
+            className="text-primary hover:underline"
+          >
+            Complete Registration
+          </Link>
+        </div>
       </main>
     </>
   );

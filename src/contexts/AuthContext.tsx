@@ -14,7 +14,7 @@ interface AuthContextType {
   loading: boolean;
   error: Error | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (firstName: string, lastName: string, email: string, password: string) => Promise<void>;
+  register: (firstName: string, lastName: string, email: string, password: string, birthdate?: string, nationalId?: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -94,19 +94,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const register = async (firstName: string, lastName: string, email: string, password: string) => {
+  const register = async (firstName: string, lastName: string, email: string, password: string, birthdate?: string, nationalId?: string) => {
     try {
       setLoading(true);
+      
+      // Prepare user attributes
+      const userAttributes: Record<string, string> = {
+        email,
+        given_name: firstName,
+        family_name: lastName
+      };
+      
+      // Add optional attributes if provided
+      if (birthdate) {
+        userAttributes.birthdate = birthdate;
+      }
+      
+      if (nationalId) {
+        userAttributes['custom:nationalId'] = nationalId;
+      }
+      
       // Register user with Amplify Auth
       const { isSignUpComplete, userId, nextStep }: SignUpOutput = await signUp({
         username: email,
         password,
         options: {
-          userAttributes: {
-            email,
-            given_name: firstName,
-            family_name: lastName
-          }
+          userAttributes
         }
       });
       
