@@ -7,8 +7,8 @@ specifies that any unauthenticated user can "create", "read", "update",
 and "delete" any "Todo" records.
 =========================================================================*/
 
-// Define enums outside of the schema
-const DataCategory = {
+// Define string literals for enums
+export const DataCategory = {
   PERSONAL: 'PERSONAL',
   CONTACT: 'CONTACT',
   FINANCIAL: 'FINANCIAL',
@@ -17,32 +17,34 @@ const DataCategory = {
   BEHAVIORAL: 'BEHAVIORAL',
   TECHNICAL: 'TECHNICAL',
   OTHER: 'OTHER'
-};
+} as const;
 
-const SharingStatus = {
+export const SharingStatus = {
   PENDING: 'PENDING',
   ACCEPTED: 'ACCEPTED',
   REJECTED: 'REJECTED',
   EXPIRED: 'EXPIRED',
   TERMINATED: 'TERMINATED'
-};
+} as const;
 
-const NotificationFrequency = {
+export const NotificationFrequency = {
   IMMEDIATE: 'IMMEDIATE',
   DAILY: 'DAILY',
   WEEKLY: 'WEEKLY',
   MONTHLY: 'MONTHLY',
   NEVER: 'NEVER'
-};
+} as const;
 
 const schema = a.schema({
   // User model
   User: a
     .model({
+      id: a.id(),
       email: a.string().required(),
       firstName: a.string().required(),
       lastName: a.string().required(),
-      passwordHash: a.string().required(),
+      birthdate: a.string(), // Store as ISO string
+      nationalId: a.string(),
       isActive: a.boolean().default(true),
       isAdmin: a.boolean().default(false),
       createdAt: a.datetime(),
@@ -53,12 +55,15 @@ const schema = a.schema({
       allow.authenticated().to(['read']),
     ]),
 
-  // Token package model
+  // TokenPackage model
   TokenPackage: a.model({
+      id: a.id(),
       name: a.string().required(),
       amount: a.integer().required(),
       price: a.float().required(),
       description: a.string(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime(),
     })
     .authorization((allow) => [
       allow.authenticated().to(['read']),
@@ -66,7 +71,9 @@ const schema = a.schema({
     ]),
 
   // Company model
-  Company: a.model({
+  Company: a
+    .model({
+      id: a.id(),
       name: a.string().required(),
       description: a.string(),
       website: a.string(),
@@ -79,9 +86,9 @@ const schema = a.schema({
       postalCode: a.string(),
       phone: a.string(),
       isActive: a.boolean().default(true),
-      ownerId: a.string().required(),
       createdAt: a.datetime(),
       updatedAt: a.datetime(),
+      userId: a.string().required(), // Foreign key for User
     })
     .authorization((allow) => [
       allow.owner(),
@@ -90,18 +97,20 @@ const schema = a.schema({
     ]),
 
   // DataType model
-  DataType: a.model({
+  DataType: a
+    .model({
+      id: a.id(),
       name: a.string().required(),
       description: a.string(),
-      category: a.string().required(),  // We'll validate against DataCategory values
+      category: a.string().required(), // Use string, but validate with DataCategory values
       isSensitive: a.boolean().default(false),
       retentionPeriod: a.integer(),
       isRequired: a.boolean().default(false),
-      validationRules: a.json(),
+      validationRules: a.string(), // JSON stored as string
       isActive: a.boolean().default(true),
-      companyId: a.string().required(),
       createdAt: a.datetime(),
       updatedAt: a.datetime(),
+      companyId: a.string().required(), // Foreign key for Company
     })
     .authorization((allow) => [
       allow.owner(),
@@ -110,21 +119,23 @@ const schema = a.schema({
     ]),
 
   // DataSharingTerm model
-  DataSharingTerm: a.model({
+  DataSharingTerm: a
+    .model({
+      id: a.id(),
       purpose: a.string().required(),
       duration: a.integer(),
-      conditions: a.json(),
-      status: a.string().default('PENDING'),  // We'll validate against SharingStatus values
+      conditions: a.string(), // JSON stored as string
+      status: a.string().default(SharingStatus.PENDING), // Use string but validate with SharingStatus
       startDate: a.datetime(),
       endDate: a.datetime(),
       terminationReason: a.string(),
       isActive: a.boolean().default(true),
-      companyId: a.string().required(),
-      dataTypeId: a.string().required(),
-      sharedById: a.string().required(),
-      sharedWithId: a.string().required(),
       createdAt: a.datetime(),
       updatedAt: a.datetime(),
+      companyId: a.string().required(), // Foreign key for Company
+      dataTypeId: a.string().required(), // Foreign key for DataType
+      sharedById: a.string().required(), // Foreign key for User
+      sharedWithId: a.string().required(), // Foreign key for User
     })
     .authorization((allow) => [
       allow.owner(),
@@ -132,12 +143,13 @@ const schema = a.schema({
     ]),
 
   // UserPreferences model
-  UserPreferences: a.model({
-      userId: a.string().required(),
+  UserPreferences: a
+    .model({
+      id: a.id(),
       emailNotifications: a.boolean().default(true),
-      notificationFrequency: a.string().default('IMMEDIATE'),  // We'll validate against NotificationFrequency values
-      notificationTypes: a.json(),
-      dataSharingPreferences: a.json(),
+      notificationFrequency: a.string().default(NotificationFrequency.IMMEDIATE), // Use string
+      notificationTypes: a.string(), // JSON stored as string
+      dataSharingPreferences: a.string(), // JSON stored as string
       privacyLevel: a.string().default('balanced'),
       theme: a.string().default('light'),
       language: a.string().default('en'),
@@ -146,6 +158,7 @@ const schema = a.schema({
       autoDeleteData: a.boolean().default(false),
       createdAt: a.datetime(),
       updatedAt: a.datetime(),
+      userId: a.string().required(), // Foreign key for User
     })
     .authorization((allow) => [
       allow.owner(),
@@ -155,13 +168,10 @@ const schema = a.schema({
 
 export type Schema = ClientSchema<typeof schema>;
 
-// Export the enum constants for client-side validation
-export { DataCategory, SharingStatus, NotificationFrequency };
-
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'apiKey',
+    defaultAuthorizationMode: 'userPool',
     apiKeyAuthorizationMode: {
       expiresInDays: 30,
     },
