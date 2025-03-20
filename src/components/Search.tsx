@@ -4,15 +4,23 @@ import './Search.css';
 
 // Define interfaces for our data types
 interface DataType {
-  id: string;
+  id: string | null;
   name: string;
   description: string | null;
   category: string;
+  companyId: string;
+  isSensitive?: boolean | null;
+  retentionPeriod?: number | null;
+  isRequired?: boolean | null;
+  validationRules?: string | null;
+  isActive?: boolean | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
 }
 
 // Update Company interface to match the schema
 interface Company {
-  id: string;
+  id: string | null;
   name: string;
   ownerId: string;
   description?: string | null;
@@ -97,16 +105,16 @@ const Search: React.FC = () => {
       });
       
       // Combine and format results
-      const formattedResults = [
-        ...dataTypeResults.data.map((item: DataType) => ({
-          id: item.id,
+      const formattedResults: SearchResult[] = [
+        ...dataTypeResults.data.map((item: any) => ({
+          id: item.id || '',  // Ensure id is always a string
           type: 'Data Type',
           name: item.name,
           description: item.description || 'No description',
           link: `/data-types`
         })),
-        ...companyResults.data.map((item) => ({
-          id: item.id,
+        ...companyResults.data.map((item: any) => ({
+          id: item.id || '',  // Ensure id is always a string
           type: 'Company',
           name: item.name,
           description: item.description || 'No description',
