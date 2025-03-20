@@ -9,11 +9,11 @@ export const auth = defineAuth({
     email: true,
   },
   userAttributes: {
-    given_name: {
+    givenName: {
       required: true,
       mutable: true,
     },
-    family_name: {
+    familyName: {
       required: true,
       mutable: true,
     },
@@ -21,9 +21,10 @@ export const auth = defineAuth({
       required: true,
       mutable: false,
     },
+    // Custom attributes are defined with the 'custom:' prefix
     'custom:nationalId': {
-      required: true,
+      dataType: 'String',
       mutable: false,
-    },
-  },
+    }
+  }
 });
