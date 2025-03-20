@@ -1,1 +1,0 @@
-# Flask-Migrate will populate this directory with migration files 
