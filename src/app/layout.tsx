@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/toaster'
-import { AuthProvider } from '@/context/auth-context'
+import { AuthProvider } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/protected-route'
 import { AmplifyProvider } from '@/components/amplify-provider'
 

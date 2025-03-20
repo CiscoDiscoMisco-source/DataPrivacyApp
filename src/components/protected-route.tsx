@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useAuth } from '@/context/auth-context';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -11,12 +11,12 @@ interface ProtectedRouteProps {
 const publicPaths = ['/login'];
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, isLoading } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!loading) {
       // If not authenticated and not on a public path, redirect to login
       if (!user && !publicPaths.includes(pathname)) {
         router.push('/login');
@@ -27,10 +27,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
         router.push('/');
       }
     }
-  }, [user, isLoading, router, pathname]);
+  }, [user, loading, router, pathname]);
 
   // Show nothing while checking authentication
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="w-16 h-16 border-t-4 border-blue-500 rounded-full animate-spin"></div>

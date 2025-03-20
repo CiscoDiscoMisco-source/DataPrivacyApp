@@ -13,7 +13,7 @@ import Link from 'next/link';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register } = useAuth();
+  const { signup } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -109,14 +109,11 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      // Use the updated register function with all fields
-      await register(
-        formData.firstName, 
-        formData.lastName, 
+      // Use the updated signup function
+      await signup(
         formData.email, 
         formData.password,
-        formData.birthdate,
-        formData.nationalId
+        formData.firstName
       );
       
       toast({
