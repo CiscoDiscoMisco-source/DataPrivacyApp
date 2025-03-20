@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/auth-context';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,17 +13,19 @@ import Link from 'next/link';
 
 export default function SignupPage() {
   const router = useRouter();
-  const { signup } = useAuth();
+  const { register } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    username: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: ''
   });
   const [errors, setErrors] = useState({
-    username: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -32,15 +34,22 @@ export default function SignupPage() {
   const validateForm = () => {
     let isValid = true;
     const newErrors = {
-      username: '',
+      firstName: '',
+      lastName: '',
       email: '',
       password: '',
       confirmPassword: ''
     };
 
-    // Username validation
-    if (!formData.username.trim()) {
-      newErrors.username = 'Username is required';
+    // First name validation
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+      isValid = false;
+    }
+
+    // Last name validation
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
       isValid = false;
     }
 
@@ -57,8 +66,8 @@ export default function SignupPage() {
     if (!formData.password) {
       newErrors.password = 'Password is required';
       isValid = false;
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
       isValid = false;
     }
 
@@ -82,27 +91,20 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      const success = await signup(formData.email, formData.password, formData.username);
-
-      if (success) {
-        toast({
-          title: 'Account created',
-          description: 'Your account has been created successfully',
-        });
-        
-        // Redirect to home page
-        router.push('/');
-      } else {
-        toast({
-          title: 'Signup failed',
-          description: 'Unable to create account. Please try again',
-          variant: 'destructive'
-        });
-      }
-    } catch (error) {
+      await register(formData.firstName, formData.lastName, formData.email, formData.password);
+      
       toast({
-        title: 'Error',
-        description: 'An error occurred during signup',
+        title: 'Account created',
+        description: 'Your account has been created successfully. Please check your email for verification.',
+      });
+      
+      // Redirect to login page
+      router.push('/login');
+    } catch (error) {
+      console.error('Signup error:', error);
+      toast({
+        title: 'Signup failed',
+        description: error instanceof Error ? error.message : 'Unable to create account. Please try again.',
         variant: 'destructive'
       });
     } finally {
@@ -133,15 +135,26 @@ export default function SignupPage() {
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="firstName">First Name</Label>
                 <Input 
-                  id="username" 
-                  placeholder="johndoe" 
-                  value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  id="firstName" 
+                  placeholder="John" 
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                   className="rounded-lg"
                 />
-                {errors.username && <p className="text-sm text-red-500">{errors.username}</p>}
+                {errors.firstName && <p className="text-sm text-red-500">{errors.firstName}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input 
+                  id="lastName" 
+                  placeholder="Doe" 
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  className="rounded-lg"
+                />
+                {errors.lastName && <p className="text-sm text-red-500">{errors.lastName}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>

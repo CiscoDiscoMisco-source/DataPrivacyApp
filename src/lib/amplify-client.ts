@@ -51,7 +51,7 @@ export async function fetchCompaniesByOwner(ownerId: string) {
   const client = getAmplifyClient();
   return await client.models.Company.list({
     filter: {
-      ownerId: { eq: ownerId }
+      userId: { eq: ownerId }
     }
   });
 }
