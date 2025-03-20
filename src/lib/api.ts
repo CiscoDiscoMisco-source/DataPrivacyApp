@@ -1,225 +1,109 @@
 import { generateClient } from 'aws-amplify/api';
-import { 
-  createCompany, 
-  createUser, 
-  createPreference, 
-  createDataSharingPolicy, 
-  createTokenPackage 
-} from '../graphql/mutations';
-import { 
-  getCompany, 
-  getUser, 
-  getPreference, 
-  getDataSharingPolicy, 
-  getTokenPackage 
-} from '../graphql/queries';
-import { 
-  listCompanies, 
-  listUsers, 
-  listPreferences, 
-  listDataSharingPolicies, 
-  listTokenPackages 
-} from '../graphql/queries';
-import { 
-  updateCompany, 
-  updateUser, 
-  updatePreference, 
-  updateDataSharingPolicy, 
-  updateTokenPackage 
-} from '../graphql/mutations';
-import { 
-  deleteCompany, 
-  deleteUser, 
-  deletePreference, 
-  deleteDataSharingPolicy, 
-  deleteTokenPackage 
-} from '../graphql/mutations';
-import type { 
-  CreateCompanyInput, 
-  CreateUserInput, 
-  CreatePreferenceInput, 
-  CreateDataSharingPolicyInput, 
-  CreateTokenPackageInput,
-  UpdateCompanyInput,
-  UpdateUserInput,
-  UpdatePreferenceInput,
-  UpdateDataSharingPolicyInput,
-  UpdateTokenPackageInput
-} from '../API';
+import type { Schema } from '../../amplify/data/resource';
 
-const client = generateClient();
+const client = generateClient<Schema>();
 
 // User API
-export const createUserAPI = async (input: CreateUserInput) => {
-  return client.graphql({
-    query: createUser,
-    variables: { input }
-  });
+export const createUserAPI = async (input) => {
+  return client.models.User.create(input);
 };
 
 export const getUserAPI = async (id: string) => {
-  return client.graphql({
-    query: getUser,
-    variables: { id }
-  });
+  return client.models.User.get({ id });
 };
 
 export const listUsersAPI = async () => {
-  return client.graphql({
-    query: listUsers
-  });
+  return client.models.User.list();
 };
 
-export const updateUserAPI = async (input: UpdateUserInput) => {
-  return client.graphql({
-    query: updateUser,
-    variables: { input }
-  });
+export const updateUserAPI = async (input) => {
+  return client.models.User.update(input);
 };
 
 export const deleteUserAPI = async (id: string) => {
-  return client.graphql({
-    query: deleteUser,
-    variables: { input: { id } }
-  });
+  return client.models.User.delete({ id });
 };
 
 // Company API
-export const createCompanyAPI = async (input: CreateCompanyInput) => {
-  return client.graphql({
-    query: createCompany,
-    variables: { input }
-  });
+export const createCompanyAPI = async (input) => {
+  return client.models.Company.create(input);
 };
 
 export const getCompanyAPI = async (id: string) => {
-  return client.graphql({
-    query: getCompany,
-    variables: { id }
-  });
+  return client.models.Company.get({ id });
 };
 
 export const listCompaniesAPI = async () => {
-  return client.graphql({
-    query: listCompanies
-  });
+  return client.models.Company.list();
 };
 
-export const updateCompanyAPI = async (input: UpdateCompanyInput) => {
-  return client.graphql({
-    query: updateCompany,
-    variables: { input }
-  });
+export const updateCompanyAPI = async (input) => {
+  return client.models.Company.update(input);
 };
 
 export const deleteCompanyAPI = async (id: string) => {
-  return client.graphql({
-    query: deleteCompany,
-    variables: { input: { id } }
-  });
+  return client.models.Company.delete({ id });
 };
 
-// Preference API
-export const createPreferenceAPI = async (input: CreatePreferenceInput) => {
-  return client.graphql({
-    query: createPreference,
-    variables: { input }
-  });
+// UserPreferences API (previously Preference)
+export const createPreferenceAPI = async (input) => {
+  return client.models.UserPreferences.create(input);
 };
 
 export const getPreferenceAPI = async (id: string) => {
-  return client.graphql({
-    query: getPreference,
-    variables: { id }
-  });
+  return client.models.UserPreferences.get({ id });
 };
 
 export const listPreferencesAPI = async () => {
-  return client.graphql({
-    query: listPreferences
-  });
+  return client.models.UserPreferences.list();
 };
 
-export const updatePreferenceAPI = async (input: UpdatePreferenceInput) => {
-  return client.graphql({
-    query: updatePreference,
-    variables: { input }
-  });
+export const updatePreferenceAPI = async (input) => {
+  return client.models.UserPreferences.update(input);
 };
 
 export const deletePreferenceAPI = async (id: string) => {
-  return client.graphql({
-    query: deletePreference,
-    variables: { input: { id } }
-  });
+  return client.models.UserPreferences.delete({ id });
 };
 
-// DataSharingPolicy API
-export const createDataSharingPolicyAPI = async (input: CreateDataSharingPolicyInput) => {
-  return client.graphql({
-    query: createDataSharingPolicy,
-    variables: { input }
-  });
+// DataSharingTerm API (previously DataSharingPolicy)
+export const createDataSharingPolicyAPI = async (input) => {
+  return client.models.DataSharingTerm.create(input);
 };
 
 export const getDataSharingPolicyAPI = async (id: string) => {
-  return client.graphql({
-    query: getDataSharingPolicy,
-    variables: { id }
-  });
+  return client.models.DataSharingTerm.get({ id });
 };
 
 export const listDataSharingPoliciesAPI = async () => {
-  return client.graphql({
-    query: listDataSharingPolicies
-  });
+  return client.models.DataSharingTerm.list();
 };
 
-export const updateDataSharingPolicyAPI = async (input: UpdateDataSharingPolicyInput) => {
-  return client.graphql({
-    query: updateDataSharingPolicy,
-    variables: { input }
-  });
+export const updateDataSharingPolicyAPI = async (input) => {
+  return client.models.DataSharingTerm.update(input);
 };
 
 export const deleteDataSharingPolicyAPI = async (id: string) => {
-  return client.graphql({
-    query: deleteDataSharingPolicy,
-    variables: { input: { id } }
-  });
+  return client.models.DataSharingTerm.delete({ id });
 };
 
 // TokenPackage API
-export const createTokenPackageAPI = async (input: CreateTokenPackageInput) => {
-  return client.graphql({
-    query: createTokenPackage,
-    variables: { input }
-  });
+export const createTokenPackageAPI = async (input) => {
+  return client.models.TokenPackage.create(input);
 };
 
 export const getTokenPackageAPI = async (id: string) => {
-  return client.graphql({
-    query: getTokenPackage,
-    variables: { id }
-  });
+  return client.models.TokenPackage.get({ id });
 };
 
 export const listTokenPackagesAPI = async () => {
-  return client.graphql({
-    query: listTokenPackages
-  });
+  return client.models.TokenPackage.list();
 };
 
-export const updateTokenPackageAPI = async (input: UpdateTokenPackageInput) => {
-  return client.graphql({
-    query: updateTokenPackage,
-    variables: { input }
-  });
+export const updateTokenPackageAPI = async (input) => {
+  return client.models.TokenPackage.update(input);
 };
 
 export const deleteTokenPackageAPI = async (id: string) => {
-  return client.graphql({
-    query: deleteTokenPackage,
-    variables: { input: { id } }
-  });
+  return client.models.TokenPackage.delete({ id });
 }; 

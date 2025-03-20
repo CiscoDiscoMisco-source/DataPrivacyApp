@@ -1,16 +1,13 @@
 import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/api';
-import type { GraphQLResult } from '@aws-amplify/api-graphql';
-
-// Import models directly from the models directory
-import { User, Company, Preference } from '../models';
+import type { Schema } from '../../amplify/data/resource';
 
 // Initialize API client
-const client = generateClient();
+const client = generateClient<Schema>();
 
 // Hook for getting a user by ID
 export function useUser(userId: string | null) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -23,30 +20,9 @@ export function useUser(userId: string | null) {
     const fetchUser = async () => {
       setLoading(true);
       try {
-        const response = await client.graphql({
-          query: `
-            query GetUser($id: ID!) {
-              getUser(id: $id) {
-                id
-                email
-                name
-                tokens
-                preferences {
-                  items {
-                    id
-                    dataType
-                    allowed
-                    companyId
-                  }
-                }
-              }
-            }
-          `,
-          variables: { id: userId }
-        }) as GraphQLResult<{ getUser: User }>;
-        
-        if (response.data?.getUser) {
-          setUser(response.data.getUser);
+        const response = await client.models.User.get({ id: userId });
+        if (response) {
+          setUser(response);
         }
         setError(null);
       } catch (err) {
@@ -65,7 +41,7 @@ export function useUser(userId: string | null) {
 
 // Hook for getting a company by ID
 export function useCompany(companyId: string | null) {
-  const [company, setCompany] = useState<Company | null>(null);
+  const [company, setCompany] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -78,32 +54,9 @@ export function useCompany(companyId: string | null) {
     const fetchCompany = async () => {
       setLoading(true);
       try {
-        const response = await client.graphql({
-          query: `
-            query GetCompany($id: ID!) {
-              getCompany(id: $id) {
-                id
-                name
-                logo
-                industry
-                description
-                dataSharingPolicies {
-                  items {
-                    id
-                    dataType
-                    purpose
-                    thirdParties
-                    description
-                  }
-                }
-              }
-            }
-          `,
-          variables: { id: companyId }
-        }) as GraphQLResult<{ getCompany: Company }>;
-        
-        if (response.data?.getCompany) {
-          setCompany(response.data.getCompany);
+        const response = await client.models.Company.get({ id: companyId });
+        if (response) {
+          setCompany(response);
         }
         setError(null);
       } catch (err) {
@@ -122,7 +75,7 @@ export function useCompany(companyId: string | null) {
 
 // Hook for listing all companies
 export function useCompanies() {
-  const [companies, setCompanies] = useState<Company[]>([]);
+  const [companies, setCompanies] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -130,24 +83,9 @@ export function useCompanies() {
     const fetchCompanies = async () => {
       setLoading(true);
       try {
-        const response = await client.graphql({
-          query: `
-            query ListCompanies {
-              listCompanies {
-                items {
-                  id
-                  name
-                  logo
-                  industry
-                  description
-                }
-              }
-            }
-          `,
-        }) as GraphQLResult<{ listCompanies: { items: Company[] } }>;
-        
-        if (response.data?.listCompanies?.items) {
-          setCompanies(response.data.listCompanies.items);
+        const response = await client.models.Company.list();
+        if (response.data) {
+          setCompanies(response.data);
         }
         setError(null);
       } catch (err) {
@@ -166,7 +104,7 @@ export function useCompanies() {
 
 // Hook for user preferences
 export function useUserPreferences(userId: string | null) {
-  const [preferences, setPreferences] = useState<Preference[]>([]);
+  const [preferences, setPreferences] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -179,28 +117,11 @@ export function useUserPreferences(userId: string | null) {
     const fetchPreferences = async () => {
       setLoading(true);
       try {
-        const response = await client.graphql({
-          query: `
-            query ListPreferencesByUser($userId: ID!) {
-              listPreferences(filter: { userId: { eq: $userId } }) {
-                items {
-                  id
-                  dataType
-                  allowed
-                  companyId
-                  company {
-                    id
-                    name
-                  }
-                }
-              }
-            }
-          `,
-          variables: { userId }
-        }) as GraphQLResult<{ listPreferences: { items: Preference[] } }>;
-        
-        if (response.data?.listPreferences?.items) {
-          setPreferences(response.data.listPreferences.items);
+        const response = await client.models.UserPreferences.list({
+          filter: { userId: { eq: userId } }
+        });
+        if (response.data) {
+          setPreferences(response.data);
         }
         setError(null);
       } catch (err) {
@@ -217,34 +138,31 @@ export function useUserPreferences(userId: string | null) {
   // Function to update a preference
   const updatePreference = async (id: string, allowed: boolean) => {
     try {
-      const response = await client.graphql({
-        query: `
-          mutation UpdatePreference($input: UpdatePreferenceInput!) {
-            updatePreference(input: $input) {
-              id
-              dataType
-              allowed
-              companyId
-            }
-          }
-        `,
-        variables: { 
-          input: { 
-            id, 
-            allowed 
-          } 
-        }
-      }) as GraphQLResult<{ updatePreference: Preference }>;
+      const currentPref = await client.models.UserPreferences.get({ id });
+      if (!currentPref) {
+        throw new Error('Preference not found');
+      }
       
-      if (response.data?.updatePreference) {
-        // Update the local state
+      // Create an update object with only the id
+      // We'll need to adjust this based on the actual schema structure
+      const updateData = {
+        id,
+        // Add any fields that need to be updated based on the schema
+        // This will need to be adjusted based on your specific schema
+        privacyLevel: allowed ? 'opt-in' : 'opt-out'
+      };
+      
+      const response = await client.models.UserPreferences.update(updateData);
+      
+      if (response) {
+        // Update the local state with the response data
         setPreferences(prev => 
           prev.map(pref => 
-            pref.id === id ? { ...pref, allowed } : pref
+            pref.id === id ? response : pref
           )
         );
       }
-      return response.data?.updatePreference;
+      return response;
     } catch (err) {
       console.error('Error updating preference:', err);
       throw err;

@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/api';
+import type { Schema } from '../../amplify/data/resource';
 
 // Create a single client instance for the app
-export const client = generateClient();
+export const client = generateClient<Schema>();
 
 interface DataContextType {
   client: any; // Simplify to avoid complex type issues
