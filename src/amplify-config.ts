@@ -1,5 +1,6 @@
 import { Amplify } from 'aws-amplify';
 import { cognitoUserPoolsTokenProvider } from 'aws-amplify/auth/cognito';
+import awsExports from './aws-exports';
 
 // Define minimal type for our needs
 interface ResourcesConfig {
@@ -38,19 +39,26 @@ try {
 Amplify.configure({
   Auth: {
     Cognito: {
-      userPoolId: resourcesConfig?.Auth?.Cognito?.userPoolId || '',
-      userPoolClientId: resourcesConfig?.Auth?.Cognito?.userPoolClientId || '',
+      userPoolId: resourcesConfig?.Auth?.Cognito?.userPoolId || awsExports.aws_user_pools_id,
+      userPoolClientId: resourcesConfig?.Auth?.Cognito?.userPoolClientId || awsExports.aws_user_pools_web_client_id,
       loginWith: {
         email: true,
+        oauth: {
+          domain: awsExports.oauth.domain,
+          scopes: awsExports.oauth.scope,
+          redirectSignIn: awsExports.oauth.redirectSignIn.split(','),
+          redirectSignOut: awsExports.oauth.redirectSignOut.split(','),
+          responseType: 'code' as const
+        }
       },
     },
   },
   API: {
     GraphQL: {
-      endpoint: resourcesConfig?.API?.GraphQL?.endpoint || '',
-      region: resourcesConfig?.API?.GraphQL?.region || 'us-east-1',
+      endpoint: resourcesConfig?.API?.GraphQL?.endpoint || awsExports.aws_appsync_graphqlEndpoint,
+      region: resourcesConfig?.API?.GraphQL?.region || awsExports.aws_appsync_region || 'us-east-1',
       defaultAuthMode: 'userPool',
-      apiKey: resourcesConfig?.API?.GraphQL?.apiKey,
+      apiKey: resourcesConfig?.API?.GraphQL?.apiKey || awsExports.aws_appsync_apiKey,
     },
   },
   Storage: {

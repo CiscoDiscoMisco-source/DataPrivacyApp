@@ -78,9 +78,12 @@ const Register = () => {
     
     try {
       setLoading(true);
+      console.log('Form validated, attempting registration...');
       
       // Attempt registration
       const result = await register(username, email, name, lastName, birthDate, nationalId, password);
+      
+      console.log('Registration result:', result);
       
       if (result.success) {
         navigate('/');

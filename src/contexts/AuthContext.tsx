@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { signUp, signIn, signOut, getCurrentUser, type SignUpOutput } from 'aws-amplify/auth';
+import { signInWithRedirect } from 'aws-amplify/auth';
+import { Hub } from 'aws-amplify/utils';
 
 interface User {
   id: string;
@@ -16,6 +18,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (firstName: string, lastName: string, email: string, password: string, birthdate?: string, nationalId?: string) => Promise<void>;
   logout: () => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -59,6 +62,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     checkAuth();
+    
+    // Set up Hub listener for auth events
+    const unsubscribe = Hub.listen('auth', ({ payload }) => {
+      switch (payload.event) {
+        case 'signInWithRedirect':
+          // User has been redirected back after successful sign-in
+          checkAuth();
+          break;
+        case 'signInWithRedirect_failure':
+          // OAuth sign-in failed
+          setError(new Error('Google sign-in failed'));
+          setLoading(false);
+          break;
+        case 'signedOut':
+          setUser(null);
+          break;
+      }
+    });
+    
+    return () => unsubscribe();
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -151,8 +174,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      setLoading(true);
+      await signInWithRedirect({ provider: 'Google' });
+      // The page will redirect to Google at this point
+    } catch (err) {
+      console.error('Google login error:', err);
+      setLoading(false);
+      throw err;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, error, login, register, logout }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loading, 
+      error, 
+      login, 
+      register, 
+      logout,
+      loginWithGoogle
+    }}>
       {children}
     </AuthContext.Provider>
   );

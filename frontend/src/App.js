@@ -13,6 +13,7 @@ import PreferenceManager from './pages/PreferenceManager';
 // Components
 import Navbar from './components/Navbar';
 import PrivateRoute from './components/PrivateRoute';
+import DebugInfo from './components/DebugInfo';
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -59,6 +60,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
+      {process.env.NODE_ENV !== 'production' && <DebugInfo />}
     </div>
   );
 }
