@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { signUp, signIn, signOut, getCurrentUser, type SignUpOutput } from 'aws-amplify/auth';
 import { signInWithRedirect } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
+import { UserApi } from '../services/ApiService';
 
 interface User {
   id: string;
@@ -99,13 +100,42 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Get user info after successful sign-in
         const { userId, username } = await getCurrentUser();
         
-        setUser({
-          id: userId,
-          email: username || email,
-          firstName: '',
-          lastName: '',
-          isAdmin: false // You would determine this based on user groups or attributes
-        });
+        try {
+          // Fetch user data from database
+          const userData = await UserApi.get(userId);
+          
+          if (userData) {
+            setUser({
+              id: userId,
+              email: username || email,
+              firstName: userData.firstName,
+              lastName: userData.lastName,
+              isAdmin: userData.isAdmin || false
+            });
+          } else {
+            // If user not found in database but exists in Cognito
+            setUser({
+              id: userId,
+              email: username || email,
+              firstName: '',
+              lastName: '',
+              isAdmin: false
+            });
+            
+            console.warn('User authenticated but not found in database');
+          }
+        } catch (dbError) {
+          console.error('Error fetching user data from database:', dbError);
+          
+          // Fall back to basic user info
+          setUser({
+            id: userId,
+            email: username || email,
+            firstName: '',
+            lastName: '',
+            isAdmin: false
+          });
+        }
       } else {
         // Handle authentication challenges if necessary
         console.log('Next auth step required:', nextStep);
@@ -151,6 +181,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (!isSignUpComplete) {
         // Handle any additional signup steps (e.g., confirmation)
         console.log('Sign up requires more steps:', nextStep);
+      }
+      
+      // Create user in our database
+      try {
+        await UserApi.create({
+          id: userId, // Use the Cognito user ID
+          email,
+          firstName,
+          lastName,
+          birthdate,
+          nationalId,
+          isActive: true,
+          isAdmin: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+        console.log('User created in database');
+      } catch (dbError) {
+        console.error('Error creating user in database:', dbError);
+        // Note: We continue even if database creation fails, as the user is registered in Cognito
       }
       
       console.log('Registered user with ID:', userId);

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Auth.css';
+import { useAuth } from '../contexts/AuthContext';
 
 const Register: React.FC = () => {
   const [firstName, setFirstName] = useState('');
@@ -8,9 +9,12 @@ const Register: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [birthdate, setBirthdate] = useState('');
+  const [nationalId, setNationalId] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { register } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,25 +38,22 @@ const Register: React.FC = () => {
     
     try {
       setLoading(true);
-      // In a real app, you would use Amplify Auth
-      // const { isSignedIn } = await signUp({
-      //   username: email,
-      //   password,
-      //   options: {
-      //     userAttributes: {
-      //       email,
-      //       given_name: firstName,
-      //       family_name: lastName
-      //     }
-      //   }
-      // });
+      // Using Amplify Auth via AuthContext
+      await register(
+        firstName,
+        lastName,
+        email,
+        password,
+        birthdate || undefined,
+        nationalId || undefined
+      );
       
-      // Mock successful registration
       console.log('Registration successful for:', email);
       navigate('/login');
     } catch (err) {
       console.error('Registration error:', err);
-      setError('Failed to register. Please try again.');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to register. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -101,6 +102,28 @@ const Register: React.FC = () => {
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
               required
+            />
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="birthdate">Birthdate</label>
+            <input
+              type="date"
+              id="birthdate"
+              value={birthdate}
+              onChange={(e) => setBirthdate(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="nationalId">National ID (Optional)</label>
+            <input
+              type="text"
+              id="nationalId"
+              value={nationalId}
+              onChange={(e) => setNationalId(e.target.value)}
+              disabled={loading}
             />
           </div>
           
