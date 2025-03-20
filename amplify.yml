@@ -9,7 +9,6 @@ backend:
       commands:
         - echo "Running Amplify backend build..."
         - amplify -v || echo "amplify version command failed"
-        - npm run generate-outputs || echo "Failed to generate outputs, but continuing build"
 frontend:
   phases:
     preBuild:
