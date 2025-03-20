@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import { signUp, signIn, signOut, fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
 
 const AuthContext = createContext();
 
@@ -14,86 +14,109 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Initialize auth state from local storage
+  // Initialize auth state from Amplify
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
+    const checkAuthState = async () => {
+      try {
+        // Check if user is signed in
+        const user = await getCurrentUser();
+        if (user) {
+          const attributes = await fetchUserAttributes();
+          setCurrentUser(attributes);
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        console.error('Auth state check error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    if (token && user) {
-      setCurrentUser(JSON.parse(user));
-      setIsAuthenticated(true);
-      api.setAuthToken(token);
-    }
-
-    setLoading(false);
+    checkAuthState();
   }, []);
 
   // Login function
   const login = async (email, password) => {
     try {
-      const response = await api.post('/api/login', { email, password });
-      const { user, access_token } = response.data.data;
+      const result = await signIn({
+        username: email,
+        password
+      });
       
-      // Save auth data
-      localStorage.setItem('token', access_token);
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      // Update state
-      setCurrentUser(user);
-      setIsAuthenticated(true);
-      api.setAuthToken(access_token);
-      
-      return { success: true };
+      if (result) {
+        const attributes = await fetchUserAttributes();
+        setCurrentUser(attributes);
+        setIsAuthenticated(true);
+        return { success: true };
+      }
     } catch (error) {
-      const message = error.response?.data?.message || 'Login failed';
-      return { success: false, message };
+      console.error('Login error:', error);
+      return { 
+        success: false, 
+        message: error.message || 'Login failed' 
+      };
     }
   };
 
   // Register function
   const register = async (username, email, name, lastName, birthDate, nationalId, password) => {
     try {
-      const response = await api.post('/api/register', { 
-        username, 
-        email, 
-        name, 
-        lastName, 
-        birthDate, 
-        nationalId, 
-        password 
+      console.log('Attempting Amplify registration with:', { email, name, lastName, birthDate, nationalId });
+      
+      const result = await signUp({
+        username: email,
+        password,
+        options: {
+          userAttributes: {
+            email,
+            given_name: name,
+            family_name: lastName,
+            birthdate: birthDate,
+            'custom:nationalId': nationalId
+          }
+        }
       });
-      const { user, access_token } = response.data.data;
       
-      // Save auth data
-      localStorage.setItem('token', access_token);
-      localStorage.setItem('user', JSON.stringify(user));
+      console.log('Amplify registration result:', result);
       
-      // Update state
-      setCurrentUser(user);
-      setIsAuthenticated(true);
-      api.setAuthToken(access_token);
-      
-      return { success: true };
+      if (result.isSignUpComplete) {
+        // Auto sign-in after registration if no verification is required
+        // Otherwise, redirect to confirmation page
+        if (!result.nextStep.signUpStep) {
+          await login(email, password);
+        }
+        
+        return { success: true, data: result };
+      } else {
+        return { 
+          success: true, 
+          data: result,
+          requiresConfirmation: true 
+        };
+      }
     } catch (error) {
-      const errors = error.response?.data?.data?.errors || {};
-      const message = error.response?.data?.message || 'Registration failed';
-      return { success: false, message, errors };
+      console.error('Registration error:', error);
+      return { 
+        success: false, 
+        message: error.message || 'Registration failed',
+        errors: {} 
+      };
     }
   };
 
   // Logout function
-  const logout = () => {
-    // Clear local storage
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    
-    // Update state
-    setCurrentUser(null);
-    setIsAuthenticated(false);
-    api.clearAuthToken();
-    
-    // Redirect to login
-    navigate('/login');
+  const logout = async () => {
+    try {
+      await signOut();
+      // Update state
+      setCurrentUser(null);
+      setIsAuthenticated(false);
+      
+      // Redirect to login
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const value = {
