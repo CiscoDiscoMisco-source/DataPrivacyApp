@@ -1,10 +1,9 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { signUp, signIn, signOut, getCurrentUser, type SignUpOutput } from 'aws-amplify/auth';
+import { signUp, signIn, signOut, getCurrentUser, type SignUpOutput, fetchUserAttributes } from 'aws-amplify/auth';
 import { signInWithRedirect } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
-import { UserApi } from '../services/ApiService';
 
 interface User {
   id: string;
@@ -35,23 +34,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  // Helper function to fetch user attributes and set the user state
+  const fetchAndSetUserData = async () => {
+    try {
+      const { userId, username } = await getCurrentUser();
+      const attributes = await fetchUserAttributes();
+      
+      setUser({
+        id: userId,
+        email: username || attributes.email || '',
+        firstName: attributes.given_name || '',
+        lastName: attributes.family_name || '',
+        // Admin status could be managed through Cognito groups instead
+        isAdmin: false 
+      });
+    } catch (err) {
+      console.error('Error fetching user attributes:', err);
+      setUser(null);
+    }
+  };
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
         setLoading(true);
         // Get the current authenticated user
-        const { userId, username, signInDetails } = await getCurrentUser();
+        const { userId, username } = await getCurrentUser();
         
-        // Get additional user attributes if needed
-        // This would need to be expanded based on your auth setup
         if (username) {
-          setUser({
-            id: userId,
-            email: username, // In Cognito, username is often the email
-            firstName: '', // These would need to be retrieved from user attributes
-            lastName: '',
-            isAdmin: false
-          });
+          // Fetch user attributes from Cognito
+          await fetchAndSetUserData();
         } else {
           setUser(null);
         }
@@ -71,7 +83,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       switch (payload.event) {
         case 'signInWithRedirect':
           // User has been redirected back after successful sign-in
-          checkAuth();
+          fetchAndSetUserData();
+          setLoading(false);
           break;
         case 'signInWithRedirect_failure':
           // OAuth sign-in failed
@@ -97,45 +110,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
       
       if (isSignedIn) {
-        // Get user info after successful sign-in
-        const { userId, username } = await getCurrentUser();
-        
-        try {
-          // Fetch user data from database
-          const userData = await UserApi.get(userId);
-          
-          if (userData) {
-            setUser({
-              id: userId,
-              email: username || email,
-              firstName: userData.firstName,
-              lastName: userData.lastName,
-              isAdmin: userData.isAdmin || false
-            });
-          } else {
-            // If user not found in database but exists in Cognito
-            setUser({
-              id: userId,
-              email: username || email,
-              firstName: '',
-              lastName: '',
-              isAdmin: false
-            });
-            
-            console.warn('User authenticated but not found in database');
-          }
-        } catch (dbError) {
-          console.error('Error fetching user data from database:', dbError);
-          
-          // Fall back to basic user info
-          setUser({
-            id: userId,
-            email: username || email,
-            firstName: '',
-            lastName: '',
-            isAdmin: false
-          });
-        }
+        // Get user attributes from Cognito
+        await fetchAndSetUserData();
       } else {
         // Handle authentication challenges if necessary
         console.log('Next auth step required:', nextStep);
@@ -153,7 +129,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setLoading(true);
       
-      // Prepare user attributes
+      // Prepare user attributes for Cognito
       const userAttributes: Record<string, string> = {
         email,
         given_name: firstName,
@@ -165,10 +141,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         userAttributes.birthdate = birthdate;
       }
       
-      // Remove the custom:nationalId attribute from Cognito
-      // We'll still store it in our database below
+      if (nationalId) {
+        userAttributes['custom:nationalId'] = nationalId;
+      }
       
-      // Register user with Amplify Auth
+      // Register user with Amplify Auth (Cognito)
       const { isSignUpComplete, userId, nextStep }: SignUpOutput = await signUp({
         username: email,
         password,
@@ -182,27 +159,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.log('Sign up requires more steps:', nextStep);
       }
       
-      // Create user in our database
-      try {
-        await UserApi.create({
-          id: userId, // Use the Cognito user ID
-          email,
-          firstName,
-          lastName,
-          birthdate,
-          nationalId, // Still store nationalId in our database
-          isActive: true,
-          isAdmin: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        });
-        console.log('User created in database');
-      } catch (dbError) {
-        console.error('Error creating user in database:', dbError);
-        // Note: We continue even if database creation fails, as the user is registered in Cognito
-      }
-      
       console.log('Registered user with ID:', userId);
+      // No need to create user in custom database - Cognito now handles everything
     } catch (err) {
       console.error('Registration error:', err);
       throw err;
