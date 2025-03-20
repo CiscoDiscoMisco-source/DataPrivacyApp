@@ -10,11 +10,22 @@ interface DataType {
   category: string;
 }
 
+// Update Company interface to match the schema
 interface Company {
   id: string;
   name: string;
-  description: string | null;
-  industry: string;
+  ownerId: string;
+  description?: string | null;
+  website?: string | null;
+  industry?: string | null;
+  sizeRange?: string | null;
+  country?: string | null;
+  state?: string | null;
+  city?: string | null;
+  address?: string | null;
+  postalCode?: string | null;
+  phone?: string | null;
+  isActive?: boolean | null;
 }
 
 interface SearchResult {
@@ -94,7 +105,7 @@ const Search: React.FC = () => {
           description: item.description || 'No description',
           link: `/data-types`
         })),
-        ...companyResults.data.map((item: Company) => ({
+        ...companyResults.data.map((item) => ({
           id: item.id,
           type: 'Company',
           name: item.name,
