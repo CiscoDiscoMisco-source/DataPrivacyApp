@@ -1,0 +1,42 @@
+type User @model @auth(rules: [{ allow: owner }]) {
+  id: ID!
+  email: String!
+  name: String!
+  tokens: Int!
+  preferences: [Preference] @hasMany
+}
+
+type Company @model @auth(rules: [{ allow: public, operations: [read] }, { allow: private, operations: [create, update, delete] }]) {
+  id: ID!
+  name: String!
+  logo: String
+  industry: String!
+  description: String!
+  dataSharingPolicies: [DataSharingPolicy] @hasMany
+}
+
+type DataSharingPolicy @model @auth(rules: [{ allow: public, operations: [read] }, { allow: private, operations: [create, update, delete] }]) {
+  id: ID!
+  dataType: String!
+  purpose: String!
+  thirdParties: [String]!
+  description: String!
+  company: Company @belongsTo
+}
+
+type Preference @model @auth(rules: [{ allow: owner }]) {
+  id: ID!
+  dataType: String!
+  allowed: Boolean!
+  companyId: ID
+  company: Company @belongsTo
+  user: User @belongsTo
+}
+
+type TokenPackage @model @auth(rules: [{ allow: public, operations: [read] }, { allow: private, operations: [create, update, delete] }]) {
+  id: ID!
+  name: String!
+  amount: Int!
+  price: Float!
+  description: String!
+} 

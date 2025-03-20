@@ -1,21 +1,21 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { Schema } from '../../amplify/data/resource';
-import { generateClient } from 'aws-amplify/data';
+import { generateClient } from 'aws-amplify/api';
 
 interface DataContextType {
-  client: ReturnType<typeof generateClient<Schema>>;
   loading: boolean;
   error: Error | null;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
+// Create a single client instance for the app
+export const client = generateClient();
+
 interface DataProviderProps {
   children: React.ReactNode;
-  client: ReturnType<typeof generateClient<Schema>>;
 }
 
-export const DataProvider: React.FC<DataProviderProps> = ({ children, client }) => {
+export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -35,7 +35,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children, client }) 
   }, []);
 
   return (
-    <DataContext.Provider value={{ client, loading, error }}>
+    <DataContext.Provider value={{ loading, error }}>
       {children}
     </DataContext.Provider>
   );

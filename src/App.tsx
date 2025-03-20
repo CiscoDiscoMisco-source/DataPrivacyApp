@@ -18,13 +18,13 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { LoadingProvider } from './contexts/LoadingContext';
-import { client } from './amplify-config';
+import './amplify-config';  // Import configuration
 
 function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <DataProvider client={client}>
+        <DataProvider>
           <ThemeProvider>
             <NotificationProvider>
               <LoadingProvider>

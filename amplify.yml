@@ -7,9 +7,6 @@ backend:
         - npm install
         - echo "Node version $(node -v)"
         - echo "NPM version $(npm -v)"
-        - echo "Checking for Amplify CLI tools..."
-        - which amplify || echo "amplify not found"
-        - which ampx || echo "ampx not found"
         - |
           # Set up AWS credentials using Amplify Secrets
           echo "Setting up AWS credentials from Amplify Secrets"
@@ -57,8 +54,7 @@ backend:
     build:
       commands:
         - echo "Running Amplify backend build..."
-        - which amplify && (amplify -v || echo "amplify version command failed")
-        - which ampx && (ampx -v || echo "ampx version command failed")
+        - amplify -v || echo "amplify version command failed"
         - export DEBUG=*
         - |
           node -e "console.log('Environment variables:', JSON.stringify({

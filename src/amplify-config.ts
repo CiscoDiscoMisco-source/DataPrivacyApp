@@ -1,28 +1,83 @@
 import { Amplify } from 'aws-amplify';
-import { generateClient } from 'aws-amplify/data';
-import type { Schema } from '../amplify/data/resource';
+import { cognitoUserPoolsTokenProvider } from 'aws-amplify/auth/cognito';
 
-// Initialize Amplify with hardcoded values instead of reading from amplify_outputs.json
+// Define minimal type for our needs
+interface ResourcesConfig {
+  Auth?: {
+    Cognito?: {
+      userPoolId?: string;
+      userPoolClientId?: string;
+    };
+  };
+  API?: {
+    GraphQL?: {
+      endpoint?: string;
+      region?: string;
+      apiKey?: string;
+    };
+  };
+}
+
+// Try to load ampify outputs if they exist
+let resourcesConfig: ResourcesConfig = {};
+
+try {
+  const amplifyOutputs = require('../amplify_outputs.json');
+  resourcesConfig = amplifyOutputs.resourcesConfig || {};
+  console.log('Loaded Amplify outputs from file');
+} catch (error) {
+  console.warn('Could not load Amplify outputs file. Using empty configuration.', error);
+}
+
+// Configure Amplify
 Amplify.configure({
-  API: {
-    GraphQL: {
-      endpoint: 'https://yd5htfzw5bahdbo77uky26adm4.appsync-api.us-east-1.amazonaws.com/graphql',
-      region: 'us-east-1',
-      apiKey: 'da2-odqcyla2zrf4lmne3u5rpfnuye'
-    }
-  },
   Auth: {
     Cognito: {
-      userPoolId: 'us-east-1_gSDA0C46A',
-      userPoolClientId: '6tkf89lorvpbmovosjmj7ojdba',
-      identityPoolId: 'us-east-1:a3ad9767-83ff-431e-8838-be3b1e11d39b',
-      region: 'us-east-1'
+      userPoolId: process.env.NEXT_PUBLIC_USER_POOL_ID || resourcesConfig?.Auth?.Cognito?.userPoolId || '',
+      userPoolClientId: process.env.NEXT_PUBLIC_USER_POOL_CLIENT_ID || resourcesConfig?.Auth?.Cognito?.userPoolClientId || '',
+      loginWith: {
+        email: true,
+      },
+    },
+  },
+  API: {
+    GraphQL: {
+      endpoint: process.env.NEXT_PUBLIC_API_ENDPOINT || resourcesConfig?.API?.GraphQL?.endpoint || '',
+      region: process.env.NEXT_PUBLIC_REGION || resourcesConfig?.API?.GraphQL?.region || 'us-east-1',
+      defaultAuthMode: 'userPool',
+      apiKey: process.env.NEXT_PUBLIC_API_KEY || resourcesConfig?.API?.GraphQL?.apiKey,
+    },
+  },
+}, {
+  ssr: true
+});
+
+// Set up token provider
+cognitoUserPoolsTokenProvider.setKeyValueStorage({
+  setItem: async (key: string, value: string) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(key, value);
     }
+    return Promise.resolve();
+  },
+  getItem: async (key: string) => {
+    if (typeof window !== 'undefined') {
+      return Promise.resolve(localStorage.getItem(key));
+    }
+    return Promise.resolve(null);
+  },
+  removeItem: async (key: string) => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(key);
+    }
+    return Promise.resolve();
+  },
+  clear: async () => {
+    if (typeof window !== 'undefined') {
+      localStorage.clear();
+    }
+    return Promise.resolve();
   }
 });
 
-// Generate the client
-export const client = generateClient<Schema>();
-
-// Export the client for use in components
-export default client; 
+export default Amplify; 
