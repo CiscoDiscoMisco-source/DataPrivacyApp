@@ -19,7 +19,8 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [profileData, setProfileData] = useState({
-    username: '',
+    firstName: '',
+    lastName: '',
     email: ''
   });
   const [passwordData, setPasswordData] = useState({
@@ -28,7 +29,8 @@ export default function ProfilePage() {
     confirmPassword: ''
   });
   const [errors, setErrors] = useState({
-    username: '',
+    firstName: '',
+    lastName: '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
@@ -42,17 +44,23 @@ export default function ProfilePage() {
     }
     
     setProfileData({
-      username: user.username,
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
       email: user.email
     });
   }, [user, router]);
 
   const validateProfileForm = () => {
     let isValid = true;
-    const newErrors = { ...errors, username: '' };
+    const newErrors = { ...errors, firstName: '', lastName: '' };
 
-    if (!profileData.username.trim()) {
-      newErrors.username = 'Username is required';
+    if (!profileData.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+      isValid = false;
+    }
+    
+    if (!profileData.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
       isValid = false;
     }
 
@@ -108,7 +116,8 @@ export default function ProfilePage() {
         if (user) {
           const updatedUser = {
             ...user,
-            username: profileData.username
+            firstName: profileData.firstName,
+            lastName: profileData.lastName
           };
           
           localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -223,14 +232,24 @@ export default function ProfilePage() {
                   <form onSubmit={handleUpdateProfile}>
                     <CardContent className="space-y-4 pt-6">
                       <div className="space-y-2">
-                        <Label htmlFor="username">Username</Label>
+                        <Label htmlFor="firstName">First Name</Label>
                         <Input 
-                          id="username" 
-                          value={profileData.username}
-                          onChange={(e) => setProfileData({ ...profileData, username: e.target.value })}
+                          id="firstName" 
+                          value={profileData.firstName}
+                          onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
                           className="rounded-lg"
                         />
-                        {errors.username && <p className="text-sm text-red-500">{errors.username}</p>}
+                        {errors.firstName && <p className="text-sm text-red-500">{errors.firstName}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Last Name</Label>
+                        <Input 
+                          id="lastName" 
+                          value={profileData.lastName}
+                          onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
+                          className="rounded-lg"
+                        />
+                        {errors.lastName && <p className="text-sm text-red-500">{errors.lastName}</p>}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
