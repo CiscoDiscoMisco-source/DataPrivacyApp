@@ -8,8 +8,8 @@ Amplify.configure({
     GraphQL: {
       endpoint: 'http://localhost:20002/graphql',
       region: 'us-east-1',
-      authenticationType: 'API_KEY',
-      apiKey: 'da2-fakeApiId123456'
+      defaultAuthMode: 'apiKey',
+      apiKey: 'da2-dudxakwdefde7n53d2lwt5yxae'
     }
   }
 });
