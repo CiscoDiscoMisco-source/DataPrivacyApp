@@ -18,23 +18,22 @@ interface ResourcesConfig {
   };
 }
 
-// Try to load ampify outputs if they exist
+// Load config from amplify_outputs.json
 let resourcesConfig: ResourcesConfig = {};
 
 try {
   const amplifyOutputs = require('../amplify_outputs.json');
   resourcesConfig = amplifyOutputs.resourcesConfig || {};
-  console.log('Loaded Amplify outputs from file');
 } catch (error) {
-  console.warn('Could not load Amplify outputs file. Using empty configuration.', error);
+  console.warn('Could not load Amplify outputs file.');
 }
 
 // Configure Amplify
 Amplify.configure({
   Auth: {
     Cognito: {
-      userPoolId: process.env.NEXT_PUBLIC_USER_POOL_ID || resourcesConfig?.Auth?.Cognito?.userPoolId || '',
-      userPoolClientId: process.env.NEXT_PUBLIC_USER_POOL_CLIENT_ID || resourcesConfig?.Auth?.Cognito?.userPoolClientId || '',
+      userPoolId: resourcesConfig?.Auth?.Cognito?.userPoolId || '',
+      userPoolClientId: resourcesConfig?.Auth?.Cognito?.userPoolClientId || '',
       loginWith: {
         email: true,
       },
@@ -42,10 +41,10 @@ Amplify.configure({
   },
   API: {
     GraphQL: {
-      endpoint: process.env.NEXT_PUBLIC_API_ENDPOINT || resourcesConfig?.API?.GraphQL?.endpoint || '',
-      region: process.env.NEXT_PUBLIC_REGION || resourcesConfig?.API?.GraphQL?.region || 'us-east-1',
+      endpoint: resourcesConfig?.API?.GraphQL?.endpoint || '',
+      region: resourcesConfig?.API?.GraphQL?.region || 'us-east-1',
       defaultAuthMode: 'userPool',
-      apiKey: process.env.NEXT_PUBLIC_API_KEY || resourcesConfig?.API?.GraphQL?.apiKey,
+      apiKey: resourcesConfig?.API?.GraphQL?.apiKey,
     },
   },
 }, {

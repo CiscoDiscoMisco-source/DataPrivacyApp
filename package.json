@@ -7,10 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "amplify": "amplify",
     "generate-outputs": "node scripts/generate-amplify-outputs.js",
-    "prebuild": "npm run generate-outputs || echo 'Failed to generate outputs, continuing build'",
-    "amplify-push": "amplify push"
+    "prebuild": "npm run generate-outputs || echo 'Failed to generate outputs, continuing build'"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.6",
