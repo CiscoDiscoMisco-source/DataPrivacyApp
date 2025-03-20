@@ -13,7 +13,7 @@ import Link from 'next/link';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { signup } = useAuth();
+  const { register } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -109,11 +109,14 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      // Use the updated signup function
-      await signup(
+      // Use the register function from the AuthContext
+      await register(
+        formData.firstName,
+        formData.lastName, 
         formData.email, 
         formData.password,
-        formData.firstName
+        formData.birthdate,
+        formData.nationalId
       );
       
       toast({
