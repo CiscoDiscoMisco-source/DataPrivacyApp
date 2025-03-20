@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useData } from '../contexts/DataContext';
 import './Search.css';
 
@@ -25,39 +25,64 @@ interface SearchResult {
   link: string;
 }
 
+const RESULTS_LIMIT = 10; // Limit results for better performance
+
 const Search: React.FC = () => {
   const { client } = useData();
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  const handleSearch = async () => {
-    if (!searchTerm.trim()) return;
+  // Debounce search term to prevent excessive API calls
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500); // 500ms delay
+
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [searchTerm]);
+
+  // Perform search when debounced search term changes
+  useEffect(() => {
+    if (debouncedSearchTerm) {
+      handleSearch();
+    }
+  }, [debouncedSearchTerm]);
+
+  const handleSearch = useCallback(async () => {
+    if (!debouncedSearchTerm.trim()) {
+      setSearchResults([]);
+      return;
+    }
     
     setIsSearching(true);
-    setSearchResults([]);
     
     try {
-      // Search in data types
+      // Search in data types with limit
       const dataTypeResults = await client.models.DataType.list({
         filter: {
           or: [
-            { name: { contains: searchTerm } },
-            { description: { contains: searchTerm } },
-            { category: { contains: searchTerm } }
+            { name: { contains: debouncedSearchTerm } },
+            { description: { contains: debouncedSearchTerm } },
+            { category: { contains: debouncedSearchTerm } }
           ]
-        }
+        },
+        limit: RESULTS_LIMIT
       });
       
-      // Search in companies
+      // Search in companies with limit
       const companyResults = await client.models.Company.list({
         filter: {
           or: [
-            { name: { contains: searchTerm } },
-            { description: { contains: searchTerm } },
-            { industry: { contains: searchTerm } }
+            { name: { contains: debouncedSearchTerm } },
+            { description: { contains: debouncedSearchTerm } },
+            { industry: { contains: debouncedSearchTerm } }
           ]
-        }
+        },
+        limit: RESULTS_LIMIT
       });
       
       // Combine and format results
@@ -84,7 +109,7 @@ const Search: React.FC = () => {
     } finally {
       setIsSearching(false);
     }
-  };
+  }, [client, debouncedSearchTerm]);
 
   return (
     <div className="search">
@@ -97,7 +122,6 @@ const Search: React.FC = () => {
           placeholder="Search for data types, companies, users..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
         />
         <button 
           className="search-button"
@@ -122,9 +146,9 @@ const Search: React.FC = () => {
             ))}
           </div>
         </div>
-      ) : searchTerm && !isSearching ? (
+      ) : debouncedSearchTerm && !isSearching ? (
         <div className="no-results">
-          <p>No results found for "{searchTerm}"</p>
+          <p>No results found for "{debouncedSearchTerm}"</p>
         </div>
       ) : null}
     </div>

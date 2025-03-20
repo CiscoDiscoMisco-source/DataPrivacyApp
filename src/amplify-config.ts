@@ -16,6 +16,12 @@ interface ResourcesConfig {
       apiKey?: string;
     };
   };
+  Storage?: {
+    S3?: {
+      bucket?: string;
+      region?: string;
+    };
+  };
 }
 
 // Load config from amplify_outputs.json
@@ -45,6 +51,12 @@ Amplify.configure({
       region: resourcesConfig?.API?.GraphQL?.region || 'us-east-1',
       defaultAuthMode: 'userPool',
       apiKey: resourcesConfig?.API?.GraphQL?.apiKey,
+    },
+  },
+  Storage: {
+    S3: {
+      bucket: resourcesConfig?.Storage?.S3?.bucket || '',
+      region: resourcesConfig?.Storage?.S3?.region || 'us-east-1',
     },
   },
 }, {

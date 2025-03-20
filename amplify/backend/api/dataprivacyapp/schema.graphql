@@ -1,0 +1,57 @@
+# This schema uses Cognito User Pools for authorized access along with API key for public access
+
+type Todo @model 
+  @auth(rules: [
+    { allow: public, provider: apiKey, operations: [read] },
+    { allow: private, provider: userPools }
+  ]) {
+  id: ID!
+  name: String!
+  description: String
+  owner: String @auth(rules: [{ allow: owner }])
+}
+
+type User @model
+  @auth(rules: [
+    { allow: owner },
+    { allow: private, provider: userPools, operations: [read] }
+  ]) {
+  id: ID!
+  email: String!
+  name: String
+}
+
+type PrivacySettings @model
+  @auth(rules: [
+    { allow: owner },
+    { allow: private, provider: userPools, operations: [read] }
+  ]) {
+  id: ID!
+  allowDataCollection: Boolean
+  shareWithThirdParties: Boolean
+  owner: String @auth(rules: [{ allow: owner }])
+}
+
+type ConsentRecord @model
+  @auth(rules: [
+    { allow: owner },
+    { allow: private, provider: userPools, operations: [read] }
+  ]) {
+  id: ID!
+  consentType: String!
+  dateGranted: AWSDateTime!
+  dateRevoked: AWSDateTime
+  owner: String @auth(rules: [{ allow: owner }])
+}
+
+type DataAccessLog @model
+  @auth(rules: [
+    { allow: owner },
+    { allow: private, provider: userPools, operations: [read] }
+  ]) {
+  id: ID!
+  accessType: String!
+  timestamp: AWSDateTime!
+  accessedBy: String!
+  owner: String @auth(rules: [{ allow: owner }])
+}

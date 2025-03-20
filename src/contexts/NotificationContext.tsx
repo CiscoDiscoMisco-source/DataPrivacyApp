@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import './Notification.css';
 
 export type NotificationType = 'success' | 'error' | 'info' | 'warning';
@@ -24,9 +24,16 @@ interface NotificationProviderProps {
 
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const timeoutIdsRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   const hideNotification = useCallback((id: string) => {
     setNotifications((prev) => prev.filter((notification) => notification.id !== id));
+    
+    // Clear the timeout when hiding notification
+    if (timeoutIdsRef.current[id]) {
+      clearTimeout(timeoutIdsRef.current[id]);
+      delete timeoutIdsRef.current[id];
+    }
   }, []);
 
   const showNotification = useCallback((message: string, type: NotificationType, duration = 5000) => {
@@ -35,17 +42,22 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     setNotifications((prev) => [...prev, { id, message, type, duration }]);
     
     if (duration > 0) {
-      setTimeout(() => {
+      // Store the timeout ID
+      const timeoutId = setTimeout(() => {
         hideNotification(id);
       }, duration);
+      
+      timeoutIdsRef.current[id] = timeoutId;
     }
     
     return id;
   }, [hideNotification]);
 
   useEffect(() => {
-    // Clean up any remaining notifications when the component unmounts
+    // Clean up any remaining notifications and timeouts when the component unmounts
     return () => {
+      Object.values(timeoutIdsRef.current).forEach(clearTimeout);
+      timeoutIdsRef.current = {};
       setNotifications([]);
     };
   }, []);

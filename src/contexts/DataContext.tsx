@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import type { Schema } from '../../amplify/data/resource';
 
@@ -6,7 +6,7 @@ import type { Schema } from '../../amplify/data/resource';
 export const client = generateClient<Schema>();
 
 interface DataContextType {
-  client: any; // Simplify to avoid complex type issues
+  client: ReturnType<typeof generateClient<Schema>>;
   loading: boolean;
   error: Error | null;
 }
@@ -20,6 +20,7 @@ interface DataProviderProps {
 export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
     const initializeData = async () => {
@@ -27,13 +28,22 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         setLoading(true);
         // Add any initialization logic here
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to initialize data'));
+        if (isMountedRef.current) {
+          setError(err instanceof Error ? err : new Error('Failed to initialize data'));
+        }
       } finally {
-        setLoading(false);
+        if (isMountedRef.current) {
+          setLoading(false);
+        }
       }
     };
 
     initializeData();
+
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   return (

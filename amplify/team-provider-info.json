@@ -1,0 +1,27 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-dataprivacyapp-dev-6ed66-authRole",
+      "UnauthRoleArn": "arn:aws:iam::711387094932:role/amplify-dataprivacyapp-dev-6ed66-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::711387094932:role/amplify-dataprivacyapp-dev-6ed66-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-dataprivacyapp-dev-6ed66-deployment",
+      "UnauthRoleName": "amplify-dataprivacyapp-dev-6ed66-unauthRole",
+      "StackName": "amplify-dataprivacyapp-dev-6ed66",
+      "StackId": "arn:aws:cloudformation:us-east-1:711387094932:stack/amplify-dataprivacyapp-dev-6ed66/5544a8a0-059e-11f0-928f-0e34c62dc21d",
+      "AmplifyAppId": "drsim45f3sxj9"
+    },
+    "categories": {
+      "auth": {
+        "dataprivacyappc29c11b7": {},
+        "dataprivacyappef23b561": {}
+      },
+      "function": {
+        "dataprivacyapp59ed31d8": {}
+      },
+      "api": {
+        "dataprivacyapp": {}
+      }
+    }
+  }
+}

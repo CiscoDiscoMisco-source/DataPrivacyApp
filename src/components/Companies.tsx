@@ -2,15 +2,27 @@ import React, { useEffect, useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import './Companies.css';
 
+interface Company {
+  id: string;
+  name: string;
+  description: string | null;
+  website?: string;
+  industry?: string;
+  sizeRange?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+}
+
 const Companies: React.FC = () => {
   const { client, loading, error } = useData();
-  const [companies, setCompanies] = useState<any[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
 
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
         const result = await client.models.Company.list();
-        setCompanies(result.data as any[]);
+        setCompanies(result.data as Company[]);
       } catch (err) {
         console.error('Error fetching companies:', err);
       }
@@ -26,7 +38,7 @@ const Companies: React.FC = () => {
     <div className="companies">
       <h2>Companies</h2>
       <div className="companies-grid">
-        {companies.map((company) => (
+        {companies.map((company: Company) => (
           <div key={company.id} className="company-card">
             <h3>{company.name}</h3>
             <p className="description">{company.description || 'No description'}</p>

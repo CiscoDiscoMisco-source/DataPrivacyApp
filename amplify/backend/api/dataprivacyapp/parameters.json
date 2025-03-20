@@ -1,0 +1,11 @@
+{
+  "AppSyncApiName": "dataprivacyapp",
+  "DynamoDBBillingMode": "PAY_PER_REQUEST",
+  "DynamoDBEnableServerSideEncryption": false,
+  "AuthCognitoUserPoolId": {
+    "Fn::GetAtt": [
+      "authdataprivacyappef23b561",
+      "Outputs.UserPoolId"
+    ]
+  }
+}

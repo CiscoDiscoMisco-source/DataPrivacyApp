@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { signUp, signIn, signOut, getCurrentUser, type SignUpOutput } from 'aws-amplify/auth';
 
 interface User {
   id: string;
@@ -32,19 +33,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const checkAuth = async () => {
       try {
         setLoading(true);
-        // In a real app, you would check if the user is authenticated
-        // const currentUser = await getCurrentUser();
+        // Get the current authenticated user
+        const { userId, username, signInDetails } = await getCurrentUser();
         
-        // For now, we'll use a mock user
-        const mockUser: User = {
-          id: '1',
-          email: 'user@example.com',
-          firstName: 'John',
-          lastName: 'Doe',
-          isAdmin: false
-        };
-        
-        setUser(mockUser);
+        // Get additional user attributes if needed
+        // This would need to be expanded based on your auth setup
+        if (username) {
+          setUser({
+            id: userId,
+            email: username, // In Cognito, username is often the email
+            firstName: '', // These would need to be retrieved from user attributes
+            lastName: '',
+            isAdmin: false
+          });
+        } else {
+          setUser(null);
+        }
       } catch (err) {
         console.error('Auth check error:', err);
         setUser(null);
@@ -60,19 +64,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     try {
       setLoading(true);
-      // In a real app, you would use Amplify Auth to sign in
-      // const { user } = await signIn(email, password);
+      // Sign in the user with Amplify Auth
+      const { isSignedIn, nextStep } = await signIn({
+        username: email,
+        password,
+      });
       
-      // For now, we'll use a mock user
-      const mockUser: User = {
-        id: '1',
-        email,
-        firstName: 'John',
-        lastName: 'Doe',
-        isAdmin: email.includes('admin')
-      };
-      
-      setUser(mockUser);
+      if (isSignedIn) {
+        // Get user info after successful sign-in
+        const { userId, username } = await getCurrentUser();
+        
+        setUser({
+          id: userId,
+          email: username || email,
+          firstName: '',
+          lastName: '',
+          isAdmin: false // You would determine this based on user groups or attributes
+        });
+      } else {
+        // Handle authentication challenges if necessary
+        console.log('Next auth step required:', nextStep);
+        throw new Error(`Authentication requires: ${nextStep.signInStep}`);
+      }
     } catch (err) {
       console.error('Login error:', err);
       throw err;
@@ -84,10 +97,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (firstName: string, lastName: string, email: string, password: string) => {
     try {
       setLoading(true);
-      // In a real app, you would use Amplify Auth to sign up
-      // await signUp(email, password, { firstName, lastName });
+      // Register user with Amplify Auth
+      const { isSignUpComplete, userId, nextStep }: SignUpOutput = await signUp({
+        username: email,
+        password,
+        options: {
+          userAttributes: {
+            email,
+            given_name: firstName,
+            family_name: lastName
+          }
+        }
+      });
       
-      console.log('Registered:', { firstName, lastName, email });
+      if (!isSignUpComplete) {
+        // Handle any additional signup steps (e.g., confirmation)
+        console.log('Sign up requires more steps:', nextStep);
+      }
+      
+      console.log('Registered user with ID:', userId);
     } catch (err) {
       console.error('Registration error:', err);
       throw err;
@@ -99,9 +127,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     try {
       setLoading(true);
-      // In a real app, you would use Amplify Auth to sign out
-      // await signOut();
-      
+      // Sign out using Amplify Auth
+      await signOut();
       setUser(null);
     } catch (err) {
       console.error('Logout error:', err);
