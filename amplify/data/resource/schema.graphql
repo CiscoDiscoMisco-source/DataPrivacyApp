@@ -1,4 +1,4 @@
-type User @model @auth(rules: [{ allow: owner }]) {
+type User @model (rules: [{ allow: owner }]) {
   id: ID!
   email: String!
   name: String!
@@ -6,7 +6,7 @@ type User @model @auth(rules: [{ allow: owner }]) {
   preferences: [Preference] @hasMany
 }
 
-type Company @model @auth(rules: [{ allow: public, operations: [read] }, { allow: private, operations: [create, update, delete] }]) {
+type Company @model (rules: [{ allow: public, operations: [read] }, { allow: private, operations: [create, update, delete] }]) {
   id: ID!
   name: String!
   logo: String
@@ -15,7 +15,7 @@ type Company @model @auth(rules: [{ allow: public, operations: [read] }, { allow
   dataSharingPolicies: [DataSharingPolicy] @hasMany
 }
 
-type DataSharingPolicy @model @auth(rules: [{ allow: public, operations: [read] }, { allow: private, operations: [create, update, delete] }]) {
+type DataSharingPolicy @model (rules: [{ allow: public, operations: [read] }, { allow: private, operations: [create, update, delete] }]) {
   id: ID!
   dataType: String!
   purpose: String!
@@ -24,7 +24,7 @@ type DataSharingPolicy @model @auth(rules: [{ allow: public, operations: [read] 
   company: Company @belongsTo
 }
 
-type Preference @model @auth(rules: [{ allow: owner }]) {
+type Preference @model (rules: [{ allow: owner }]) {
   id: ID!
   dataType: String!
   allowed: Boolean!
@@ -33,7 +33,7 @@ type Preference @model @auth(rules: [{ allow: owner }]) {
   user: User @belongsTo
 }
 
-type TokenPackage @model @auth(rules: [{ allow: public, operations: [read] }, { allow: private, operations: [create, update, delete] }]) {
+type TokenPackage @model (rules: [{ allow: public, operations: [read] }, { allow: private, operations: [create, update, delete] }]) {
   id: ID!
   name: String!
   amount: Int!

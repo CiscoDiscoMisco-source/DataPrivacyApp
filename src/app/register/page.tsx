@@ -148,14 +148,14 @@ export default function RegisterPage() {
             </div>
           </div>
           <h1 className="text-3xl font-bold text-primary">Data Privacy Manager</h1>
-          <p className="text-muted-foreground mt-2">Complete your registration to get started</p>
+          <p className="text-muted-foreground mt-2">Create your account to get started</p>
         </div>
         
         <Card className="border-none shadow-xl">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Complete Registration</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
             <CardDescription className="text-center">
-              Enter all your details to create your account
+              Enter your details to create a new account
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
@@ -263,12 +263,12 @@ export default function RegisterPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing Registration...
+                    Creating account...
                   </>
                 ) : (
                   <>
                     <UserPlus className="mr-2 h-4 w-4" />
-                    Complete Registration
+                    Create Account
                   </>
                 )}
               </Button>
