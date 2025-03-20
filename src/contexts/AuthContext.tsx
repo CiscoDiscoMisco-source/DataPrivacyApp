@@ -165,9 +165,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         userAttributes.birthdate = birthdate;
       }
       
-      if (nationalId) {
-        userAttributes['custom:nationalId'] = nationalId;
-      }
+      // Remove the custom:nationalId attribute from Cognito
+      // We'll still store it in our database below
       
       // Register user with Amplify Auth
       const { isSignUpComplete, userId, nextStep }: SignUpOutput = await signUp({
@@ -191,7 +190,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           firstName,
           lastName,
           birthdate,
-          nationalId,
+          nationalId, // Still store nationalId in our database
           isActive: true,
           isAdmin: false,
           createdAt: new Date().toISOString(),
