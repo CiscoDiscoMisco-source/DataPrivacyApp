@@ -2,10 +2,33 @@ import React, { useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import './Search.css';
 
+// Define interfaces for our data types
+interface DataType {
+  id: string;
+  name: string;
+  description: string | null;
+  category: string;
+}
+
+interface Company {
+  id: string;
+  name: string;
+  description: string | null;
+  industry: string;
+}
+
+interface SearchResult {
+  id: string;
+  type: string;
+  name: string;
+  description: string;
+  link: string;
+}
+
 const Search: React.FC = () => {
   const { client } = useData();
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
   const handleSearch = async () => {
@@ -39,14 +62,14 @@ const Search: React.FC = () => {
       
       // Combine and format results
       const formattedResults = [
-        ...dataTypeResults.data.map(item => ({
+        ...dataTypeResults.data.map((item: DataType) => ({
           id: item.id,
           type: 'Data Type',
           name: item.name,
           description: item.description || 'No description',
           link: `/data-types`
         })),
-        ...companyResults.data.map(item => ({
+        ...companyResults.data.map((item: Company) => ({
           id: item.id,
           type: 'Company',
           name: item.name,
