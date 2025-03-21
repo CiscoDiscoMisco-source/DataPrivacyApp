@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { signUp, signIn, signOut, getCurrentUser, type SignUpOutput, fetchUserAttributes } from 'aws-amplify/auth';
 import { signInWithRedirect } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
+import { client } from '../amplify-config';
 
 interface User {
   id: string;
@@ -141,8 +142,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         userAttributes.birthdate = birthdate;
       }
       
+      // Only add nationalId if it's provided - it will be stored as custom:nationalid in Cognito
       if (nationalId) {
-        userAttributes['custom:nationalId'] = nationalId;
+        userAttributes['custom:nationalid'] = nationalId;
       }
       
       // Register user with Amplify Auth (Cognito)
@@ -160,7 +162,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
       
       console.log('Registered user with ID:', userId);
-      // No need to create user in custom database - Cognito now handles everything
+      
+      // After successful signup, we'll create a user entry in our GraphQL API
+      // This is needed to store any additional data that doesn't fit in Cognito
+      if (userId && isSignUpComplete) {
+        try {
+          // Create user in the data API
+          await client.models.User.create({
+            email,
+            firstName,
+            lastName,
+            birthdate,
+            nationalId,
+            isActive: true,
+            isAdmin: false,
+            createdAt: new Date().toISOString()
+          });
+        } catch (apiError) {
+          console.error('Error creating user in database:', apiError);
+          // We won't throw here since the auth signup was successful
+        }
+      }
     } catch (err) {
       console.error('Registration error:', err);
       throw err;

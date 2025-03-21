@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import configureAmplify from '@/lib/amplify-config';
+import Amplify from '../amplify-config';
 
 interface AmplifyProviderProps {
   children: React.ReactNode;
@@ -11,8 +11,7 @@ export function AmplifyProvider({ children }: AmplifyProviderProps) {
   const [isConfigured, setIsConfigured] = useState(false);
 
   useEffect(() => {
-    // Configure Amplify on the client side
-    configureAmplify();
+    // Amplify is already configured in amplify-config.ts
     setIsConfigured(true);
   }, []);
 

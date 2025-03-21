@@ -21,6 +21,9 @@
       },
       "api": {
         "dataprivacyapp": {}
+      },
+      "storage": {
+        "s3dataprivacyappstorage4285bb57": {}
       }
     }
   }

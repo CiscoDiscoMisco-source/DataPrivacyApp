@@ -19,7 +19,7 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import { StorageProvider } from './contexts/StorageContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { LoadingProvider } from './contexts/LoadingContext';
-import './amplify-config';  // Import configuration
+import './amplify-config';  // Import the updated configuration
 
 // Combine providers to reduce nesting depth
 const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => (

@@ -1,6 +1,6 @@
 import { generateClient } from 'aws-amplify/api';
 import { getCurrentUser } from 'aws-amplify/auth';
-import { DataCategory, SharingStatus, NotificationFrequency } from '../../amplify/data/resource';
+import { DataCategory, SharingStatus, NotificationFrequency } from '../../../amplify/data/resource';
 
 /**
  * Generate a client for Amplify's Data API

@@ -71,8 +71,7 @@ export const AuthProvider = ({ children }) => {
             email,
             given_name: name,
             family_name: lastName,
-            birthdate: birthDate,
-            'custom:nationalid': nationalId
+            birthdate: birthDate
           }
         }
       });

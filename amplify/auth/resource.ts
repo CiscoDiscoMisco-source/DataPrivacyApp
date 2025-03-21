@@ -22,7 +22,7 @@ export const auth = defineAuth({
       mutable: false,
     },
     // Custom attributes are defined with the 'custom:' prefix
-    'custom:nationalId': {
+    'custom:nationalid': {
       dataType: 'String',
       mutable: false,
     }

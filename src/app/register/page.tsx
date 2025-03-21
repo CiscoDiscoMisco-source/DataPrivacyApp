@@ -239,18 +239,18 @@ export default function RegisterPage() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="nationalId">National ID</Label>
-                <div className="flex items-center">
-                  <CreditCard className="mr-2 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    id="nationalId" 
-                    placeholder="ID Number" 
-                    value={formData.nationalId}
-                    onChange={(e) => setFormData({ ...formData, nationalId: e.target.value })}
-                    className="rounded-lg"
-                  />
-                </div>
-                {errors.nationalId && <p className="text-sm text-red-500">{errors.nationalId}</p>}
+                <Label htmlFor="nationalId">National ID (Optional - stored securely in application database)</Label>
+                <Input
+                  id="nationalId"
+                  name="nationalId"
+                  value={formData.nationalId}
+                  onChange={(e) => setFormData({ ...formData, nationalId: e.target.value })}
+                  disabled={isLoading}
+                  className="w-full"
+                />
+                {errors.nationalId && (
+                  <p className="text-sm text-destructive">{errors.nationalId}</p>
+                )}
               </div>
               
               <div className="text-sm text-muted-foreground">
