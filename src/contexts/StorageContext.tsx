@@ -1,12 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import { 
-  uploadFile, 
-  downloadFile, 
-  removeFile, 
-  getFileUrl, 
-  listFiles 
-} from '../services/StorageService';
-import { TransferProgressEvent } from 'aws-amplify/storage';
+import { storageService, TransferProgressEvent } from '../services/storage';
 
 interface StorageContextType {
   loading: boolean;
@@ -15,8 +8,8 @@ interface StorageContextType {
   upload: (key: string, file: File, onProgress?: (event: TransferProgressEvent) => void) => Promise<any>;
   download: (key: string, onProgress?: (event: TransferProgressEvent) => void) => Promise<any>;
   remove: (key: string) => Promise<any>;
-  getUrl: (key: string, options?: { validateObjectExistence?: boolean; expiresIn?: number }) => Promise<any>;
-  list: () => Promise<any>;
+  getUrl: (key: string) => Promise<any>;
+  list: (prefix?: string) => Promise<any>;
   clearError: () => void;
 }
 
@@ -47,8 +40,9 @@ export const StorageProvider: React.FC<StorageProviderProps> = ({ children }) =>
       setLoading(true);
       setError(null);
       
-      const progressCallback = onProgress || handleProgress(key);
-      const result = await uploadFile(key, file, { progressCallback });
+      const result = await storageService.uploadFile(key, file, {
+        progressCallback: onProgress || handleProgress(key)
+      });
       
       return result;
     } catch (err) {
@@ -67,8 +61,7 @@ export const StorageProvider: React.FC<StorageProviderProps> = ({ children }) =>
       setLoading(true);
       setError(null);
       
-      const progressCallback = onProgress || handleProgress(key);
-      const result = await downloadFile(key, { progressCallback });
+      const result = await storageService.downloadFile(key);
       
       return result;
     } catch (err) {
@@ -84,7 +77,7 @@ export const StorageProvider: React.FC<StorageProviderProps> = ({ children }) =>
       setLoading(true);
       setError(null);
       
-      const result = await removeFile(key);
+      const result = await storageService.removeFile(key);
       
       return result;
     } catch (err) {
@@ -95,15 +88,12 @@ export const StorageProvider: React.FC<StorageProviderProps> = ({ children }) =>
     }
   };
 
-  const getUrl = async (
-    key: string, 
-    options?: { validateObjectExistence?: boolean; expiresIn?: number }
-  ) => {
+  const getUrl = async (key: string) => {
     try {
       setLoading(true);
       setError(null);
       
-      const result = await getFileUrl(key, options);
+      const result = await storageService.getFileUrl(key);
       
       return result;
     } catch (err) {
@@ -114,12 +104,12 @@ export const StorageProvider: React.FC<StorageProviderProps> = ({ children }) =>
     }
   };
 
-  const list = async () => {
+  const list = async (prefix = '') => {
     try {
       setLoading(true);
       setError(null);
       
-      const result = await listFiles();
+      const result = await storageService.listFiles(prefix);
       
       return result;
     } catch (err) {

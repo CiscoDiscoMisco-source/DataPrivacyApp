@@ -1,1 +1,15 @@
-amplify-codegen-temp\models\models
+# Build artifacts
+build/
+dist/
+.next/
+
+# Node modules
+node_modules/
+
+# Test files
+**/*.test.js
+**/*.test.ts
+**/*.test.tsx
+
+# Generated files
+*.generated.*

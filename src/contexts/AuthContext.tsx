@@ -1,10 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { signUp, signIn, signOut, getCurrentUser, type SignUpOutput, fetchUserAttributes } from 'aws-amplify/auth';
-import { signInWithRedirect } from 'aws-amplify/auth';
-import { Hub } from 'aws-amplify/utils';
-import { client } from '../amplify-config';
+import { authService } from '../services/auth';
 
 interface User {
   id: string;
@@ -35,36 +32,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Helper function to fetch user attributes and set the user state
-  const fetchAndSetUserData = async () => {
-    try {
-      const { userId, username } = await getCurrentUser();
-      const attributes = await fetchUserAttributes();
-      
-      setUser({
-        id: userId,
-        email: username || attributes.email || '',
-        firstName: attributes.given_name || '',
-        lastName: attributes.family_name || '',
-        // Admin status could be managed through Cognito groups instead
-        isAdmin: false 
-      });
-    } catch (err) {
-      console.error('Error fetching user attributes:', err);
-      setUser(null);
-    }
-  };
-
   useEffect(() => {
     const checkAuth = async () => {
       try {
         setLoading(true);
-        // Get the current authenticated user
-        const { userId, username } = await getCurrentUser();
+        const userData = await authService.getCurrentUser();
         
-        if (username) {
-          // Fetch user attributes from Cognito
-          await fetchAndSetUserData();
+        if (userData) {
+          setUser(userData);
         } else {
           setUser(null);
         }
@@ -78,48 +53,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     checkAuth();
-    
-    // Set up Hub listener for auth events
-    const unsubscribe = Hub.listen('auth', ({ payload }) => {
-      switch (payload.event) {
-        case 'signInWithRedirect':
-          // User has been redirected back after successful sign-in
-          fetchAndSetUserData();
-          setLoading(false);
-          break;
-        case 'signInWithRedirect_failure':
-          // OAuth sign-in failed
-          setError(new Error('Google sign-in failed'));
-          setLoading(false);
-          break;
-        case 'signedOut':
-          setUser(null);
-          break;
-      }
-    });
-    
-    return () => unsubscribe();
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
       setLoading(true);
-      // Sign in the user with Amplify Auth
-      const { isSignedIn, nextStep } = await signIn({
-        username: email,
-        password,
-      });
+      setError(null);
       
-      if (isSignedIn) {
-        // Get user attributes from Cognito
-        await fetchAndSetUserData();
-      } else {
-        // Handle authentication challenges if necessary
-        console.log('Next auth step required:', nextStep);
-        throw new Error(`Authentication requires: ${nextStep.signInStep}`);
-      }
+      const response = await authService.login(email, password);
+      setUser(response.user);
     } catch (err) {
       console.error('Login error:', err);
+      setError(err instanceof Error ? err : new Error('Login failed'));
       throw err;
     } finally {
       setLoading(false);
@@ -129,62 +74,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (firstName: string, lastName: string, email: string, password: string, birthdate?: string, nationalId?: string) => {
     try {
       setLoading(true);
+      setError(null);
       
-      // Prepare user attributes for Cognito
-      const userAttributes: Record<string, string> = {
-        email,
-        given_name: firstName,
-        family_name: lastName
-      };
-      
-      // Add optional attributes if provided
-      if (birthdate) {
-        userAttributes.birthdate = birthdate;
-      }
-      
-      // Only add nationalId if it's provided - it will be stored as custom:nationalid in Cognito
-      if (nationalId) {
-        userAttributes['custom:nationalid'] = nationalId;
-      }
-      
-      // Register user with Amplify Auth (Cognito)
-      const { isSignUpComplete, userId, nextStep }: SignUpOutput = await signUp({
-        username: email,
-        password,
-        options: {
-          userAttributes
-        }
-      });
-      
-      if (!isSignUpComplete) {
-        // Handle any additional signup steps (e.g., confirmation)
-        console.log('Sign up requires more steps:', nextStep);
-      }
-      
-      console.log('Registered user with ID:', userId);
-      
-      // After successful signup, we'll create a user entry in our GraphQL API
-      // This is needed to store any additional data that doesn't fit in Cognito
-      if (userId && isSignUpComplete) {
-        try {
-          // Create user in the data API
-          await client.models.User.create({
-            email,
-            firstName,
-            lastName,
-            birthdate,
-            nationalId,
-            isActive: true,
-            isAdmin: false,
-            createdAt: new Date().toISOString()
-          });
-        } catch (apiError) {
-          console.error('Error creating user in database:', apiError);
-          // We won't throw here since the auth signup was successful
-        }
-      }
+      const response = await authService.register(firstName, lastName, email, password, birthdate, nationalId);
+      setUser(response.user);
     } catch (err) {
       console.error('Registration error:', err);
+      setError(err instanceof Error ? err : new Error('Registration failed'));
       throw err;
     } finally {
       setLoading(false);
@@ -194,12 +90,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     try {
       setLoading(true);
-      // Sign out using Amplify Auth
-      await signOut();
+      await authService.logout();
       setUser(null);
     } catch (err) {
       console.error('Logout error:', err);
-      throw err;
+      setError(err instanceof Error ? err : new Error('Logout failed'));
     } finally {
       setLoading(false);
     }
@@ -208,13 +103,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const loginWithGoogle = async () => {
     try {
       setLoading(true);
-      await signInWithRedirect({ provider: 'Google' });
-      // The page will redirect to Google at this point
+      setError(null);
+      
+      // Redirect to Google OAuth endpoint
+      // The backend will provide Google OAuth URL
+      const response = await fetch('/api/auth/google-auth-url');
+      const { url } = await response.json();
+      window.location.href = url;
     } catch (err) {
       console.error('Google login error:', err);
       setLoading(false);
-      throw err;
+      setError(err instanceof Error ? err : new Error('Google login failed'));
     }
+    // No finally block as we're redirecting the browser
   };
 
   return (
