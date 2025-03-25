@@ -4,7 +4,9 @@ from datetime import timedelta
 class Config:
     """Base config."""
     SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
-    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'jwt-secret-key-change-in-production')
+    # Use Supabase JWT secret for our app's JWT authentication
+    SUPABASE_JWT_SECRET = os.environ.get('SUPABASE_JWT_SECRET')
+    JWT_SECRET_KEY = os.environ.get('SUPABASE_JWT_SECRET', 'jwt-secret-key-change-in-production')
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -12,7 +14,6 @@ class Config:
     # Supabase Configuration
     SUPABASE_URL = os.environ.get('SUPABASE_URL')
     SUPABASE_ANON_KEY = os.environ.get('SUPABASE_ANON_KEY')
-    SUPABASE_JWT_SECRET = os.environ.get('SUPABASE_JWT_SECRET')
 
 class DevelopmentConfig(Config):
     """Development config."""
@@ -43,4 +44,5 @@ class ProductionConfig(Config):
         'pool_recycle': 1800,
     }
     SECRET_KEY = os.environ.get('SECRET_KEY')
-    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') 
+    # Use Supabase JWT secret for production as well
+    JWT_SECRET_KEY = os.environ.get('SUPABASE_JWT_SECRET') 

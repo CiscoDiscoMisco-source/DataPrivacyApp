@@ -1,5 +1,5 @@
 import jwt
-from flask import request, jsonify
+from flask import request, jsonify, current_app
 from functools import wraps
 from os import environ
 
@@ -15,7 +15,8 @@ def authenticate_token():
         return None
     
     try:
-        secret = environ.get('JWT_SECRET_KEY', 'default_jwt_secret_for_development')
+        # Use Supabase JWT secret for consistency with Supabase authentication
+        secret = environ.get('SUPABASE_JWT_SECRET', 'default_jwt_secret_for_development')
         decoded = jwt.decode(token, secret, algorithms=["HS256"])
         return decoded
     except jwt.PyJWTError as error:
