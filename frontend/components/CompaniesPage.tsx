@@ -30,12 +30,12 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ searchTerm }) => {
     const fetchCompanies = async (): Promise<void> => {
       try {
         setLoading(true);
+        setError(null);
         const data = await ApiService.get<CompaniesResponse>('/companies');
         setCompanies(data.companies);
-        setError(null);
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to fetch companies:', err);
-        setError('Failed to load companies. Please try again later.');
+        setError(err.message || 'Failed to load companies. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -50,20 +50,30 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ searchTerm }) => {
       if (!searchTerm || searchTerm.length <= 2) {
         // Load all companies if search term is too short
         if (companies.length === 0) {
-          // Only reload if we don't already have companies
-          const data = await ApiService.get<CompaniesResponse>('/companies');
-          setCompanies(data.companies);
+          try {
+            // Only reload if we don't already have companies
+            setLoading(true);
+            setError(null);
+            const data = await ApiService.get<CompaniesResponse>('/companies');
+            setCompanies(data.companies);
+          } catch (err: any) {
+            console.error('Failed to fetch companies:', err);
+            setError(err.message || 'Failed to load companies. Please try again later.');
+          } finally {
+            setLoading(false);
+          }
         }
         return;
       }
       
       try {
         setLoading(true);
+        setError(null);
         const data = await ApiService.get<CompaniesResponse>('/companies', { search: searchTerm });
         setCompanies(data.companies);
-      } catch (err) {
+      } catch (err: any) {
         console.error('Search failed:', err);
-        setError('Search failed. Please try again.');
+        setError(err.message || 'Search failed. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -76,7 +86,7 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ searchTerm }) => {
     
     // Cleanup function to clear timeout
     return () => clearTimeout(debounceTimeout);
-  }, [searchTerm]);
+  }, [searchTerm, companies.length]);
   
   const handleViewDetails = (companyId: string): void => {
     router.push(`/companies/${companyId}`);

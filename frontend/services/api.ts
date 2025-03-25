@@ -65,19 +65,23 @@ const buildHeaders = (customHeaders: Record<string, string> = {}): Record<string
 // Helper to build API URL with version
 const buildApiUrl = (endpoint: string): string => {
   if (!API_BASE_URL) {
-    throw new Error('NEXT_PUBLIC_SUPABASE_URL is not configured');
+    console.error('API_BASE_URL is not configured. Check your .env file for NEXT_PUBLIC_API_URL or NEXT_PUBLIC_SUPABASE_URL');
+    throw new Error('API configuration missing');
   }
 
   // Remove leading slash if present
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
   
+  // Remove any trailing slashes from the base URL
+  const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+  
   // Special endpoints that don't need versioning
   if (cleanEndpoint === 'health' || cleanEndpoint.startsWith('auth/')) {
-    return `${API_BASE_URL}/${cleanEndpoint}`;
+    return `${baseUrl}/${cleanEndpoint}`;
   }
   
   // Add version prefix for all other endpoints
-  return `${API_BASE_URL}/${API_VERSION}/${cleanEndpoint}`;
+  return `${baseUrl}/${API_VERSION}/${cleanEndpoint}`;
 };
 
 // Helper to handle API responses
@@ -108,6 +112,26 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
   return await response.json() as T;
 };
 
+// Helper function to handle API errors
+const handleApiError = (error: any, endpoint: string): Error => {
+  // Log error with context for debugging
+  console.error(`API Error (${endpoint}):`, error);
+  
+  // Network errors (like CORS, server down, etc)
+  if (error instanceof TypeError && error.message === 'Failed to fetch') {
+    console.error(`Network error accessing ${endpoint}. Check API server status and CORS configuration.`);
+    return new Error('Unable to connect to the server. Please check your network connection and try again.');
+  }
+  
+  // Improve user-facing error messages
+  if (error instanceof Error) {
+    // Add more context to error for easier debugging
+    error.message = `API Error (${endpoint}): ${error.message}`;
+  }
+  
+  return error;
+};
+
 // Generic request function to reduce duplication
 const request = async <T>(
   method: string,
@@ -120,7 +144,8 @@ const request = async <T>(
     return Promise.resolve((method === 'GET' ? [] : {}) as unknown as T);
   }
   
-  const url = new URL(buildApiUrl(endpoint), window.location.origin);
+  // Build the complete URL directly rather than using window.location.origin
+  const url = new URL(buildApiUrl(endpoint));
   
   // Add query parameters for GET requests
   if (params && Object.keys(params).length > 0) {
@@ -132,7 +157,8 @@ const request = async <T>(
   const options: RequestInit = {
     method,
     headers: buildHeaders(),
-    credentials: 'include'
+    credentials: 'include',
+    mode: 'cors'
   };
   
   // Add body for non-GET requests with user_id for RLS compatibility
@@ -153,11 +179,11 @@ const request = async <T>(
   }
   
   try {
+    console.log(`API ${method} request to: ${url.toString()}`);
     const response = await fetch(url.toString(), options);
     return await handleResponse<T>(response);
   } catch (error) {
-    console.error('API request failed:', error);
-    throw error;
+    throw handleApiError(error, endpoint);
   }
 };
 
