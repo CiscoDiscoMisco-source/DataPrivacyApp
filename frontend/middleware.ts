@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { createClient } from './utils/supabase/middleware';
 
 // List of public routes that don't require authentication
-const publicRoutes = ['/login', '/signup', '/', '/auth', '/privacy', '/terms'];
+const publicRoutes = ['/login', '/signup', '/auth', '/privacy', '/terms'];
 
 // Check if the route is public
 const isPublicRoute = (path: string) => {
@@ -15,6 +15,22 @@ const isPublicRoute = (path: string) => {
 export async function middleware(request: NextRequest) {
   // Get the pathname of the request
   const { pathname } = request.nextUrl;
+  
+  // Special handling for homepage
+  if (pathname === '/') {
+    // Create Supabase client with cookies from the request
+    const { supabase } = createClient(request);
+    
+    // Check if user is authenticated
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    // If no session and trying to access homepage, redirect to login
+    if (!session) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/login';
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
   
   // If it's a public route, no need to check auth
   if (isPublicRoute(pathname)) {
