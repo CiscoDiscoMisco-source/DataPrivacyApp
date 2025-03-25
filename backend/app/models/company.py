@@ -2,61 +2,55 @@ from typing import Optional, List
 from app.schemas.company import CompanySchema, DataSharingPolicySchema
 from app.repositories.company import CompanyRepository, DataSharingPolicyRepository
 
-# Association table for many-to-many relationship between companies - using direct SQL table creation
-# to avoid conflict with SQLAlchemy model inheritance
-company_relationships = db.Table(
-    'company_relationships',
-    db.Column('source_company_id', db.BigInteger, db.ForeignKey('companies.id', name='company_relationships_source_company_id_fkey'), primary_key=True),
-    db.Column('target_company_id', db.BigInteger, db.ForeignKey('companies.id', name='company_relationships_target_company_id_fkey'), primary_key=True),
-    db.Column('relationship_type', db.String(50))
-)
+# Table name for company relationships in Supabase
+COMPANY_RELATIONSHIPS_TABLE = 'company_relationships'
 
 class Company:
     """Company model for organizations in the system."""
     
     def __init__(self, schema: CompanySchema):
-        self.schema = schema
+        self._schema = schema
         self._repository = CompanyRepository()
     
     @property
     def id(self) -> Optional[int]:
-        return self.schema.id
+        return self._schema.id
     
     @property
     def name(self) -> str:
-        return self.schema.name
+        return self._schema.name
     
     @property
     def logo(self) -> Optional[str]:
-        return self.schema.logo
+        return self._schema.logo
     
     @property
     def industry(self) -> Optional[str]:
-        return self.schema.industry
+        return self._schema.industry
     
     @property
     def website(self) -> Optional[str]:
-        return self.schema.website
+        return self._schema.website
     
     @property
     def description(self) -> Optional[str]:
-        return self.schema.description
+        return self._schema.description
     
     @property
     def size_range(self) -> Optional[str]:
-        return self.schema.size_range
+        return self._schema.size_range
     
     @property
     def city(self) -> Optional[str]:
-        return self.schema.city
+        return self._schema.city
     
     @property
     def state(self) -> Optional[str]:
-        return self.schema.state
+        return self._schema.state
     
     @property
     def country(self) -> Optional[str]:
-        return self.schema.country
+        return self._schema.country
     
     @classmethod
     async def find_by_id(cls, id: int) -> Optional['Company']:
@@ -73,9 +67,9 @@ class Company:
     async def save(self) -> 'Company':
         """Save the company."""
         if self.id:
-            self.schema = await self._repository.update(self.schema)
+            self._schema = await self._repository.update(self._schema)
         else:
-            self.schema = await self._repository.create(self.schema)
+            self._schema = await self._repository.create(self._schema)
         return self
     
     async def delete(self) -> bool:
@@ -93,7 +87,7 @@ class Company:
     
     def to_dict(self):
         """Convert company to dictionary for API response."""
-        return self.schema.to_dict()
+        return self._schema.to_dict()
 
 class DataSharingPolicy:
     """Data sharing policy for a company."""
