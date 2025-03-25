@@ -6,20 +6,6 @@
 const API_BASE_URL = '/api';
 const API_VERSION = 'v1';
 
-interface ApiResponse<T> {
-  data?: T;
-  message?: string;
-  error?: string;
-}
-
-interface RequestParams {
-  [key: string]: string | number | boolean;
-}
-
-interface RequestHeaders {
-  [key: string]: string;
-}
-
 // Helper function to get auth token
 const getAuthToken = (): string | null => {
   if (typeof window !== 'undefined') {
@@ -29,8 +15,8 @@ const getAuthToken = (): string | null => {
 };
 
 // Helper to build headers with authentication
-const buildHeaders = (customHeaders: RequestHeaders = {}): RequestHeaders => {
-  const headers: RequestHeaders = {
+const buildHeaders = (customHeaders: Record<string, string> = {}): Record<string, string> => {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     ...customHeaders
@@ -56,13 +42,26 @@ const buildApiUrl = (endpoint: string): string => {
 // Helper to handle API responses
 const handleResponse = async <T>(response: Response): Promise<T> => {
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
+    let errorData: any = {};
+    try {
+      errorData = await response.json();
+    } catch (e) {
+      // Response wasn't valid JSON
+      console.error('Could not parse error response as JSON');
+    }
+    
     console.error('API error details:', {
       status: response.status,
       statusText: response.statusText,
       errorData
     });
-    throw new Error(errorData.message || `API error: ${response.status} - ${response.statusText}`);
+    
+    // Safely access errorData.message
+    const errorMessage = errorData && typeof errorData === 'object' && 'message' in errorData 
+      ? errorData.message 
+      : `API error: ${response.status} - ${response.statusText}`;
+      
+    throw new Error(errorMessage);
   }
   
   return await response.json() as T;
@@ -74,7 +73,7 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
  * @param {Object} params - Query parameters
  * @returns {Promise<T>} - Response data
  */
-export const get = async <T>(endpoint: string, params: RequestParams = {}): Promise<T> => {
+export const get = async <T>(endpoint: string, params: Record<string, string> = {}): Promise<T> => {
   if (typeof window === 'undefined') {
     return Promise.resolve([] as unknown as T);
   }
@@ -83,7 +82,7 @@ export const get = async <T>(endpoint: string, params: RequestParams = {}): Prom
   
   // Add query parameters
   Object.keys(params).forEach(key => {
-    url.searchParams.append(key, String(params[key]));
+    url.searchParams.append(key, params[key]);
   });
   
   try {
