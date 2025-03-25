@@ -3,7 +3,7 @@
  * Handles all communication with the backend
  */
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const API_VERSION = 'v1';
 
 // Helper function to get auth token
@@ -32,6 +32,10 @@ const buildHeaders = (customHeaders: Record<string, string> = {}): Record<string
 
 // Helper to build API URL with version
 const buildApiUrl = (endpoint: string): string => {
+  if (!API_BASE_URL) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL is not configured');
+  }
+
   // Don't add version prefix if endpoint already includes it or if it's a special endpoint
   if (endpoint.startsWith('/')) {
     // Ensure endpoint starts with a slash for consistency
