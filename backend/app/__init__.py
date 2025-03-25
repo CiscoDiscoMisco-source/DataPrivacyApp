@@ -44,6 +44,10 @@ def create_app(config_name=None):
         print("Exiting application...")
         sys.exit(1)
     
+    # Fix for SQLAlchemy PostgreSQL dialect
+    if app.config.get('SQLALCHEMY_DATABASE_URI') and app.config.get('SQLALCHEMY_DATABASE_URI').startswith('postgres://'):
+        app.config['SQLALCHEMY_DATABASE_URI'] = app.config.get('SQLALCHEMY_DATABASE_URI').replace('postgres://', 'postgresql://', 1)
+    
     # Ensure Supabase credentials are set - fail if not found
     if not app.config.get('SUPABASE_URL') or not app.config.get('SUPABASE_KEY'):
         print("ERROR: Supabase credentials are not set!")
