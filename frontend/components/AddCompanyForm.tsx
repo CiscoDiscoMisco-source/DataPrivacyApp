@@ -36,6 +36,13 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
       return;
     }
     
+    // Check if user is authenticated
+    const token = localStorage.getItem('dp_access_token');
+    if (!token) {
+      setError('You must be logged in to create a company');
+      return;
+    }
+    
     try {
       setLoading(true);
       setError(null);

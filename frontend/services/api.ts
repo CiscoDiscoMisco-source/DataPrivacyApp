@@ -119,6 +119,8 @@ const buildHeaders = (customHeaders: Record<string, string> = {}): Record<string
     const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     if (anonKey) {
       headers['apikey'] = anonKey;
+      // Also set the Authorization header with the anon key for backend compatibility
+      headers['Authorization'] = `Bearer ${anonKey}`;
     }
   }
   

@@ -78,37 +78,49 @@ async def get_related_companies(company_id):
 @jwt_required()
 async def create_company():
     """Create a new company with current user as owner."""
-    current_user_id = get_jwt_identity()
-    
-    data = request.get_json()
-    
-    # Validate required fields
-    if 'name' not in data:
+    try:
+        current_user_id = get_jwt_identity()
+        
+        if not current_user_id:
+            return jsonify({
+                'error': 'Authentication error',
+                'message': 'You must be logged in to create a company'
+            }), 401
+        
+        data = request.get_json()
+        
+        # Validate required fields
+        if 'name' not in data:
+            return jsonify({
+                'error': 'Missing field',
+                'message': 'Name is required'
+            }), 400
+        
+        # Create a schema from the data
+        company_data = {
+            'name': data['name'],
+            'user_id': current_user_id,  # Set the user_id for RLS
+            'logo': data.get('logo'),
+            'industry': data.get('industry'),
+            'website': data.get('website'),
+            'description': data.get('description'),
+            'size_range': data.get('size_range'),
+            'city': data.get('city'),
+            'state': data.get('state'),
+            'country': data.get('country')
+        }
+        
+        # Create and save the company
+        company_schema = CompanySchema(**company_data)
+        company = Company(company_schema)
+        saved_company = await company.save()
+        
         return jsonify({
-            'error': 'Missing field',
-            'message': 'Name is required'
-        }), 400
-    
-    # Create a schema from the data
-    company_data = {
-        'name': data['name'],
-        'user_id': current_user_id,  # Set the user_id for RLS
-        'logo': data.get('logo'),
-        'industry': data.get('industry'),
-        'website': data.get('website'),
-        'description': data.get('description'),
-        'size_range': data.get('size_range'),
-        'city': data.get('city'),
-        'state': data.get('state'),
-        'country': data.get('country')
-    }
-    
-    # Create and save the company
-    company_schema = CompanySchema(**company_data)
-    company = Company(company_schema)
-    saved_company = await company.save()
-    
-    return jsonify({
-        'message': 'Company created successfully',
-        'company': saved_company.to_dict()
-    }), 201 
+            'message': 'Company created successfully',
+            'company': saved_company.to_dict()
+        }), 201
+    except Exception as e:
+        return jsonify({
+            'error': 'Authentication error',
+            'message': f'Failed to create company: {str(e)}'
+        }), 401 
