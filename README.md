@@ -8,13 +8,13 @@ This project follows a clean separation of frontend and backend, with proper org
 
 ```
 project/
-├── frontend/           # React frontend
+├── frontend/           # Next.js frontend
 │   ├── public/         # Static assets
 │   ├── src/            # Source code
 │   │   ├── components/ # Reusable components
 │   │   ├── contexts/   # React contexts
 │   │   ├── hooks/      # Custom hooks
-│   │   ├── pages/      # Page components
+│   │   ├── pages/      # Next.js pages
 │   │   ├── services/   # API services
 │   │   └── utils/      # Utilities
 │   └── package.json    # Frontend dependencies
@@ -32,26 +32,11 @@ project/
     └── environments/   # Environment configurations
 ```
 
-The project is organized as follows:
-
-- `/frontend` - Next.js frontend application
-  - `/frontend/src` - Source code for the frontend
-  - `/frontend/public` - Static assets
-  - `/frontend/pages` - Next.js pages
-  - `/frontend/components` - React components
-
-- `/backend` - Python Flask backend application
-  - `/backend/app` - Main application code
-  - `/backend/migrations` - Database migrations
-  - `/backend/tests` - Backend tests
-
-- `/api` - API definitions and gateway configurations
-
 ## Tech Stack
 
-- **Frontend**: React, Bootstrap
-- **Backend**: Python, Flask, SQLAlchemy
-- **Database**: PostgreSQL
+- **Frontend**: Next.js, TypeScript, Tailwind CSS
+- **Backend**: Python, Flask, Pydantic
+- **Database**: PostgreSQL (via Supabase)
 - **Search**: Elasticsearch
 - **Infrastructure**: AWS (Elastic Beanstalk, S3, CloudFront, RDS, API Gateway, VPC)
 - **CI/CD**: GitHub Actions
@@ -68,9 +53,9 @@ Each environment has its own configuration, database, and infrastructure.
 ## Getting Started
 
 ### Prerequisites
-- Node.js 14+
+- Node.js 18+
 - Python 3.8+
-- PostgreSQL
+- PostgreSQL (via Supabase)
 - Elasticsearch
 - AWS CLI (for deployment)
 - Terraform (for infrastructure)
@@ -84,9 +69,7 @@ Each environment has its own configuration, database, and infrastructure.
    python -m venv venv
    source venv/bin/activate  # Windows: venv\Scripts\activate
    pip install -r requirements.txt
-   pip install -r requirements-dev.txt
    cp .env.template .env  # Edit with your local config
-   flask db upgrade
    flask run
    ```
 
@@ -94,10 +77,33 @@ Each environment has its own configuration, database, and infrastructure.
    ```
    cd frontend
    npm install
-   npm start
+   npm run dev
    ```
 
 4. Visit http://localhost:3000 in your browser
+
+## Features
+
+- User authentication and authorization
+- Company data management
+- Data privacy preferences management
+- Data sharing terms and agreements
+- Search functionality
+- Multi-environment support
+- Secure API endpoints
+- Responsive UI with modern design
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Testing
 
