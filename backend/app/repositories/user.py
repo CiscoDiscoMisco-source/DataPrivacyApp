@@ -1,101 +1,125 @@
 from typing import Optional, List, Dict, Any
 from app.db import get_supabase
 from app.schemas.user import UserSchema, TokenPackageSchema
+from supabase import Client
+from postgrest.exceptions import APIError
 
 class UserRepository:
     """Repository for user-related database operations."""
     
-    @staticmethod
-    async def find_by_id(id: int) -> Optional[UserSchema]:
+    def __init__(self, supabase: Optional[Client] = None):
+        self.supabase = supabase or get_supabase()
+    
+    async def find_by_id(self, id: int) -> Optional[UserSchema]:
         """Find a user by ID."""
-        supabase = get_supabase()
-        response = supabase.table('users').select('*').eq('id', id).execute()
-        if response.data:
-            return UserSchema.from_dict(response.data[0])
-        return None
+        try:
+            response = self.supabase.table('users').select('*').eq('id', id).single().execute()
+            return UserSchema.model_validate(response.data)
+        except APIError:
+            return None
     
-    @staticmethod
-    async def find_by_email(email: str) -> Optional[UserSchema]:
+    async def find_by_email(self, email: str) -> Optional[UserSchema]:
         """Find a user by email."""
-        supabase = get_supabase()
-        response = supabase.table('users').select('*').eq('email', email).execute()
-        if response.data:
-            return UserSchema.from_dict(response.data[0])
-        return None
+        try:
+            response = self.supabase.table('users').select('*').eq('email', email).single().execute()
+            return UserSchema.model_validate(response.data)
+        except APIError:
+            return None
     
-    @staticmethod
-    async def get_all() -> List[UserSchema]:
+    async def get_all(self) -> List[UserSchema]:
         """Get all users."""
-        supabase = get_supabase()
-        response = supabase.table('users').select('*').execute()
-        return [UserSchema.from_dict(item) for item in response.data]
+        try:
+            response = self.supabase.table('users').select('*').execute()
+            return [UserSchema.model_validate(item) for item in response.data]
+        except APIError:
+            return []
     
-    @staticmethod
-    async def create(user: UserSchema) -> UserSchema:
+    async def create(self, user: UserSchema) -> Optional[UserSchema]:
         """Create a new user."""
-        supabase = get_supabase()
-        response = supabase.table('users').insert(user.to_dict()).execute()
-        return UserSchema.from_dict(response.data[0])
+        try:
+            response = self.supabase.table('users').insert(user.model_dump(exclude={'id'})).execute()
+            return UserSchema.model_validate(response.data[0])
+        except APIError:
+            return None
     
-    @staticmethod
-    async def update(user: UserSchema) -> UserSchema:
+    async def update(self, user: UserSchema) -> Optional[UserSchema]:
         """Update an existing user."""
-        supabase = get_supabase()
-        response = supabase.table('users').update(user.to_dict()).eq('id', user.id).execute()
-        return UserSchema.from_dict(response.data[0])
+        if not user.id:
+            return None
+        try:
+            response = self.supabase.table('users').update(
+                user.model_dump(exclude={'id', 'created_at'})
+            ).eq('id', user.id).execute()
+            return UserSchema.model_validate(response.data[0])
+        except APIError:
+            return None
     
-    @staticmethod
-    async def delete(id: int) -> bool:
+    async def delete(self, id: int) -> bool:
         """Delete a user."""
-        supabase = get_supabase()
-        response = supabase.table('users').delete().eq('id', id).execute()
-        return bool(response.data)
+        try:
+            response = self.supabase.table('users').delete().eq('id', id).execute()
+            return bool(response.data)
+        except APIError:
+            return False
     
-    @staticmethod
-    async def update_tokens(user_id: int, new_token_count: int) -> Optional[UserSchema]:
+    async def update_tokens(self, user_id: int, new_token_count: int) -> Optional[UserSchema]:
         """Update user's token count."""
-        supabase = get_supabase()
-        response = supabase.table('users').update({'tokens': new_token_count}).eq('id', user_id).execute()
-        if response.data:
-            return UserSchema.from_dict(response.data[0])
-        return None
+        try:
+            response = self.supabase.table('users').update(
+                {'tokens': new_token_count}
+            ).eq('id', user_id).execute()
+            return UserSchema.model_validate(response.data[0])
+        except APIError:
+            return None
 
 class TokenPackageRepository:
     """Repository for token package operations."""
     
-    @staticmethod
-    async def find_by_id(id: int) -> Optional[TokenPackageSchema]:
+    def __init__(self, supabase: Optional[Client] = None):
+        self.supabase = supabase or get_supabase()
+    
+    async def find_by_id(self, id: int) -> Optional[TokenPackageSchema]:
         """Find a token package by ID."""
-        supabase = get_supabase()
-        response = supabase.table('token_packages').select('*').eq('id', id).execute()
-        if response.data:
-            return TokenPackageSchema.from_dict(response.data[0])
-        return None
+        try:
+            response = self.supabase.table('token_packages').select('*').eq('id', id).single().execute()
+            return TokenPackageSchema.model_validate(response.data)
+        except APIError:
+            return None
     
-    @staticmethod
-    async def get_all() -> List[TokenPackageSchema]:
+    async def get_all(self) -> List[TokenPackageSchema]:
         """Get all token packages."""
-        supabase = get_supabase()
-        response = supabase.table('token_packages').select('*').execute()
-        return [TokenPackageSchema.from_dict(item) for item in response.data]
+        try:
+            response = self.supabase.table('token_packages').select('*').execute()
+            return [TokenPackageSchema.model_validate(item) for item in response.data]
+        except APIError:
+            return []
     
-    @staticmethod
-    async def create(package: TokenPackageSchema) -> TokenPackageSchema:
+    async def create(self, package: TokenPackageSchema) -> Optional[TokenPackageSchema]:
         """Create a new token package."""
-        supabase = get_supabase()
-        response = supabase.table('token_packages').insert(package.to_dict()).execute()
-        return TokenPackageSchema.from_dict(response.data[0])
+        try:
+            response = self.supabase.table('token_packages').insert(
+                package.model_dump(exclude={'id'})
+            ).execute()
+            return TokenPackageSchema.model_validate(response.data[0])
+        except APIError:
+            return None
     
-    @staticmethod
-    async def update(package: TokenPackageSchema) -> TokenPackageSchema:
+    async def update(self, package: TokenPackageSchema) -> Optional[TokenPackageSchema]:
         """Update an existing token package."""
-        supabase = get_supabase()
-        response = supabase.table('token_packages').update(package.to_dict()).eq('id', package.id).execute()
-        return TokenPackageSchema.from_dict(response.data[0])
+        if not package.id:
+            return None
+        try:
+            response = self.supabase.table('token_packages').update(
+                package.model_dump(exclude={'id', 'created_at'})
+            ).eq('id', package.id).execute()
+            return TokenPackageSchema.model_validate(response.data[0])
+        except APIError:
+            return None
     
-    @staticmethod
-    async def delete(id: int) -> bool:
+    async def delete(self, id: int) -> bool:
         """Delete a token package."""
-        supabase = get_supabase()
-        response = supabase.table('token_packages').delete().eq('id', id).execute()
-        return bool(response.data) 
+        try:
+            response = self.supabase.table('token_packages').delete().eq('id', id).execute()
+            return bool(response.data)
+        except APIError:
+            return False 
