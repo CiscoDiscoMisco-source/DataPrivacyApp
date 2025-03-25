@@ -1,10 +1,12 @@
 from app import db
 from .base import BaseModel
 
-# Association table for many-to-many relationship between companies
-company_relationships = db.Table('company_relationships',
-    db.Column('source_company_id', db.String(36), db.ForeignKey('companies.id'), primary_key=True),
-    db.Column('target_company_id', db.String(36), db.ForeignKey('companies.id'), primary_key=True),
+# Association table for many-to-many relationship between companies - using direct SQL table creation
+# to avoid conflict with SQLAlchemy model inheritance
+company_relationships = db.Table(
+    'company_relationships',
+    db.Column('source_company_id', db.String(36), db.ForeignKey('companies.id', name='company_relationships_source_company_id_fkey'), primary_key=True),
+    db.Column('target_company_id', db.String(36), db.ForeignKey('companies.id', name='company_relationships_target_company_id_fkey'), primary_key=True),
     db.Column('relationship_type', db.String(50))
 )
 
