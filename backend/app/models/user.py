@@ -1,21 +1,40 @@
+from typing import Optional, List
 from flask_bcrypt import Bcrypt
-from typing import Optional, Dict, Any
-from .base import BaseModel
+from app.schemas.user import UserSchema, TokenPackageSchema
+from app.repositories.user import UserRepository, TokenPackageRepository
 
 bcrypt = Bcrypt()
 
-class User(BaseModel):
+class User:
     """User model for authentication and profile data."""
-    __tablename__ = 'users'
     
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.email = kwargs.get('email')
-        self.password_hash = kwargs.get('password_hash')
-        self.first_name = kwargs.get('first_name')
-        self.last_name = kwargs.get('last_name')
-        self.is_admin = kwargs.get('is_admin', False)
-        self.tokens = kwargs.get('tokens', 0)
+    def __init__(self, schema: UserSchema):
+        self.schema = schema
+        self._repository = UserRepository()
+    
+    @property
+    def id(self) -> Optional[int]:
+        return self.schema.id
+    
+    @property
+    def email(self) -> str:
+        return self.schema.email
+    
+    @property
+    def first_name(self) -> str:
+        return self.schema.first_name
+    
+    @property
+    def last_name(self) -> str:
+        return self.schema.last_name
+    
+    @property
+    def is_admin(self) -> bool:
+        return self.schema.is_admin
+    
+    @property
+    def tokens(self) -> int:
+        return self.schema.tokens
     
     @property
     def password(self):
@@ -23,44 +42,113 @@ class User(BaseModel):
         raise AttributeError('password is not a readable attribute')
 
     @password.setter
-    def password(self, password):
+    def password(self, password: str):
         """Set password to a hashed password."""
-        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+        self.schema.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
 
-    def verify_password(self, password):
+    def verify_password(self, password: str) -> bool:
         """Check if hashed password matches actual password."""
-        return bcrypt.check_password_hash(self.password_hash, password)
+        return bcrypt.check_password_hash(self.schema.password_hash, password)
     
-    def to_dict(self) -> Dict[str, Any]:
+    @classmethod
+    async def find_by_id(cls, id: int) -> Optional['User']:
+        """Find a user by ID."""
+        schema = await UserRepository.find_by_id(id)
+        return cls(schema) if schema else None
+    
+    @classmethod
+    async def find_by_email(cls, email: str) -> Optional['User']:
+        """Find a user by email."""
+        schema = await UserRepository.find_by_email(email)
+        return cls(schema) if schema else None
+    
+    @classmethod
+    async def get_all(cls) -> List['User']:
+        """Get all users."""
+        schemas = await UserRepository.get_all()
+        return [cls(schema) for schema in schemas]
+    
+    async def save(self) -> 'User':
+        """Save the user."""
+        if self.id:
+            self.schema = await self._repository.update(self.schema)
+        else:
+            self.schema = await self._repository.create(self.schema)
+        return self
+    
+    async def delete(self) -> bool:
+        """Delete the user."""
+        if self.id:
+            return await self._repository.delete(self.id)
+        return False
+    
+    async def update_tokens(self, new_token_count: int) -> bool:
+        """Update user's token count."""
+        if not self.id:
+            return False
+        updated_schema = await self._repository.update_tokens(self.id, new_token_count)
+        if updated_schema:
+            self.schema = updated_schema
+            return True
+        return False
+    
+    def to_dict(self):
         """Convert user to dictionary for API response."""
-        base_dict = super().to_dict()
-        base_dict.update({
-            'email': self.email,
-            'first_name': self.first_name,
-            'last_name': self.last_name,
-            'is_admin': self.is_admin,
-            'tokens': self.tokens
-        })
-        return base_dict
+        return self.schema.to_dict()
 
-class TokenPackage(BaseModel):
+class TokenPackage:
     """Token packages that users can purchase."""
-    __tablename__ = 'token_packages'
     
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.name = kwargs.get('name')
-        self.amount = kwargs.get('amount')
-        self.price = kwargs.get('price')
-        self.description = kwargs.get('description')
+    def __init__(self, schema: TokenPackageSchema):
+        self.schema = schema
+        self._repository = TokenPackageRepository()
     
-    def to_dict(self) -> Dict[str, Any]:
+    @property
+    def id(self) -> Optional[int]:
+        return self.schema.id
+    
+    @property
+    def name(self) -> str:
+        return self.schema.name
+    
+    @property
+    def amount(self) -> int:
+        return self.schema.amount
+    
+    @property
+    def price(self) -> float:
+        return self.schema.price
+    
+    @property
+    def description(self) -> Optional[str]:
+        return self.schema.description
+    
+    @classmethod
+    async def find_by_id(cls, id: int) -> Optional['TokenPackage']:
+        """Find a token package by ID."""
+        schema = await TokenPackageRepository.find_by_id(id)
+        return cls(schema) if schema else None
+    
+    @classmethod
+    async def get_all(cls) -> List['TokenPackage']:
+        """Get all token packages."""
+        schemas = await TokenPackageRepository.get_all()
+        return [cls(schema) for schema in schemas]
+    
+    async def save(self) -> 'TokenPackage':
+        """Save the token package."""
+        if self.id:
+            self.schema = await self._repository.update(self.schema)
+        else:
+            self.schema = await self._repository.create(self.schema)
+        return self
+    
+    async def delete(self) -> bool:
+        """Delete the token package."""
+        if self.id:
+            return await self._repository.delete(self.id)
+        return False
+    
+    def to_dict(self):
         """Convert token package to dictionary for API response."""
-        base_dict = super().to_dict()
-        base_dict.update({
-            'name': self.name,
-            'amount': self.amount,
-            'price': self.price,
-            'description': self.description
-        })
-        return base_dict 
+        return self.schema.to_dict() 
