@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, Dict, Any
-from app import supabase
+from app.db import get_supabase
 
 class BaseModel:
     """Base model with common attributes and methods for Supabase."""
@@ -25,6 +25,7 @@ class BaseModel:
     @classmethod
     async def find_by_id(cls, id: int) -> Optional['BaseModel']:
         """Find a model by ID using Supabase."""
+        supabase = get_supabase()
         response = supabase.table(cls.__tablename__).select('*').eq('id', id).execute()
         if response.data:
             return cls.from_dict(response.data[0])
@@ -33,11 +34,13 @@ class BaseModel:
     @classmethod
     async def get_all(cls) -> list['BaseModel']:
         """Get all instances of the model using Supabase."""
+        supabase = get_supabase()
         response = supabase.table(cls.__tablename__).select('*').execute()
         return [cls.from_dict(item) for item in response.data]
     
     async def save(self) -> 'BaseModel':
         """Save the model to Supabase."""
+        supabase = get_supabase()
         data = self.to_dict()
         if self.id:
             response = supabase.table(self.__tablename__).update(data).eq('id', self.id).execute()
@@ -47,6 +50,7 @@ class BaseModel:
     
     async def delete(self) -> bool:
         """Delete the model from Supabase."""
+        supabase = get_supabase()
         if self.id:
             response = supabase.table(self.__tablename__).delete().eq('id', self.id).execute()
             return bool(response.data)
