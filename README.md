@@ -32,6 +32,21 @@ project/
     └── environments/   # Environment configurations
 ```
 
+The project is organized as follows:
+
+- `/frontend` - Next.js frontend application
+  - `/frontend/src` - Source code for the frontend
+  - `/frontend/public` - Static assets
+  - `/frontend/pages` - Next.js pages
+  - `/frontend/components` - React components
+
+- `/backend` - Python Flask backend application
+  - `/backend/app` - Main application code
+  - `/backend/migrations` - Database migrations
+  - `/backend/tests` - Backend tests
+
+- `/api` - API definitions and gateway configurations
+
 ## Tech Stack
 
 - **Frontend**: React, Bootstrap
@@ -125,4 +140,42 @@ This application has been configured to work with Vercel deployment. The backend
 The following API endpoints are available:
 - GET /api/health - Health check
 - POST /api/v1/auth/login - User authentication
-- GET /api/v1/data-types - Retrieve data types (requires authentication) 
+- GET /api/v1/data-types - Retrieve data types (requires authentication)
+
+## Development Setup
+
+### Running the Application
+
+To run both frontend and backend simultaneously:
+
+```bash
+npm run dev
+```
+
+To run just the frontend:
+
+```bash
+npm start
+# or
+cd frontend && npm run dev
+```
+
+To run just the backend:
+
+```bash
+cd backend && python app.py
+```
+
+### Building for Production
+
+To build the frontend for production:
+
+```bash
+npm run build
+```
+
+To prepare the backend for deployment:
+
+```bash
+npm run build:backend
+``` 

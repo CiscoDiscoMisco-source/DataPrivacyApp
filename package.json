@@ -2,26 +2,22 @@
   "name": "data-privacy-app",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.20.0",
-    "react-scripts": "5.0.1",
-    "bootstrap": "^5.3.2",
-    "http-proxy-middleware": "^2.0.6",
     "jsonwebtoken": "^9.0.2"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "build:backend": "cd backend && pip install -r requirements.txt",
+    "test": "cd frontend && npm run test",
+    "dev": "concurrently \"cd backend && python app.py\" \"cd frontend && npm run dev\""
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   },
   "browserslist": {
     "production": [
@@ -35,4 +31,4 @@
       "last 1 safari version"
     ]
   }
-} 
+}

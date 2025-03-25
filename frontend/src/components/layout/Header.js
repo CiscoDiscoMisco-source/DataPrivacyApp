@@ -1,9 +1,10 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Header = ({ searchTerm, handleSearch }) => {
-  const location = useLocation();
+  const router = useRouter();
   const { logout } = useAuth();
   
   return (
@@ -25,39 +26,36 @@ const Header = ({ searchTerm, handleSearch }) => {
         <nav className="mt-6">
           <ul className="flex border-b border-gray-200">
             <li className="mr-1">
-              <Link 
-                className={`inline-block px-4 py-2 rounded-t-md ${
-                  location.pathname === '/' || location.pathname === '/companies' 
+              <Link href="/companies">
+                <a className={`inline-block px-4 py-2 rounded-t-md ${
+                  router.pathname === '/' || router.pathname === '/companies' 
                     ? 'bg-blue-500 text-white' 
                     : 'text-blue-500 hover:bg-gray-100'
-                }`} 
-                to="/companies"
-              >
-                Companies
+                }`}>
+                  Companies
+                </a>
               </Link>
             </li>
             <li className="mr-1">
-              <Link 
-                className={`inline-block px-4 py-2 rounded-t-md ${
-                  location.pathname === '/preferences' 
+              <Link href="/preferences">
+                <a className={`inline-block px-4 py-2 rounded-t-md ${
+                  router.pathname === '/preferences' 
                     ? 'bg-blue-500 text-white' 
                     : 'text-blue-500 hover:bg-gray-100'
-                }`} 
-                to="/preferences"
-              >
-                My Preferences
+                }`}>
+                  My Preferences
+                </a>
               </Link>
             </li>
             <li className="mr-1">
-              <Link 
-                className={`inline-block px-4 py-2 rounded-t-md ${
-                  location.pathname === '/settings' 
+              <Link href="/settings">
+                <a className={`inline-block px-4 py-2 rounded-t-md ${
+                  router.pathname === '/settings' 
                     ? 'bg-blue-500 text-white' 
                     : 'text-blue-500 hover:bg-gray-100'
-                }`} 
-                to="/settings"
-              >
-                Settings
+                }`}>
+                  Settings
+                </a>
               </Link>
             </li>
             <li className="ml-auto">
