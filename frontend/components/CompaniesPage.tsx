@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ApiService from '../services/api';
 import AddCompanyForm from './AddCompanyForm';
 import { useRouter } from 'next/router';
+import Layout from './Layout';
 
 interface Company {
   id: string;
@@ -104,70 +105,83 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ searchTerm }) => {
   };
   
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center pb-4 border-b border-primary-glow/20">
-        <h2 className="glass-heading text-2xl">Companies with your data</h2>
-        <button 
-          className="glass-button" 
-          onClick={() => setIsAddingCompany(true)}
-          disabled={isAddingCompany}
-        >
-          Add Company Manually
-        </button>
-      </div>
-      
-      {isAddingCompany && (
-        <div className="mb-8">
-          <AddCompanyForm 
-            onSuccess={handleAddCompanySuccess} 
-            onCancel={() => setIsAddingCompany(false)} 
-          />
-        </div>
-      )}
-      
-      {loading && !isAddingCompany && (
-        <div className="flex justify-center py-10">
-          <div className="inline-block animate-spin h-10 w-10 border-4 border-primary-light border-t-transparent rounded-full" role="status">
-            <span className="sr-only">Loading...</span>
+    <Layout title="Companies">
+      <div className="space-y-8">
+        <div className="glass-container">
+          <div className="flex justify-between items-center">
+            <h2 className="glass-heading text-2xl m-0">Companies with your data</h2>
+            <button 
+              className="glass-button"
+              onClick={() => setIsAddingCompany(true)}
+              disabled={isAddingCompany}
+            >
+              Add Company Manually
+            </button>
           </div>
         </div>
-      )}
-      
-      {error && (
-        <div className="glass-container bg-red-500/20 border-red-500/50 p-4" role="alert">
-          <span className="font-medium text-red-100">{error}</span>
-        </div>
-      )}
-      
-      {!loading && !error && companies.length === 0 && !isAddingCompany && (
-        <div className="glass-container p-4" role="alert">
-          <p className="glass-text">No companies found. You can add a company manually using the button above.</p>
-        </div>
-      )}
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {companies.map(company => (
-          <div className="glass-container p-6" key={company.id}>
-            <h3 className="glass-heading text-xl mb-3">{company.name}</h3>
-            <p className="glass-text mb-6">{company.description || 'No description available'}</p>
-            <div className="flex justify-between pt-4 border-t border-primary-glow/20">
+        
+        {isAddingCompany && (
+          <div className="glass-container">
+            <AddCompanyForm 
+              onSuccess={handleAddCompanySuccess} 
+              onCancel={() => setIsAddingCompany(false)} 
+            />
+          </div>
+        )}
+        
+        {loading && !isAddingCompany && (
+          <div className="glass-container flex justify-center py-10">
+            <div className="relative w-16 h-16">
+              <div className="absolute inset-0 border-4 border-primary-200/30 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-t-primary-500 animate-spin rounded-full"></div>
+            </div>
+          </div>
+        )}
+        
+        {error && (
+          <div className="glass-container bg-red-900/30 border-red-500/30" role="alert">
+            <p className="glass-text text-red-100">{error}</p>
+          </div>
+        )}
+        
+        {!loading && !error && companies.length === 0 && !isAddingCompany && (
+          <div className="glass-container" role="alert">
+            <div className="flex flex-col items-center space-y-4">
+              <p className="glass-text text-center">No companies found in your privacy management list.</p>
               <button 
-                className="glass-button"
-                onClick={() => handleViewDetails(company.id)}
+                className="glass-button bg-primary-500/20 hover:bg-primary-500/30"
+                onClick={() => setIsAddingCompany(true)}
               >
-                View Details
-              </button>
-              <button 
-                className="glass-button" 
-                onClick={() => handleManagePreferences(company.id)}
-              >
-                Manage Preferences
+                Add Your First Company
               </button>
             </div>
           </div>
-        ))}
+        )}
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {companies.map(company => (
+            <div className="glass-card group hover:shadow-glass-highlight transition-all duration-300" key={company.id}>
+              <h3 className="glass-heading text-xl mb-3">{company.name}</h3>
+              <p className="glass-text mb-6 line-clamp-2">{company.description || 'No description available'}</p>
+              <div className="flex justify-between space-x-4 pt-4 border-t border-primary-400/20">
+                <button 
+                  className="glass-button flex-1 text-sm px-4"
+                  onClick={() => handleViewDetails(company.id)}
+                >
+                  View Details
+                </button>
+                <button 
+                  className="glass-button flex-1 text-sm px-4" 
+                  onClick={() => handleManagePreferences(company.id)}
+                >
+                  Manage Preferences
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

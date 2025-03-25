@@ -8,19 +8,22 @@ const Home: NextPage = () => {
   
   useEffect(() => {
     // Redirect to the main application
-    router.push('/companies');
-  }, [router]);
+    window.location.href = '/companies';
+  }, []);
   
   return (
-    <Layout title="Welcome | Data Privacy App">
-      <div className="flex justify-center items-center py-12">
-        <div className="max-w-md mx-auto">
-          <div>
-            <h1 className="text-2xl font-semibold text-center">Data Privacy App</h1>
-          </div>
-          <div className="divide-y divide-gray-200">
-            <div className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
-              <p className="text-center">Redirecting to application...</p>
+    <Layout title="Welcome">
+      <div className="min-h-[80vh] flex flex-col justify-center items-center">
+        <div className="glass-premium max-w-md w-full mx-auto p-8">
+          <div className="text-center space-y-6">
+            <h1 className="glass-heading text-3xl">Data Privacy App</h1>
+            <div className="glass-container bg-primary-900/30">
+              <p className="glass-text text-lg">Redirecting to application...</p>
+              <div className="mt-4">
+                <div className="glass-progress">
+                  <div className="glass-progress-bar w-full animate-pulse"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
