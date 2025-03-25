@@ -5,8 +5,8 @@ from .base import BaseModel
 # to avoid conflict with SQLAlchemy model inheritance
 company_relationships = db.Table(
     'company_relationships',
-    db.Column('source_company_id', db.String(36), db.ForeignKey('companies.id', name='company_relationships_source_company_id_fkey'), primary_key=True),
-    db.Column('target_company_id', db.String(36), db.ForeignKey('companies.id', name='company_relationships_target_company_id_fkey'), primary_key=True),
+    db.Column('source_company_id', db.BigInteger, db.ForeignKey('companies.id', name='company_relationships_source_company_id_fkey'), primary_key=True),
+    db.Column('target_company_id', db.BigInteger, db.ForeignKey('companies.id', name='company_relationships_target_company_id_fkey'), primary_key=True),
     db.Column('relationship_type', db.String(50))
 )
 
@@ -59,8 +59,8 @@ class DataSharingPolicy(BaseModel):
     """Data sharing policy for a company."""
     __tablename__ = 'data_sharing_policies'
     
-    company_id = db.Column(db.String(36), db.ForeignKey('companies.id'), nullable=False)
-    data_type_id = db.Column(db.String(36), db.ForeignKey('data_types.id'), nullable=False)
+    company_id = db.Column(db.BigInteger, db.ForeignKey('companies.id'), nullable=False)
+    data_type_id = db.Column(db.BigInteger, db.ForeignKey('data_types.id'), nullable=False)
     purpose = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text)
     
@@ -87,6 +87,6 @@ class DataSharingPolicy(BaseModel):
 
 # Association table for many-to-many relationship between data sharing policies and third party companies
 data_sharing_third_parties = db.Table('data_sharing_third_parties',
-    db.Column('policy_id', db.String(36), db.ForeignKey('data_sharing_policies.id'), primary_key=True),
-    db.Column('company_id', db.String(36), db.ForeignKey('companies.id'), primary_key=True)
+    db.Column('policy_id', db.BigInteger, db.ForeignKey('data_sharing_policies.id'), primary_key=True),
+    db.Column('company_id', db.BigInteger, db.ForeignKey('companies.id'), primary_key=True)
 ) 

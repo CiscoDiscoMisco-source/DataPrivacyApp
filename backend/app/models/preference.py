@@ -5,9 +5,9 @@ class UserPreference(BaseModel):
     """User preference model for storing privacy preferences."""
     __tablename__ = 'user_preferences'
     
-    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
-    data_type_id = db.Column(db.String(36), db.ForeignKey('data_types.id'), nullable=False)
-    company_id = db.Column(db.String(36), db.ForeignKey('companies.id'), nullable=True)  # If null, it's a global preference
+    user_id = db.Column(db.BigInteger, db.ForeignKey('users.id'), nullable=False)
+    data_type_id = db.Column(db.BigInteger, db.ForeignKey('data_types.id'), nullable=False)
+    company_id = db.Column(db.BigInteger, db.ForeignKey('companies.id'), nullable=True)  # If null, it's a global preference
     allowed = db.Column(db.Boolean, default=False, nullable=False)
     
     __table_args__ = (
@@ -30,7 +30,7 @@ class UserProfilePreference(BaseModel):
     """User profile preferences for notifications, theme, language, etc."""
     __tablename__ = 'user_profile_preferences'
     
-    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False, unique=True)
+    user_id = db.Column(db.BigInteger, db.ForeignKey('users.id'), nullable=False, unique=True)
     email_notifications = db.Column(db.Boolean, default=True)
     notification_frequency = db.Column(db.String(50), default='daily')
     notification_types = db.Column(db.JSON)
