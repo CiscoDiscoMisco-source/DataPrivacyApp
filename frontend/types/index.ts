@@ -94,4 +94,9 @@ export interface User {
   name: string;
   email?: string;
   isAdmin: boolean;
+  created_at?: string;
+  updated_at?: string;
+  last_sign_in_at?: string;
+  avatar_url?: string;
+  phone?: string;
 } 
