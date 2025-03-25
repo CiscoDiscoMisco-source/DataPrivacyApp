@@ -4,7 +4,7 @@ import Link from 'next/link';
 const GlassmorphismShowcase: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-      <h1 className="glass-heading text-3xl mb-8 text-center">Glassmorphism UI Components</h1>
+      <h1 className="glass-heading text-3xl mb-8 text-center">Minimalist UI Components</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {/* Basic Glass Card */}
@@ -37,7 +37,7 @@ const GlassmorphismShowcase: React.FC = () => {
         {/* Premium Glass Card */}
         <div className="glass-premium p-6">
           <h3 className="glass-text text-xl font-semibold mb-3">Premium Glass Card</h3>
-          <p className="glass-text mb-4">Enhanced with animated gradient border effect.</p>
+          <p className="glass-text mb-4">Enhanced with subtle gradient border effect.</p>
           <div className="flex justify-end">
             <button className="glass-button">Learn More</button>
           </div>
@@ -74,7 +74,7 @@ const GlassmorphismShowcase: React.FC = () => {
           <div className="space-y-4">
             <div className="flex flex-wrap gap-4">
               <button className="glass-button">Standard</button>
-              <button className="glass-button bg-primary-500/30">Primary</button>
+              <button className="glass-button bg-accent-500/30">Accent</button>
               <button className="glass-button border-glass-glow">Glowing</button>
             </div>
           </div>
@@ -93,7 +93,7 @@ const GlassmorphismShowcase: React.FC = () => {
               <input 
                 type="checkbox" 
                 id="glassCheckbox" 
-                className="w-5 h-5 rounded border-glass accent-primary-500/70"
+                className="w-5 h-5 rounded border-glass accent-accent-500/70"
               />
               <label htmlFor="glassCheckbox" className="glass-text">Glass Checkbox</label>
             </div>

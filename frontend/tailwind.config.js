@@ -9,25 +9,30 @@ module.exports = {
     extend: {
       colors: {
         'primary': {
-          50: '#f0fdf4',
-          100: '#d7ebe3',
-          200: '#b3d7c7',
-          300: '#8fc3ab',
-          400: '#6baf8f',
-          500: '#4debac',
-          600: '#1e9061',
-          700: '#1a7a54',
-          800: '#166447',
-          900: '#124e3a',
+          50: '#f8fafc',
+          100: '#e2e8f0',
+          200: '#cbd5e1',
+          300: '#94a3b8',
+          400: '#64748b',
+          500: '#475569',
+          600: '#334155',
+          700: '#1e293b',
+          800: '#0f172a',
+          900: '#020617',
         },
+        'accent': {
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#3b82f6',
+        }
       },
       boxShadow: {
-        'glass-glow': '0 0 15px rgba(77, 235, 172, 0.5)',
-        'glass-shadow': '0 8px 32px rgba(30, 144, 97, 0.2)',
-        'glass-border': '0 0 0 1px rgba(77, 235, 172, 0.5)',
-        'glass-highlight': '0 0 15px rgba(77, 235, 172, 0.3), inset 0 0 20px rgba(77, 235, 172, 0.2)',
-        'glass-inner': 'inset 0 0 20px rgba(77, 235, 172, 0.15)',
-        'glass-depth': '0 10px 30px -10px rgba(30, 144, 97, 0.3)',
+        'glass-glow': '0 0 15px rgba(203, 213, 225, 0.4)',
+        'glass-shadow': '0 8px 32px rgba(15, 23, 42, 0.2)',
+        'glass-border': '0 0 0 1px rgba(203, 213, 225, 0.4)',
+        'glass-highlight': '0 0 15px rgba(203, 213, 225, 0.3), inset 0 0 20px rgba(203, 213, 225, 0.2)',
+        'glass-inner': 'inset 0 0 20px rgba(203, 213, 225, 0.15)',
+        'glass-depth': '0 10px 30px -10px rgba(15, 23, 42, 0.3)',
       },
       backdropBlur: {
         'xs': '2px',
@@ -39,10 +44,10 @@ module.exports = {
         'glass': '10px',
       },
       backgroundImage: {
-        'glass-gradient': 'linear-gradient(135deg, rgba(215, 235, 227, 0.3) 0%, rgba(77, 235, 172, 0.1) 100%)',
-        'glass-radial': 'radial-gradient(circle at center, rgba(77, 235, 172, 0.2) 0%, rgba(215, 235, 227, 0.05) 100%)',
+        'glass-gradient': 'linear-gradient(135deg, rgba(226, 232, 240, 0.3) 0%, rgba(148, 163, 184, 0.1) 100%)',
+        'glass-radial': 'radial-gradient(circle at center, rgba(148, 163, 184, 0.2) 0%, rgba(226, 232, 240, 0.05) 100%)',
         'glass-shine': 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.1) 100%)',
-        'glass-border-gradient': 'linear-gradient(90deg, rgba(77, 235, 172, 0.7) 0%, rgba(215, 235, 227, 0.5) 50%, rgba(77, 235, 172, 0.7) 100%)'
+        'glass-border-gradient': 'linear-gradient(90deg, rgba(148, 163, 184, 0.7) 0%, rgba(226, 232, 240, 0.5) 50%, rgba(148, 163, 184, 0.7) 100%)'
       },
       keyframes: {
         shimmer: {
@@ -55,12 +60,12 @@ module.exports = {
         },
         borderGlow: {
           '0%, 100%': { 
-            borderColor: 'rgba(77, 235, 172, 0.5)',
-            boxShadow: '0 0 15px rgba(77, 235, 172, 0.3)'
+            borderColor: 'rgba(148, 163, 184, 0.5)',
+            boxShadow: '0 0 15px rgba(148, 163, 184, 0.3)'
           },
           '50%': { 
-            borderColor: 'rgba(77, 235, 172, 0.8)',
-            boxShadow: '0 0 20px rgba(77, 235, 172, 0.6)'
+            borderColor: 'rgba(148, 163, 184, 0.8)',
+            boxShadow: '0 0 20px rgba(148, 163, 184, 0.6)'
           }
         }
       },
