@@ -6,66 +6,19 @@ const AuthContext = createContext(null);
 
 // Authentication Provider component
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState({ id: 1, name: 'Default User', isAdmin: false });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Initialize auth state on component mount
   useEffect(() => {
-    const initAuth = () => {
-      try {
-        // Check if user is already logged in
-        const currentUser = AuthService.getCurrentUser();
-        setUser(currentUser);
-      } catch (err) {
-        console.error('Auth initialization error:', err);
-        setError('Failed to initialize authentication');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initAuth();
+    setLoading(false);
   }, []);
-
-  // Register a new user
-  const register = async (userData) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await AuthService.register(userData);
-      setUser(response.user);
-      return response;
-    } catch (err) {
-      setError(err.message || 'Registration failed');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Log in an existing user
-  const login = async (credentials) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await AuthService.login(credentials);
-      setUser(response.user);
-      return response;
-    } catch (err) {
-      setError(err.message || 'Login failed');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Log out the current user
   const logout = () => {
-    AuthService.logout();
-    setUser(null);
+    // Just for UI functionality, doesn't actually logout
+    console.log('Logout clicked');
   };
 
   // Value to be provided by the context
@@ -73,10 +26,8 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     error,
-    register,
-    login,
     logout,
-    isAuthenticated: !!user
+    isAuthenticated: true // Always authenticated since login is removed
   };
 
   return (

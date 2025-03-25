@@ -78,3 +78,7 @@ var/
 # Next.js
 .next/
 out/
+
+# Removed login/register files
+frontend/src/pages/LoginPage.js
+frontend/src/pages/RegisterPage.js
