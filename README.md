@@ -99,4 +99,30 @@ The application is deployed to AWS using Terraform and GitHub Actions:
 - API: API Gateway
 - Search: Elasticsearch
 
-See deployment documentation in `./terraform` for more details. 
+See deployment documentation in `./terraform` for more details.
+
+## Vercel Deployment
+
+This application has been configured to work with Vercel deployment. The backend has been migrated from a Flask application to serverless functions compatible with Vercel's architecture.
+
+### Key Changes
+- API routes are now implemented as serverless functions in the `/api` directory
+- Authentication is handled via JWT tokens in serverless functions
+- The React frontend remains unchanged but now communicates with the serverless API
+
+### Deployment Steps
+1. Connect your repository to Vercel
+2. Set up required environment variables in the Vercel dashboard:
+   - JWT_SECRET_KEY: Secret for JWT token generation/validation
+   - Any other environment-specific variables
+3. Deploy the application
+
+### Development Workflow
+- Local development still supports the Flask backend via the proxy configuration
+- Production deployment uses the serverless functions
+
+### API Endpoints
+The following API endpoints are available:
+- GET /api/health - Health check
+- POST /api/v1/auth/login - User authentication
+- GET /api/v1/data-types - Retrieve data types (requires authentication) 

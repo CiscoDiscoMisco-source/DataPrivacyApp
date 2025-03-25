@@ -1,10 +1,10 @@
 ---
 description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 ---
-description: 
+description: Apply this on every code
 globs: 
 alwaysApply: true
 ---
@@ -12,16 +12,10 @@ alwaysApply: true
 # Technical Stack
 
 - Python for backend
-- react for the frontend
+- React Next.js with Tailwind CSS for the frontend
 - PostgreSQL databases, never JSON file storage
 - Separate databeses for dev, test, and prod
 - Elasticsearch for search, using elastic.co hosting
 - Elastic.co will have dev and prod indexes
 - Python tests
-- Cloud build:
-    - Back-end: AWS Elastic Beanstalk
-    - Front-end: S3 Build + CloudFront
-    - Database: RDS
-    - API REST exposed on API Gateway
-    - Application Load Balancer
-    - Network: Traditional VPC
+
