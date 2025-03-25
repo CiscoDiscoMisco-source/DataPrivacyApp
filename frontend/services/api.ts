@@ -114,6 +114,12 @@ const buildHeaders = (customHeaders: Record<string, string> = {}): Record<string
   const token = getAuthToken();
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+  } else {
+    // Use anon key for unauthenticated requests
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (anonKey) {
+      headers['apikey'] = anonKey;
+    }
   }
   
   return headers;
