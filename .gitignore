@@ -93,3 +93,7 @@ out/
 frontend/src/pages/LoginPage.js
 frontend/src/pages/RegisterPage.js
 .vercel
+
+# Environment variables
+.env.*
+!.env.example
