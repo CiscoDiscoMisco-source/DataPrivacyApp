@@ -110,4 +110,17 @@ def me():
     
     return jsonify({
         'user': user.to_dict()
+    }), 200
+
+@auth_bp.route('/logout', methods=['POST'])
+@jwt_required()
+def logout():
+    """Logout a user.
+    
+    In a stateless JWT setup, we don't actually invalidate the token on the server.
+    The frontend will remove the token from storage.
+    This endpoint exists for compatibility with the frontend.
+    """
+    return jsonify({
+        'message': 'Logout successful'
     }), 200 

@@ -33,10 +33,19 @@ const buildHeaders = (customHeaders: Record<string, string> = {}): Record<string
 // Helper to build API URL with version
 const buildApiUrl = (endpoint: string): string => {
   // Don't add version prefix if endpoint already includes it or if it's a special endpoint
-  if (endpoint.includes('/v1/') || endpoint === '/health') {
-    return `${API_BASE_URL}${endpoint}`;
+  if (endpoint.startsWith('/')) {
+    // Ensure endpoint starts with a slash for consistency
+    if (endpoint === '/health') {
+      return `${API_BASE_URL}${endpoint}`;
+    } else if (endpoint.startsWith('/v1/')) {
+      return `${API_BASE_URL}${endpoint}`;
+    } else {
+      return `${API_BASE_URL}/${API_VERSION}${endpoint}`;
+    }
+  } else {
+    // If endpoint doesn't start with slash, add one
+    return `${API_BASE_URL}/${API_VERSION}/${endpoint}`;
   }
-  return `${API_BASE_URL}/${API_VERSION}${endpoint}`;
 };
 
 // Helper to handle API responses
