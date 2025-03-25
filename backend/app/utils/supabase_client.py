@@ -5,8 +5,6 @@ Provides a global client instance for database access, storage, and other Supaba
 from supabase import create_client, Client
 import os
 from flask import current_app
-from sqlalchemy import create_engine, text
-from sqlalchemy.exc import SQLAlchemyError
 import functools
 import time
 
@@ -48,95 +46,35 @@ def with_retry(max_retries=3, delay=1):
     Decorator to retry a function on failure.
     
     Args:
-        max_retries: Maximum number of retry attempts
-        delay: Delay between retries in seconds
-        
-    Returns:
-        Decorated function that will retry on failure
+        max_retries (int): Maximum number of retries
+        delay (int): Delay between retries in seconds
     """
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            retries = 0
-            while retries < max_retries:
+            last_exception = None
+            for attempt in range(max_retries):
                 try:
                     return func(*args, **kwargs)
                 except Exception as e:
-                    retries += 1
-                    if retries >= max_retries:
-                        raise
-                    time.sleep(delay)
+                    last_exception = e
+                    if attempt < max_retries - 1:
+                        time.sleep(delay)
+            raise last_exception
         return wrapper
     return decorator
 
-# Create a global client instance for direct imports
-try:
-    supabase: Client = get_supabase_client()
-except (ValueError, RuntimeError):
-    # Defer client creation until it's actually used within application context
-    supabase = None
-
 @with_retry(max_retries=3)
 def test_connection():
-    """
-    Test the connection to Supabase services.
-    Tests both the PostgreSQL database connection and the Supabase API.
-    
-    Returns:
-        dict: Status of PostgreSQL and API connections
-    """
-    results = {
-        "postgres": {"connected": False, "message": ""},
-        "api": {"connected": False, "message": ""}
-    }
-    
-    # Test PostgreSQL connection
-    postgres_url = os.environ.get('POSTGRES_URL')
-    if not postgres_url:
-        results["postgres"]["message"] = "POSTGRES_URL environment variable is not set"
-        return results
-    
+    """Test the Supabase connection."""
+    client = get_supabase_client()
     try:
-        # Create engine and test connection
-        engine = create_engine(postgres_url)
-        with engine.connect() as connection:
-            result = connection.execute(text("SELECT 1"))
-            row = result.fetchone()
-            if row and row[0] == 1:
-                results["postgres"]["connected"] = True
-                results["postgres"]["message"] = "Successfully connected to PostgreSQL database"
-                
-                # Get database info
-                result = connection.execute(text("SELECT current_database(), version()"))
-                db_info = result.fetchone()
-                results["postgres"]["database"] = db_info[0]
-                results["postgres"]["version"] = db_info[1]
-    except SQLAlchemyError as e:
-        results["postgres"]["message"] = f"PostgreSQL connection error: {str(e)}"
-    
-    # Test Supabase API connection
-    try:
-        # Get or create client
-        client = supabase or get_supabase_client()
-        
-        # Try to access health check
-        health_info = {"status": "ok", "timestamp": time.time()}
-        
-        # Using a healthier approach than a dummy query
-        try:
-            # Check if auth service is available
-            response = client.auth.get_user("dummy-token-for-check")
-        except Exception:
-            # Expected to fail but still confirms API is responding
-            pass
-            
-        results["api"]["connected"] = True
-        results["api"]["message"] = "Successfully connected to Supabase API"
-        results["api"]["health"] = health_info
+        # Try a simple query to test the connection
+        client.table('companies').select('count').limit(1).execute()
+        return True
     except Exception as e:
-        results["api"]["message"] = f"Supabase API connection error: {str(e)}"
-    
-    return results
+        print(f"Connection test failed: {str(e)}")
+        return False
 
 if __name__ == "__main__":
     # When run directly, print connection test results
@@ -144,15 +82,6 @@ if __name__ == "__main__":
     print("\nSupabase Connection Test Results:")
     print("--------------------------------")
     
-    # PostgreSQL status
-    pg_status = connection_status["postgres"]
-    print(f"PostgreSQL: {'✅ Connected' if pg_status['connected'] else '❌ Failed'}")
-    print(f"Message: {pg_status['message']}")
-    if pg_status['connected'] and 'database' in pg_status:
-        print(f"Database: {pg_status['database']}")
-        print(f"Version: {pg_status['version']}")
-    
-    # Supabase API status
-    api_status = connection_status["api"]
-    print(f"\nSupabase API: {'✅ Connected' if api_status['connected'] else '❌ Failed'}")
-    print(f"Message: {api_status['message']}") 
+    # Supabase status
+    print(f"Supabase: {'✅ Connected' if connection_status else '❌ Failed'}")
+    print(f"Message: {'Connection successful' if connection_status else 'Connection failed'}") 

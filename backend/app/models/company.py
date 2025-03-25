@@ -2,8 +2,9 @@ from typing import Optional, List
 from app.schemas.company import CompanySchema, DataSharingPolicySchema
 from app.repositories.company import CompanyRepository, DataSharingPolicyRepository
 
-# Table name for company relationships in Supabase
+# Table names for Supabase
 COMPANY_RELATIONSHIPS_TABLE = 'company_relationships'
+DATA_SHARING_THIRD_PARTIES_TABLE = 'data_sharing_third_parties'
 
 class Company:
     """Company model for organizations in the system."""
