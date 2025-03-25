@@ -1,0 +1,5 @@
+[33mcommit 463a904e01660d18e876a4d19469f5056b9fc15e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: vicente <vicente.carrasco@leprcon.com>
+Date:   Tue Mar 25 18:29:15 2025 -0300
+
+    Fix Supabase authentication and implement Row Level Security (RLS) policies

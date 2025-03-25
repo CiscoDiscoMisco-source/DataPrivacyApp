@@ -22,6 +22,9 @@ export interface Company {
   updatedAt?: string;
 }
 
+// Input type for creating a company (user_id will be added by the backend)
+export type CompanyInput = Omit<Company, 'id' | 'user_id'>;
+
 // User preferences types
 export interface UserPreference {
   id: string;

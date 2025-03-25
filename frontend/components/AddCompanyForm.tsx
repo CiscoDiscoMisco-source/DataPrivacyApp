@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ApiService from '../services/api';
-import { Company } from '../types';
+import { Company, CompanyInput } from '../types';
 
 interface AddCompanyFormProps {
   onSuccess: () => void;
@@ -8,7 +8,7 @@ interface AddCompanyFormProps {
 }
 
 const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) => {
-  const [company, setCompany] = useState<Omit<Company, 'id'>>({
+  const [company, setCompany] = useState<CompanyInput>({
     name: '',
     logo: '',
     industry: '',
