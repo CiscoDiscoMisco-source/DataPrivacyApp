@@ -1,5 +1,6 @@
-from app import db
-from .base import BaseModel
+from typing import Optional, List
+from app.schemas.company import CompanySchema, DataSharingPolicySchema
+from app.repositories.company import CompanyRepository, DataSharingPolicyRepository
 
 # Association table for many-to-many relationship between companies - using direct SQL table creation
 # to avoid conflict with SQLAlchemy model inheritance
@@ -10,80 +11,146 @@ company_relationships = db.Table(
     db.Column('relationship_type', db.String(50))
 )
 
-class Company(BaseModel):
+class Company:
     """Company model for organizations in the system."""
-    __tablename__ = 'companies'
     
-    name = db.Column(db.String(255), unique=True, nullable=False)
-    logo = db.Column(db.String(255))
-    industry = db.Column(db.String(100))
-    website = db.Column(db.String(255))
-    description = db.Column(db.Text)
-    size_range = db.Column(db.String(50))
-    city = db.Column(db.String(100))
-    state = db.Column(db.String(100))
-    country = db.Column(db.String(100))
+    def __init__(self, schema: CompanySchema):
+        self.schema = schema
+        self._repository = CompanyRepository()
     
-    # Relationships
-    data_sharing_policies = db.relationship('DataSharingPolicy', backref='company', lazy='dynamic', cascade='all, delete-orphan')
-    user_preferences = db.relationship('UserPreference', backref='company', lazy='dynamic', cascade='all, delete-orphan')
+    @property
+    def id(self) -> Optional[int]:
+        return self.schema.id
     
-    # Many-to-many self-referential relationship for company data sharing
-    related_companies = db.relationship(
-        'Company', 
-        secondary=company_relationships,
-        primaryjoin=(company_relationships.c.source_company_id == id),
-        secondaryjoin=(company_relationships.c.target_company_id == id),
-        backref=db.backref('source_companies', lazy='dynamic'),
-        lazy='dynamic'
-    )
+    @property
+    def name(self) -> str:
+        return self.schema.name
+    
+    @property
+    def logo(self) -> Optional[str]:
+        return self.schema.logo
+    
+    @property
+    def industry(self) -> Optional[str]:
+        return self.schema.industry
+    
+    @property
+    def website(self) -> Optional[str]:
+        return self.schema.website
+    
+    @property
+    def description(self) -> Optional[str]:
+        return self.schema.description
+    
+    @property
+    def size_range(self) -> Optional[str]:
+        return self.schema.size_range
+    
+    @property
+    def city(self) -> Optional[str]:
+        return self.schema.city
+    
+    @property
+    def state(self) -> Optional[str]:
+        return self.schema.state
+    
+    @property
+    def country(self) -> Optional[str]:
+        return self.schema.country
+    
+    @classmethod
+    async def find_by_id(cls, id: int) -> Optional['Company']:
+        """Find a company by ID."""
+        schema = await CompanyRepository.find_by_id(id)
+        return cls(schema) if schema else None
+    
+    @classmethod
+    async def get_all(cls) -> List['Company']:
+        """Get all companies."""
+        schemas = await CompanyRepository.get_all()
+        return [cls(schema) for schema in schemas]
+    
+    async def save(self) -> 'Company':
+        """Save the company."""
+        if self.id:
+            self.schema = await self._repository.update(self.schema)
+        else:
+            self.schema = await self._repository.create(self.schema)
+        return self
+    
+    async def delete(self) -> bool:
+        """Delete the company."""
+        if self.id:
+            return await self._repository.delete(self.id)
+        return False
+    
+    async def get_related_companies(self) -> List['Company']:
+        """Get companies related to this company."""
+        if not self.id:
+            return []
+        schemas = await self._repository.get_related_companies(self.id)
+        return [Company(schema) for schema in schemas]
     
     def to_dict(self):
         """Convert company to dictionary for API response."""
-        return {
-            'id': self.id,
-            'name': self.name,
-            'logo': self.logo,
-            'industry': self.industry,
-            'website': self.website,
-            'description': self.description,
-            'size_range': self.size_range,
-            'city': self.city,
-            'state': self.state,
-            'country': self.country,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
-        }
+        return self.schema.to_dict()
 
-class DataSharingPolicy(BaseModel):
+class DataSharingPolicy:
     """Data sharing policy for a company."""
-    __tablename__ = 'data_sharing_policies'
     
-    company_id = db.Column(db.BigInteger, db.ForeignKey('companies.id'), nullable=False)
-    data_type_id = db.Column(db.BigInteger, db.ForeignKey('data_types.id'), nullable=False)
-    purpose = db.Column(db.String(255), nullable=False)
-    description = db.Column(db.Text)
+    def __init__(self, schema: DataSharingPolicySchema):
+        self.schema = schema
+        self._repository = DataSharingPolicyRepository()
     
-    # Many-to-many relationship for third parties
-    third_parties = db.relationship(
-        'Company',
-        secondary='data_sharing_third_parties',
-        lazy='joined',
-        backref=db.backref('shared_with_policies', lazy='dynamic')
-    )
+    @property
+    def id(self) -> Optional[int]:
+        return self.schema.id
+    
+    @property
+    def company_id(self) -> int:
+        return self.schema.company_id
+    
+    @property
+    def data_type_id(self) -> int:
+        return self.schema.data_type_id
+    
+    @property
+    def purpose(self) -> str:
+        return self.schema.purpose
+    
+    @property
+    def description(self) -> Optional[str]:
+        return self.schema.description
+    
+    @classmethod
+    async def find_by_id(cls, id: int) -> Optional['DataSharingPolicy']:
+        """Find a policy by ID."""
+        schema = await DataSharingPolicyRepository.find_by_id(id)
+        return cls(schema) if schema else None
+    
+    @classmethod
+    async def get_company_policies(cls, company_id: int) -> List['DataSharingPolicy']:
+        """Get all policies for a company."""
+        schemas = await DataSharingPolicyRepository.get_company_policies(company_id)
+        return [cls(schema) for schema in schemas]
+    
+    async def save(self) -> 'DataSharingPolicy':
+        """Save the policy."""
+        if self.id:
+            self.schema = await self._repository.update(self.schema)
+        else:
+            self.schema = await self._repository.create(self.schema)
+        return self
+    
+    async def delete(self) -> bool:
+        """Delete the policy."""
+        if self.id:
+            return await self._repository.delete(self.id)
+        return False
     
     def to_dict(self):
-        """Convert data sharing policy to dictionary for API response."""
-        return {
-            'id': self.id,
-            'company_id': self.company_id,
-            'data_type_id': self.data_type_id,
-            'purpose': self.purpose,
-            'description': self.description,
-            'third_parties': [company.to_dict() for company in self.third_parties],
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
-        }
+        """Convert policy to dictionary for API response."""
+        return self.schema.to_dict()
 
 # Association table for many-to-many relationship between data sharing policies and third party companies
 data_sharing_third_parties = db.Table('data_sharing_third_parties',
