@@ -77,94 +77,123 @@ const PreferencesPage: React.FC = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+        <p className="text-red-800">{error}</p>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <h2 className="glass-heading text-2xl mb-6">
-        {companyId ? 'Company Privacy Preferences' : 'My Privacy Preferences'}
-      </h2>
-      
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-gray-900">
+          {companyId ? 'Company Privacy Preferences' : 'My Privacy Preferences'}
+        </h1>
+      </div>
+
       {successMessage && (
-        <div className="glass p-4 mb-4 text-green-100 rounded-lg" role="alert">
+        <div className="bg-green-50 border border-green-200 text-green-800 rounded-lg p-4" role="alert">
           {successMessage}
         </div>
       )}
-      
-      <div className="glass-card p-6 mb-6">
-        <p className="glass-text mb-6">
-          {companyId 
-            ? 'Manage your privacy preferences for this specific company.'
-            : 'Manage your global privacy preferences across all companies. These settings will be applied as defaults when a new company is added to the system.'}
-        </p>
-        
-        {/* Profile Preferences Section */}
-        {profilePreferences && (
-          <>
-            <div className="mb-6">
-              <h3 className="glass-heading text-lg mb-3">Notification Preferences</h3>
-              <div className="space-y-3">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="email-notifications"
-                    checked={profilePreferences.email_notifications}
-                    className="h-4 w-4 text-primary-300 focus:ring-primary-300 border-primary-300/30 rounded"
-                    onChange={(e) => updateProfilePreferences({ email_notifications: e.target.checked })}
-                  />
-                  <label htmlFor="email-notifications" className="ml-2 block text-sm glass-text">
-                    Receive email notifications
-                  </label>
+
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+        <div className="p-6">
+          <p className="text-gray-600 mb-6">
+            {companyId 
+              ? 'Manage your privacy preferences for this specific company.'
+              : 'Manage your global privacy preferences across all companies. These settings will be applied as defaults when a new company is added to the system.'}
+          </p>
+
+          {/* Profile Preferences Section */}
+          {profilePreferences && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Notification Preferences</h3>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="email-notifications"
+                      checked={profilePreferences.email_notifications}
+                      onChange={(e) => updateProfilePreferences({ email_notifications: e.target.checked })}
+                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <label htmlFor="email-notifications" className="ml-2 text-sm text-gray-700">
+                      Receive email notifications
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Privacy Settings</h3>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="auto-delete"
+                      checked={profilePreferences.auto_delete_data}
+                      onChange={(e) => updateProfilePreferences({ auto_delete_data: e.target.checked })}
+                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <label htmlFor="auto-delete" className="ml-2 text-sm text-gray-700">
+                      Auto-delete my data
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
-            
-            <div className="mb-6">
-              <h3 className="glass-heading text-lg mb-3">Privacy Settings</h3>
-              <div className="space-y-3">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="auto-delete"
-                    checked={profilePreferences.auto_delete_data}
-                    className="h-4 w-4 text-primary-300 focus:ring-primary-300 border-primary-300/30 rounded"
-                    onChange={(e) => updateProfilePreferences({ auto_delete_data: e.target.checked })}
-                  />
-                  <label htmlFor="auto-delete" className="ml-2 block text-sm glass-text">
-                    Auto-delete my data
-                  </label>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
-      
+
       {/* Data Type Preferences List */}
-      <div className="glass-card p-6">
-        <h3 className="glass-heading text-lg mb-4">Data Sharing Preferences</h3>
-        <p className="glass-text mb-4">
-          Control how your data is shared with companies.
-        </p>
-        <div className="space-y-4">
-          {dataPreferences.map((preference) => (
-            <div key={preference.id} className="glass p-4">
-              <h3 className="glass-heading text-xl">{preference.company?.name || 'Global Setting'}</h3>
-              
-              <div className="mt-4 space-y-2">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`data-sharing-${preference.id}`}
-                    checked={preference.allowed}
-                    onChange={(e) => updatePreference(preference.id, e.target.checked)}
-                    className="h-4 w-4 text-primary-300 focus:ring-primary-300 border-primary-300/30 rounded"
-                  />
-                  <label htmlFor={`data-sharing-${preference.id}`} className="ml-2 block text-sm glass-text">
-                    Allow data sharing
-                  </label>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+        <div className="p-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Data Sharing Preferences</h3>
+          <p className="text-gray-600 mb-6">
+            Control how your data is shared with companies.
+          </p>
+          <div className="space-y-4">
+            {dataPreferences.map((preference) => (
+              <div 
+                key={preference.id} 
+                className="bg-gray-50 rounded-lg p-4 border border-gray-200"
+              >
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium text-gray-900">
+                    {preference.company?.name || 'Global Setting'}
+                  </h4>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`data-sharing-${preference.id}`}
+                      checked={preference.allowed}
+                      onChange={(e) => updatePreference(preference.id, e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <label 
+                      htmlFor={`data-sharing-${preference.id}`} 
+                      className="ml-2 text-sm text-gray-700"
+                    >
+                      Allow data sharing
+                    </label>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
