@@ -33,6 +33,11 @@ def create_app(config_name=None):
     else:
         app.config.from_object('app.config.DevelopmentConfig')
     
+    # Ensure SQLALCHEMY_DATABASE_URI is set - fallback if environment variables are not loaded
+    if not app.config.get('SQLALCHEMY_DATABASE_URI'):
+        app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///fallback.db')
+        print(f"Warning: Using fallback database URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
+    
     # Enable CORS
     CORS(app)
     
