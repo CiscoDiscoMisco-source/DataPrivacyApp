@@ -30,6 +30,11 @@ class ProductionConfig(Config):
     DEBUG = False
     # Connect to Supabase PostgreSQL database
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    
+    # Fix for Vercel and Supabase: ensure postgresql:// protocol
+    if SQLALCHEMY_DATABASE_URI and SQLALCHEMY_DATABASE_URI.startswith('postgres://'):
+        SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace('postgres://', 'postgresql://', 1)
+    
     # For horizontally scaling environments, use NullPool with transaction pooler
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_size': 10,

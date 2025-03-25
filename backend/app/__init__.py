@@ -35,8 +35,15 @@ def create_app(config_name=None):
     
     # Ensure SQLALCHEMY_DATABASE_URI is set - fallback if environment variables are not loaded
     if not app.config.get('SQLALCHEMY_DATABASE_URI'):
-        app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///fallback.db')
-        print(f"Warning: Using fallback database URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
+        if config_name == 'production':
+            import sys
+            print("ERROR: DATABASE_URL environment variable is not set in production mode!")
+            print("Please set the DATABASE_URL environment variable to your Supabase PostgreSQL connection string")
+            print("Exiting application...")
+            sys.exit(1)
+        else:
+            app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///fallback.db')
+            print(f"Warning: Using fallback database URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
     
     # Enable CORS
     CORS(app)
