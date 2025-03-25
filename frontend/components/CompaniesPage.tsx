@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import ApiService from '../services/api';
-import { Company } from '../types';
+import AddCompanyForm from './AddCompanyForm';
+
+interface Company {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+interface CompaniesResponse {
+  companies: Company[];
+}
 
 interface CompaniesPageProps {
   searchTerm?: string;
@@ -10,14 +20,15 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ searchTerm }) => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAddingCompany, setIsAddingCompany] = useState<boolean>(false);
   
   // Load initial companies
   useEffect(() => {
-    const fetchCompanies = async () => {
+    const fetchCompanies = async (): Promise<void> => {
       try {
         setLoading(true);
-        const data = await ApiService.get<Company[]>('/companies');
-        setCompanies(data);
+        const data = await ApiService.get<CompaniesResponse>('/companies');
+        setCompanies(data.companies);
         setError(null);
       } catch (err) {
         console.error('Failed to fetch companies:', err);
@@ -32,21 +43,21 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ searchTerm }) => {
   
   // Handle search term changes
   useEffect(() => {
-    const searchCompanies = async () => {
+    const searchCompanies = async (): Promise<void> => {
       if (!searchTerm || searchTerm.length <= 2) {
         // Load all companies if search term is too short
         if (companies.length === 0) {
           // Only reload if we don't already have companies
-          const data = await ApiService.get<Company[]>('/companies');
-          setCompanies(data);
+          const data = await ApiService.get<CompaniesResponse>('/companies');
+          setCompanies(data.companies);
         }
         return;
       }
       
       try {
         setLoading(true);
-        const data = await ApiService.get<Company[]>('/companies', { search: searchTerm });
-        setCompanies(data);
+        const data = await ApiService.get<CompaniesResponse>('/companies', { search: searchTerm });
+        setCompanies(data.companies);
       } catch (err) {
         console.error('Search failed:', err);
         setError('Search failed. Please try again.');
@@ -62,58 +73,98 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ searchTerm }) => {
     
     // Cleanup function to clear timeout
     return () => clearTimeout(debounceTimeout);
-  }, [searchTerm, companies.length]);
+  }, [searchTerm]);
   
-  const handleViewDetails = (companyId: string) => {
+  const handleViewDetails = (companyId: string): void => {
     console.log('View company details:', companyId);
     // Implementation will be added later
   };
   
-  const handleManagePreferences = (companyId: string) => {
+  const handleManagePreferences = (companyId: string): void => {
     console.log('Manage preferences:', companyId);
     // Implementation will be added later
   };
   
+  const handleAddCompanySuccess = (): void => {
+    // Refresh the company list
+    setIsAddingCompany(false);
+    setLoading(true);
+    ApiService.get<CompaniesResponse>('/companies')
+      .then(data => {
+        setCompanies(data.companies);
+        setError(null);
+      })
+      .catch(err => {
+        console.error('Failed to refresh companies:', err);
+        setError('Failed to refresh company list.');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+  
   return (
     <div className="company-list">
-      <h2 className="text-2xl font-bold mb-4">Companies with your data</h2>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>Companies with your data</h2>
+        <button 
+          className="btn btn-primary" 
+          onClick={() => setIsAddingCompany(true)}
+          disabled={isAddingCompany}
+        >
+          Add Company Manually
+        </button>
+      </div>
       
-      {loading && (
-        <div className="flex justify-center py-5">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-900"></div>
+      {isAddingCompany && (
+        <div className="mb-4">
+          <AddCompanyForm 
+            onSuccess={handleAddCompanySuccess} 
+            onCancel={() => setIsAddingCompany(false)} 
+          />
+        </div>
+      )}
+      
+      {loading && !isAddingCompany && (
+        <div className="text-center py-5">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
         </div>
       )}
       
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded my-3" role="alert">
-          <span className="block sm:inline">{error}</span>
+        <div className="alert alert-danger m-3" role="alert">
+          {error}
         </div>
       )}
       
-      {!loading && !error && companies.length === 0 && (
-        <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded my-3" role="alert">
-          <span className="block sm:inline">No companies found.</span>
+      {!loading && !error && companies.length === 0 && !isAddingCompany && (
+        <div className="alert alert-info m-3" role="alert">
+          No companies found. You can add a company manually using the button above.
         </div>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="row">
         {companies.map(company => (
-          <div className="bg-white shadow rounded-lg p-4" key={company.id}>
-            <h3 className="text-xl font-semibold">{company.name}</h3>
-            <p className="text-gray-600 mt-2">{company.description || 'No description available'}</p>
-            <div className="flex justify-between mt-4">
-              <button 
-                className="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition" 
-                onClick={() => handleViewDetails(company.id)}
-              >
-                View Details
-              </button>
-              <button 
-                className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition" 
-                onClick={() => handleManagePreferences(company.id)}
-              >
-                Manage Preferences
-              </button>
+          <div className="col-md-6 col-lg-4 mb-4" key={company.id}>
+            <div className="company-card">
+              <h3>{company.name}</h3>
+              <p>{company.description || 'No description available'}</p>
+              <div className="d-flex justify-content-between mt-3">
+                <button 
+                  className="btn btn-sm btn-outline-secondary" 
+                  onClick={() => handleViewDetails(company.id)}
+                >
+                  View Details
+                </button>
+                <button 
+                  className="btn btn-sm btn-primary" 
+                  onClick={() => handleManagePreferences(company.id)}
+                >
+                  Manage Preferences
+                </button>
+              </div>
             </div>
           </div>
         ))}
