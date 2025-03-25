@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
 // Context
@@ -16,7 +15,7 @@ const ProtectedRoute = ({ children }) => {
   const { loading } = useAuth();
   
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center h-24">Loading...</div>;
   }
   
   return children;
@@ -27,50 +26,62 @@ const AppHeader = ({ searchTerm, handleSearch }) => {
   const { logout } = useAuth();
   
   return (
-    <header className="header">
-      <div className="container">
-        <div className="d-flex justify-content-between align-items-center">
-          <h1>Data Privacy App</h1>
-          <div className="search-container">
+    <header className="bg-white shadow-md py-4">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col md:flex-row justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Data Privacy App</h1>
+          <div className="w-full md:w-64">
             <input 
               type="text" 
               id="global-search" 
-              className="form-control" 
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Search companies..." 
               value={searchTerm}
               onChange={handleSearch}
             />
           </div>
         </div>
-        <nav className="mt-3">
-          <ul className="nav nav-tabs">
-            <li className="nav-item">
+        <nav className="mt-6">
+          <ul className="flex border-b border-gray-200">
+            <li className="mr-1">
               <Link 
-                className={`nav-link ${location.pathname === '/' || location.pathname === '/companies' ? 'active' : ''}`} 
+                className={`inline-block px-4 py-2 rounded-t-md ${
+                  location.pathname === '/' || location.pathname === '/companies' 
+                    ? 'bg-blue-500 text-white' 
+                    : 'text-blue-500 hover:bg-gray-100'
+                }`} 
                 to="/companies"
               >
                 Companies
               </Link>
             </li>
-            <li className="nav-item">
+            <li className="mr-1">
               <Link 
-                className={`nav-link ${location.pathname === '/preferences' ? 'active' : ''}`} 
+                className={`inline-block px-4 py-2 rounded-t-md ${
+                  location.pathname === '/preferences' 
+                    ? 'bg-blue-500 text-white' 
+                    : 'text-blue-500 hover:bg-gray-100'
+                }`} 
                 to="/preferences"
               >
                 My Preferences
               </Link>
             </li>
-            <li className="nav-item">
+            <li className="mr-1">
               <Link 
-                className={`nav-link ${location.pathname === '/settings' ? 'active' : ''}`} 
+                className={`inline-block px-4 py-2 rounded-t-md ${
+                  location.pathname === '/settings' 
+                    ? 'bg-blue-500 text-white' 
+                    : 'text-blue-500 hover:bg-gray-100'
+                }`} 
                 to="/settings"
               >
                 Settings
               </Link>
             </li>
-            <li className="nav-item ms-auto">
+            <li className="ml-auto">
               <button 
-                className="nav-link text-danger" 
+                className="inline-block px-4 py-2 text-red-500 hover:bg-gray-100 rounded-t-md"
                 onClick={logout}
               >
                 Logout
@@ -85,9 +96,9 @@ const AppHeader = ({ searchTerm, handleSearch }) => {
 
 const AppFooter = () => {
   return (
-    <footer className="footer">
-      <div className="container">
-        <p>&copy; {new Date().getFullYear()} Data Privacy App</p>
+    <footer className="bg-gray-100 py-4 mt-auto">
+      <div className="container mx-auto px-4 text-center">
+        <p className="text-gray-600">&copy; {new Date().getFullYear()} Data Privacy App</p>
       </div>
     </footer>
   );
@@ -101,10 +112,10 @@ const AppContent = () => {
   };
   
   return (
-    <div className="app-container">
+    <div className="flex flex-col min-h-screen">
       <AppHeader searchTerm={searchTerm} handleSearch={handleSearch} />
       
-      <main className="container my-4">
+      <main className="container mx-auto px-4 py-6 flex-grow">
         <Routes>
           <Route path="/" element={
             <ProtectedRoute>
