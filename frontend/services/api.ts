@@ -6,12 +6,31 @@
 const API_BASE_URL = '/api';
 const API_VERSION = 'v1';
 
+interface ApiResponse<T> {
+  data?: T;
+  message?: string;
+  error?: string;
+}
+
+interface RequestParams {
+  [key: string]: string | number | boolean;
+}
+
+interface RequestHeaders {
+  [key: string]: string;
+}
+
 // Helper function to get auth token
-const getAuthToken = () => localStorage.getItem('dp_access_token');
+const getAuthToken = (): string | null => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('dp_access_token');
+  }
+  return null;
+};
 
 // Helper to build headers with authentication
-const buildHeaders = (customHeaders = {}) => {
-  const headers = {
+const buildHeaders = (customHeaders: RequestHeaders = {}): RequestHeaders => {
+  const headers: RequestHeaders = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     ...customHeaders
@@ -26,7 +45,7 @@ const buildHeaders = (customHeaders = {}) => {
 };
 
 // Helper to build API URL with version
-const buildApiUrl = (endpoint) => {
+const buildApiUrl = (endpoint: string): string => {
   // Don't add version prefix if endpoint already includes it or if it's a special endpoint
   if (endpoint.includes('/v1/') || endpoint === '/health') {
     return `${API_BASE_URL}${endpoint}`;
@@ -35,7 +54,7 @@ const buildApiUrl = (endpoint) => {
 };
 
 // Helper to handle API responses
-const handleResponse = async (response) => {
+const handleResponse = async <T>(response: Response): Promise<T> => {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     console.error('API error details:', {
@@ -46,21 +65,25 @@ const handleResponse = async (response) => {
     throw new Error(errorData.message || `API error: ${response.status} - ${response.statusText}`);
   }
   
-  return await response.json();
+  return await response.json() as T;
 };
 
 /**
  * Send a GET request to the API
  * @param {string} endpoint - API endpoint
  * @param {Object} params - Query parameters
- * @returns {Promise<any>} - Response data
+ * @returns {Promise<T>} - Response data
  */
-export const get = async (endpoint, params = {}) => {
+export const get = async <T>(endpoint: string, params: RequestParams = {}): Promise<T> => {
+  if (typeof window === 'undefined') {
+    return Promise.resolve([] as unknown as T);
+  }
+  
   const url = new URL(buildApiUrl(endpoint), window.location.origin);
   
   // Add query parameters
   Object.keys(params).forEach(key => {
-    url.searchParams.append(key, params[key]);
+    url.searchParams.append(key, String(params[key]));
   });
   
   try {
@@ -70,7 +93,7 @@ export const get = async (endpoint, params = {}) => {
       credentials: 'include'
     });
     
-    return await handleResponse(response);
+    return await handleResponse<T>(response);
   } catch (error) {
     console.error('API request failed:', error);
     throw error;
@@ -81,9 +104,13 @@ export const get = async (endpoint, params = {}) => {
  * Send a POST request to the API
  * @param {string} endpoint - API endpoint
  * @param {Object} data - Request body data
- * @returns {Promise<any>} - Response data
+ * @returns {Promise<T>} - Response data
  */
-export const post = async (endpoint, data = {}) => {
+export const post = async <T>(endpoint: string, data: Record<string, any> = {}): Promise<T> => {
+  if (typeof window === 'undefined') {
+    return Promise.resolve({} as T);
+  }
+  
   try {
     const response = await fetch(buildApiUrl(endpoint), {
       method: 'POST',
@@ -92,7 +119,7 @@ export const post = async (endpoint, data = {}) => {
       body: JSON.stringify(data)
     });
     
-    return await handleResponse(response);
+    return await handleResponse<T>(response);
   } catch (error) {
     console.error('API request failed:', error);
     throw error;
@@ -103,9 +130,13 @@ export const post = async (endpoint, data = {}) => {
  * Send a PUT request to the API
  * @param {string} endpoint - API endpoint
  * @param {Object} data - Request body data
- * @returns {Promise<any>} - Response data
+ * @returns {Promise<T>} - Response data
  */
-export const put = async (endpoint, data = {}) => {
+export const put = async <T>(endpoint: string, data: Record<string, any> = {}): Promise<T> => {
+  if (typeof window === 'undefined') {
+    return Promise.resolve({} as T);
+  }
+  
   try {
     const response = await fetch(buildApiUrl(endpoint), {
       method: 'PUT',
@@ -114,7 +145,7 @@ export const put = async (endpoint, data = {}) => {
       body: JSON.stringify(data)
     });
     
-    return await handleResponse(response);
+    return await handleResponse<T>(response);
   } catch (error) {
     console.error('API request failed:', error);
     throw error;
@@ -124,9 +155,13 @@ export const put = async (endpoint, data = {}) => {
 /**
  * Send a DELETE request to the API
  * @param {string} endpoint - API endpoint
- * @returns {Promise<any>} - Response data
+ * @returns {Promise<T>} - Response data
  */
-export const del = async (endpoint) => {
+export const del = async <T>(endpoint: string): Promise<T> => {
+  if (typeof window === 'undefined') {
+    return Promise.resolve({} as T);
+  }
+  
   try {
     const response = await fetch(buildApiUrl(endpoint), {
       method: 'DELETE',
@@ -134,7 +169,7 @@ export const del = async (endpoint) => {
       credentials: 'include'
     });
     
-    return await handleResponse(response);
+    return await handleResponse<T>(response);
   } catch (error) {
     console.error('API request failed:', error);
     throw error;

@@ -12,7 +12,7 @@ alwaysApply: true
 # Technical Stack
 
 - Python for backend
-- React Next.js with Tailwind CSS for the frontend
+- Next.jsTypescript with Tailwind CSS for the frontend
 - PostgreSQL databases, never JSON file storage
 - Separate databeses for dev, test, and prod
 - Elasticsearch for search, using elastic.co hosting

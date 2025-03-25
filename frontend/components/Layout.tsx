@@ -1,0 +1,41 @@
+import React, { ReactNode } from 'react';
+import Head from 'next/head';
+import Navigation from './Navigation';
+
+interface LayoutProps {
+  children: ReactNode;
+  title?: string;
+}
+
+const Layout: React.FC<LayoutProps> = ({ 
+  children, 
+  title = 'Data Privacy App' 
+}) => {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Head>
+        <title>{title}</title>
+        <meta name="description" content="Manage your data privacy settings across companies" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Head>
+      
+      <Navigation />
+      
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          {children}
+        </div>
+      </main>
+      
+      <footer className="bg-white shadow-inner mt-auto">
+        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-sm text-gray-500">
+            &copy; {new Date().getFullYear()} Data Privacy App. All rights reserved.
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default Layout; 
