@@ -80,7 +80,7 @@ pytest tests/
 The backend uses the following environment variables:
 
 - `FLASK_ENV`: The environment (development, testing, production)
-- `DATABASE_URL`: PostgreSQL database connection string
+- `POSTGRES_URL`: PostgreSQL database connection string
 - `SECRET_KEY`: Secret key for JWT tokens
 - `JWT_SECRET_KEY`: Secret key for JWT
 - `ELASTICSEARCH_URL`: Elasticsearch connection string

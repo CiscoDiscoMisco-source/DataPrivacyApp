@@ -17,15 +17,15 @@ def check_connection():
     load_dotenv()
     
     # Get database URL from environment
-    database_url = os.environ.get('DATABASE_URL')
+    postgres_url = os.environ.get('POSTGRES_URL')
     
-    if not database_url:
-        print("Error: DATABASE_URL environment variable is not set.")
+    if not postgres_url:
+        print("Error: POSTGRES_URL environment variable is not set.")
         return False
     
     try:
         # Create engine
-        engine = create_engine(database_url)
+        engine = create_engine(postgres_url)
         
         # Try to connect and execute a simple query
         with engine.connect() as connection:

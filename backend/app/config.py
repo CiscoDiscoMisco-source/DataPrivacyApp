@@ -18,18 +18,18 @@ class DevelopmentConfig(Config):
     """Development config."""
     DEBUG = True
     # Use Supabase connection string if available, otherwise fallback to local SQLite
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL', 'sqlite:///dev.db')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_POSTGRES_URL', 'sqlite:///dev.db')
     
 class TestingConfig(Config):
     """Testing config."""
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL', 'sqlite:///test.db')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_POSTGRES_URL', 'sqlite:///test.db')
     
 class ProductionConfig(Config):
     """Production config."""
     DEBUG = False
     # Connect to Supabase PostgreSQL database
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('POSTGRES_URL')
     
     # Fix for Vercel and Supabase: ensure postgresql:// protocol
     if SQLALCHEMY_DATABASE_URI and SQLALCHEMY_DATABASE_URI.startswith('postgres://'):

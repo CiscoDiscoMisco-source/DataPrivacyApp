@@ -124,4 +124,10 @@ output "db_username" {
 output "db_password" {
   value     = aws_ssm_parameter.db_password.value
   sensitive = true
+}
+
+# Add connection string for Supabase PostgreSQL
+output "postgres_url" {
+  value     = "postgresql://${aws_ssm_parameter.db_username.value}:${aws_ssm_parameter.db_password.value}@${aws_db_instance.postgres.endpoint}/${aws_db_instance.postgres.name}"
+  sensitive = true
 } 

@@ -58,7 +58,7 @@ module "backend" {
   environment  = var.environment
   vpc_id       = module.network.vpc_id
   subnet_ids   = module.network.private_subnet_ids
-  database_url = module.database.database_url
+  postgres_url = module.database.postgres_url
   depends_on   = [module.database]
 }
 
@@ -101,6 +101,6 @@ output "elasticsearch_url" {
 }
 
 output "database_connection" {
-  value = module.database.database_url
+  value = module.database.postgres_url
   sensitive = true
 } 

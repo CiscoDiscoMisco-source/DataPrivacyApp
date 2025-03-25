@@ -23,7 +23,7 @@ def create_app(config_name=None):
         app.config.from_object('app.config.ProductionConfig')
         
         # If using Supabase's connection pooler in horizontally scaling environments
-        if 'pooler.supabase.co' in os.environ.get('DATABASE_URL', ''):
+        if 'pooler.supabase.co' in os.environ.get('POSTGRES_URL', ''):
             from sqlalchemy.pool import NullPool
             app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
                 'poolclass': NullPool
@@ -37,12 +37,12 @@ def create_app(config_name=None):
     if not app.config.get('SQLALCHEMY_DATABASE_URI'):
         if config_name == 'production':
             import sys
-            print("ERROR: DATABASE_URL environment variable is not set in production mode!")
-            print("Please set the DATABASE_URL environment variable to your Supabase PostgreSQL connection string")
+            print("ERROR: POSTGRES_URL environment variable is not set in production mode!")
+            print("Please set the POSTGRES_URL environment variable to your Supabase PostgreSQL connection string")
             print("Exiting application...")
             sys.exit(1)
         else:
-            app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///fallback.db')
+            app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('POSTGRES_URL', 'sqlite:///fallback.db')
             print(f"Warning: Using fallback database URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
     
     # Enable CORS

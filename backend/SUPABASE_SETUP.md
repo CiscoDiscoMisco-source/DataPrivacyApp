@@ -38,7 +38,7 @@ This guide helps you set up your application to work with Supabase as your Postg
 
 2. Edit the `.env` file with your actual Supabase credentials:
    ```
-   DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres
+   POSTGRES_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres
    SUPABASE_URL=https://[YOUR-PROJECT-REF].supabase.co
    SUPABASE_KEY=[YOUR-ANON-KEY]
    SUPABASE_JWT_SECRET=[YOUR-JWT-SECRET]
@@ -81,7 +81,7 @@ Use Supabase's connection pooler in transaction mode:
 2. Under "Connection Pooling", find the transaction mode connection string
 3. Update your `.env` file to use this connection string instead:
    ```
-   DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@[YOUR-PROJECT-REF]-pooler.supabase.co:6543/postgres
+   POSTGRES_URL=postgresql://postgres:[YOUR-PASSWORD]@[YOUR-PROJECT-REF]-pooler.supabase.co:6543/postgres
    ```
 
 This setup will automatically use `NullPool` for proper connection handling in Vercel's serverless environment.
