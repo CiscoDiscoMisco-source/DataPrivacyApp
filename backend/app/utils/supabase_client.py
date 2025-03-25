@@ -28,14 +28,14 @@ def get_supabase_client():
     try:
         # Try to get config from Flask app context
         url = current_app.config.get('SUPABASE_URL')
-        key = current_app.config.get('SUPABASE_KEY')
+        key = current_app.config.get('SUPABASE_ANON_KEY')
     except RuntimeError:
         # If not in app context, use environment variables directly
         url = os.environ.get('SUPABASE_URL')
-        key = os.environ.get('SUPABASE_KEY')
+        key = os.environ.get('SUPABASE_ANON_KEY')
     
     if not url or not key:
-        raise ValueError("SUPABASE_URL and SUPABASE_KEY environment variables must be set")
+        raise ValueError("SUPABASE_URL and SUPABASE_ANON_KEY environment variables must be set")
     
     _client_instance = create_client(url, key)
     return _client_instance
