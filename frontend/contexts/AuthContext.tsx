@@ -94,7 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Get user profile data from our API
         const userData = await ApiService.get<User>('/auth/me');
         setUser(userData);
-        router.push('/dashboard');
+        router.push('/companies');
       }
     } catch (error) {
       console.error('Login failed:', error);
