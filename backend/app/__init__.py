@@ -5,6 +5,7 @@ from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 import os
+import sys
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -36,17 +37,19 @@ def create_app(config_name=None):
         from app.config.development import DevelopmentConfig
         app.config.from_object(DevelopmentConfig)
     
-    # Ensure SQLALCHEMY_DATABASE_URI is set - fallback if environment variables are not loaded
+    # Ensure SQLALCHEMY_DATABASE_URI is set - fail if not found
     if not app.config.get('SQLALCHEMY_DATABASE_URI'):
-        if config_name == 'production':
-            import sys
-            print("ERROR: POSTGRES_URL environment variable is not set in production mode!")
-            print("Please set the POSTGRES_URL environment variable to your Supabase PostgreSQL connection string")
-            print("Exiting application...")
-            sys.exit(1)
-        else:
-            app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('POSTGRES_URL', 'sqlite:///fallback.db')
-            print(f"Warning: Using fallback database URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
+        print("ERROR: POSTGRES_URL environment variable is not set!")
+        print("Please set the POSTGRES_URL environment variable to your Supabase PostgreSQL connection string")
+        print("Exiting application...")
+        sys.exit(1)
+    
+    # Ensure Supabase credentials are set - fail if not found
+    if not app.config.get('SUPABASE_URL') or not app.config.get('SUPABASE_KEY'):
+        print("ERROR: Supabase credentials are not set!")
+        print("Please set the SUPABASE_URL and SUPABASE_KEY environment variables")
+        print("Exiting application...")
+        sys.exit(1)
     
     # Enable CORS
     CORS(app)
@@ -82,6 +85,9 @@ def create_app(config_name=None):
     @app.route('/api/health')
     def health_check():
         """Health check endpoint for Vercel"""
-        return {'status': 'healthy'}, 200
+        from app.utils.supabase_client import test_connection
+        connection_status = test_connection()
+        status = 'healthy' if connection_status['postgres']['connected'] else 'unhealthy'
+        return {'status': status, 'connections': connection_status}, 200 if status == 'healthy' else 503
     
     return app 
