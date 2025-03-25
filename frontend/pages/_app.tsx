@@ -18,9 +18,9 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="description" content="Manage your data privacy settings across various companies" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-primary-600 to-primary-500">
         <Navigation />
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <Component {...pageProps} />
         </main>
       </div>
