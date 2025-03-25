@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,13 +7,22 @@ const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
+  
+  useEffect(() => {
+    // Check if user just registered
+    if (router.query.registered === 'true') {
+      setSuccessMessage('Account created successfully! You can now log in.');
+    }
+  }, [router.query]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccessMessage(null);
     setIsSubmitting(true);
 
     try {
@@ -40,6 +49,17 @@ const LoginPage: React.FC = () => {
             </Link>
           </p>
         </div>
+        
+        {successMessage && (
+          <div className="rounded-md bg-green-50 p-4">
+            <div className="flex">
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-green-800">Success</h3>
+                <div className="mt-2 text-sm text-green-700">{successMessage}</div>
+              </div>
+            </div>
+          </div>
+        )}
         
         {error && (
           <div className="rounded-md bg-red-50 p-4">
