@@ -36,20 +36,16 @@ const buildApiUrl = (endpoint: string): string => {
     throw new Error('NEXT_PUBLIC_SUPABASE_URL is not configured');
   }
 
-  // Don't add version prefix if endpoint already includes it or if it's a special endpoint
-  if (endpoint.startsWith('/')) {
-    // Ensure endpoint starts with a slash for consistency
-    if (endpoint === '/health') {
-      return `${API_BASE_URL}${endpoint}`;
-    } else if (endpoint.startsWith('/v1/')) {
-      return `${API_BASE_URL}${endpoint}`;
-    } else {
-      return `${API_BASE_URL}/${API_VERSION}${endpoint}`;
-    }
-  } else {
-    // If endpoint doesn't start with slash, add one
-    return `${API_BASE_URL}/${API_VERSION}/${endpoint}`;
+  // Remove leading slash if present
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+  
+  // Special endpoints that don't need versioning
+  if (cleanEndpoint === 'health' || cleanEndpoint.startsWith('auth/')) {
+    return `${API_BASE_URL}/${cleanEndpoint}`;
   }
+  
+  // Add version prefix for all other endpoints
+  return `${API_BASE_URL}/${API_VERSION}/${cleanEndpoint}`;
 };
 
 // Helper to handle API responses

@@ -41,14 +41,37 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
       setLoading(true);
       setError(null);
       
-      const response = await ApiService.post('/companies', company);
+      // Clean up the data before sending
+      const cleanCompany = {
+        ...company,
+        name: company.name.trim(),
+        website: company.website?.trim() || null,
+        logo: company.logo?.trim() || null,
+        industry: company.industry?.trim() || null,
+        description: company.description?.trim() || null,
+        size_range: company.size_range || null,
+        city: company.city?.trim() || null,
+        state: company.state?.trim() || null,
+        country: company.country?.trim() || null
+      };
+      
+      const response = await ApiService.post('/companies', cleanCompany);
       console.log('Company added:', response);
       
       // Call success callback to refresh list
       onSuccess();
     } catch (err: any) {
       console.error('Failed to add company:', err);
-      setError(err.message || 'Failed to add company. Please try again.');
+      // Handle specific error cases
+      if (err.message?.includes('409')) {
+        setError('A company with this name already exists');
+      } else if (err.message?.includes('403')) {
+        setError('You do not have permission to create companies');
+      } else if (err.message?.includes('401')) {
+        setError('Please log in to create companies');
+      } else {
+        setError(err.message || 'Failed to add company. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
