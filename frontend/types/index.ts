@@ -6,14 +6,12 @@
 export interface Company {
   id: string;
   name: string;
-  user_id: string;
   logo?: string;
   industry?: string;
   website?: string;
   description?: string;
   size_range?: string;
   city?: string;
-  state?: string;
   country?: string;
   dataCollected?: string[];
   privacyUrl?: string;
@@ -22,8 +20,8 @@ export interface Company {
   updatedAt?: string;
 }
 
-// Input type for creating a company (user_id will be added by the backend)
-export type CompanyInput = Omit<Company, 'id' | 'user_id'>;
+// Input type for creating a company
+export type CompanyInput = Omit<Company, 'id'>;
 
 // User preferences types
 export interface UserPreference {

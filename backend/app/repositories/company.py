@@ -22,19 +22,21 @@ class CompanyRepository:
         return [CompanySchema.from_dict(item) for item in response.data]
     
     @staticmethod
-    async def get_user_companies(user_id: str) -> List[CompanySchema]:
-        """Get all companies for a specific user (RLS compatible)."""
+    async def get_companies_by_name(name: str) -> List[CompanySchema]:
+        """Get companies by name."""
         supabase = get_supabase()
-        response = supabase.table('companies').select('*').eq('user_id', user_id).execute()
+        response = supabase.table('companies').select('*').ilike('name', f'%{name}%').execute()
         return [CompanySchema.from_dict(item) for item in response.data]
     
     @staticmethod
     async def create(company: CompanySchema) -> CompanySchema:
         """Create a new company."""
         supabase = get_supabase()
-        # Ensure the company data is complete and RLS compatible
         company_data = company.to_dict()
-        
+        # Remove id if present since it's auto-generated
+        if 'id' in company_data:
+            del company_data['id']
+            
         response = supabase.table('companies').insert(company_data).execute()
         return CompanySchema.from_dict(response.data[0])
     
@@ -42,10 +44,10 @@ class CompanyRepository:
     async def update(company: CompanySchema) -> CompanySchema:
         """Update an existing company."""
         supabase = get_supabase()
-        # Ensure the user_id isn't modified during update for security
         update_data = company.to_dict()
-        if 'user_id' in update_data:
-            del update_data['user_id']
+        # Remove id from update data
+        if 'id' in update_data:
+            del update_data['id']
             
         response = supabase.table('companies').update(update_data).eq('id', company.id).execute()
         return CompanySchema.from_dict(response.data[0])

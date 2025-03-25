@@ -16,7 +16,6 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
     description: '',
     size_range: '',
     city: '',
-    state: '',
     country: ''
   });
   
@@ -51,7 +50,6 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
         description: company.description?.trim() || null,
         size_range: company.size_range || null,
         city: company.city?.trim() || null,
-        state: company.state?.trim() || null,
         country: company.country?.trim() || null
       };
       
@@ -172,30 +170,16 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label htmlFor="city" className="glass-text block font-semibold mb-2">City</label>
-            <input 
-              type="text" 
-              className="glass-input" 
-              id="city" 
-              name="city" 
-              value={company.city || ''} 
-              onChange={handleChange} 
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="state" className="glass-text block font-semibold mb-2">State/Province</label>
-            <input 
-              type="text" 
-              className="glass-input" 
-              id="state" 
-              name="state" 
-              value={company.state || ''} 
-              onChange={handleChange} 
-            />
-          </div>
+        <div>
+          <label htmlFor="city" className="glass-text block font-semibold mb-2">City</label>
+          <input 
+            type="text" 
+            className="glass-input" 
+            id="city" 
+            name="city" 
+            value={company.city || ''} 
+            onChange={handleChange} 
+          />
         </div>
         
         <div>

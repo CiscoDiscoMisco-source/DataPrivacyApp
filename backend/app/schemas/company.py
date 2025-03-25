@@ -6,14 +6,12 @@ class CompanySchema:
     def __init__(self, **kwargs):
         self.id: Optional[int] = kwargs.get('id')
         self.name: str = kwargs.get('name', '')
-        self.user_id: Optional[str] = kwargs.get('user_id')
         self.logo: Optional[str] = kwargs.get('logo')
         self.industry: Optional[str] = kwargs.get('industry')
         self.website: Optional[str] = kwargs.get('website')
         self.description: Optional[str] = kwargs.get('description')
         self.size_range: Optional[str] = kwargs.get('size_range')
         self.city: Optional[str] = kwargs.get('city')
-        self.state: Optional[str] = kwargs.get('state')
         self.country: Optional[str] = kwargs.get('country')
         self.created_at: Optional[datetime] = kwargs.get('created_at')
         self.updated_at: Optional[datetime] = kwargs.get('updated_at')
@@ -28,14 +26,12 @@ class CompanySchema:
         return {
             'id': self.id,
             'name': self.name,
-            'user_id': self.user_id,
             'logo': self.logo,
             'industry': self.industry,
             'website': self.website,
             'description': self.description,
             'size_range': self.size_range,
             'city': self.city,
-            'state': self.state,
             'country': self.country,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
