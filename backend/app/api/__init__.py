@@ -1,5 +1,6 @@
 # API module initialization
 from flask import jsonify
+from fastapi import APIRouter
 
 def register_error_handlers(app):
     """Register error handlers for the application."""
@@ -37,4 +38,10 @@ def register_error_handlers(app):
         return jsonify({
             'error': 'Internal Server Error',
             'message': 'The server encountered an internal error'
-        }), 500 
+        }), 500
+
+router = APIRouter()
+
+@router.get("/health")
+async def health_check():
+    return {"status": "ok"} 

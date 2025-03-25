@@ -3,7 +3,7 @@
  * Handles all communication with the backend
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const API_VERSION = 'v1';
 
 // Helper function to get auth token
