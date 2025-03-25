@@ -1,66 +1,53 @@
-# Data Privacy App Frontend
+# Data Privacy App - Frontend
 
-This is the React frontend for the Data Privacy Application. It provides a user interface for managing privacy preferences, viewing company data sharing terms, and visualizing data sharing relationships.
+This is the frontend for the Data Privacy App, built with React.
 
-## Project Structure
+## Structure
 
 ```
 frontend/
-├── public/              # Static assets and HTML template
-├── src/                 # Source code
-│   ├── components/      # Reusable UI components
-│   │   ├── company/     # Company-related components
-│   │   └── preferences/ # Preference-related components
-│   ├── hooks/           # Custom React hooks
-│   ├── pages/           # Page components
-│   ├── services/        # API services
-│   ├── utils/           # Utility functions
-│   ├── contexts/        # React contexts
-│   ├── App.js           # Main App component
-│   └── index.js         # Entry point
-└── package.json         # Dependencies and scripts
+├── public/            # Static assets
+├── src/
+│   ├── components/    # Reusable UI components
+│   │   ├── common/    # Shared components (Header, Footer)
+│   │   ├── auth/      # Authentication components
+│   │   ├── company/   # Company-related components
+│   │   └── preference/# Preference-related components
+│   ├── contexts/      # React contexts
+│   ├── hooks/         # Custom React hooks
+│   ├── pages/         # Page components
+│   ├── services/      # API services
+│   ├── utils/         # Utility functions
+│   ├── App.js         # Main App component
+│   ├── index.js       # Entry point
+│   └── setupProxy.js  # Proxy configuration
+└── package.json       # Frontend dependencies
 ```
 
-## Architecture
+## Available Scripts
 
-The frontend follows a component-based architecture with separation of concerns:
-- **Components**: Reusable UI elements
-- **Pages**: Top-level route components
-- **Hooks**: Shared stateful logic
-- **Services**: API communication
-- **Contexts**: Global state management
-- **Utils**: Helper functions and utilities
+In the project directory, you can run:
 
-## Key Features
+### `npm start`
 
-- User authentication
-- Company data management
-- Privacy preference settings
-- Data sharing terms visualization
-- Network visualization of data sharing relationships
+Runs the app in the development mode.\
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-## Setup
+### `npm test`
 
-1. Install dependencies:
-   ```
-   npm install
-   ```
+Launches the test runner in the interactive watch mode.
 
-2. Start development server:
-   ```
-   npm start
-   ```
+### `npm run build`
 
-3. Build for production:
-   ```
-   npm run build
-   ```
+Builds the app for production to the `build` folder.
 
-## Dependencies
+## Environment Variables
 
-- React
-- React Router DOM
-- Axios for API calls
-- Bootstrap for styling
-- D3.js for data visualization
-- Formik and Yup for form validation 
+The frontend uses the following environment variables:
+
+- `REACT_APP_API_URL`: The URL of the backend API (defaults to http://localhost:5000)
+- `REACT_APP_ENV`: The environment (development, test, production)
+
+## Connection to Backend
+
+The frontend connects to the backend through the proxy configuration in `src/setupProxy.js`. All API requests are prefixed with `/api`. 

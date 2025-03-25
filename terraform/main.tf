@@ -15,58 +15,92 @@ provider "aws" {
   region = var.aws_region
 }
 
-# Variables
+# Define all resources based on terraform variables
+# Environment specific configurations will be loaded from the environments directory
+
+# Variables for environment selection
+variable "environment" {
+  description = "Deployment environment (dev, test, prod)"
+  type        = string
+  default     = "dev"
+}
+
 variable "aws_region" {
-  description = "AWS region to deploy resources"
+  description = "AWS region for all resources"
   type        = string
   default     = "us-east-1"
 }
 
-variable "environment" {
-  description = "Environment name (dev, test, prod)"
-  type        = string
+# Load environment-specific configuration
+locals {
+  env_config = "${path.module}/environments/${var.environment}/config.tfvars"
 }
 
-variable "project_name" {
-  description = "Project name"
-  type        = string
-  default     = "data-privacy-app"
+# VPC and Network
+module "network" {
+  source      = "./modules/network"
+  environment = var.environment
+  vpc_cidr    = "10.0.0.0/16"
 }
 
-# Load modules
+# Database (RDS)
 module "database" {
   source      = "./modules/database"
   environment = var.environment
-  project_name = var.project_name
+  vpc_id      = module.network.vpc_id
+  subnet_ids  = module.network.private_subnet_ids
+  depends_on  = [module.network]
 }
 
-module "elastic_search" {
-  source      = "./modules/elastic_search"
-  environment = var.environment
-  project_name = var.project_name
-}
-
+# Backend - Elastic Beanstalk
 module "backend" {
-  source      = "./modules/backend"
-  environment = var.environment
-  project_name = var.project_name
-  db_endpoint = module.database.db_endpoint
-  db_name     = module.database.db_name
-  es_endpoint = module.elastic_search.es_endpoint
+  source       = "./modules/backend"
+  environment  = var.environment
+  vpc_id       = module.network.vpc_id
+  subnet_ids   = module.network.private_subnet_ids
+  database_url = module.database.database_url
+  depends_on   = [module.database]
 }
 
+# Frontend - S3 and CloudFront
 module "frontend" {
   source      = "./modules/frontend"
   environment = var.environment
-  project_name = var.project_name
-  api_endpoint = module.backend.api_endpoint
+  domain_name = var.environment == "prod" ? "dataprivacyapp.com" : "${var.environment}.dataprivacyapp.com"
 }
 
-# Outputs
+# API Gateway
+module "api_gateway" {
+  source      = "./modules/api_gateway"
+  environment = var.environment
+  backend_url = module.backend.backend_url
+  depends_on  = [module.backend]
+}
+
+# Elasticsearch for search
+module "elasticsearch" {
+  source      = "./modules/elasticsearch"
+  environment = var.environment
+  vpc_id      = module.network.vpc_id
+  subnet_ids  = module.network.private_subnet_ids
+  depends_on  = [module.network]
+}
+
+# Output the endpoints and important values
 output "frontend_url" {
   value = module.frontend.frontend_url
 }
 
-output "backend_url" {
-  value = module.backend.api_endpoint
+output "api_url" {
+  value = module.api_gateway.api_url
+}
+
+output "elasticsearch_url" {
+  value = module.elasticsearch.elasticsearch_url
+  sensitive = true
+}
+
+output "database_connection" {
+  value = module.database.database_url
+  sensitive = true
 } 

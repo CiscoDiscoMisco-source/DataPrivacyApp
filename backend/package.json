@@ -1,0 +1,17 @@
+{
+  "name": "data-privacy-app-backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "python app.py",
+    "dev": "FLASK_ENV=development FLASK_APP=app.py FLASK_DEBUG=1 flask run",
+    "test": "pytest tests/",
+    "lint": "flake8 app/ tests/",
+    "lint:fix": "black app/ tests/",
+    "db:migrate": "flask db migrate",
+    "db:upgrade": "flask db upgrade"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+} 

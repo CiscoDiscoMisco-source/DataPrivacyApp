@@ -35,26 +35,31 @@ def create_app(config_name=None):
     bcrypt.init_app(app)
     jwt.init_app(app)
     
-    # Register blueprints
-    from app.api.auth import auth_bp
-    from app.api.companies import companies_bp
-    from app.api.data_types import data_types_bp
-    from app.api.user_preferences import user_preferences_bp
-    from app.api.data_sharing_terms import data_sharing_terms_bp
-    from app.api.users import users_bp
-    from app.api.search import search_bp
+    # Register API v1 blueprints
+    from app.api.v1.auth import auth_bp
+    from app.api.v1.companies import companies_bp
+    from app.api.v1.data_types import data_types_bp
+    from app.api.v1.user_preferences import user_preferences_bp
+    from app.api.v1.data_sharing_terms import data_sharing_terms_bp
+    from app.api.v1.users import users_bp
+    from app.api.v1.search import search_bp
     
-    app.register_blueprint(auth_bp, url_prefix='/api/auth')
-    app.register_blueprint(companies_bp, url_prefix='/api/companies')
-    app.register_blueprint(data_types_bp, url_prefix='/api/data-types')
-    app.register_blueprint(user_preferences_bp, url_prefix='/api/user-preferences')
-    app.register_blueprint(data_sharing_terms_bp, url_prefix='/api/data-sharing-terms')
-    app.register_blueprint(users_bp, url_prefix='/api/users')
-    app.register_blueprint(search_bp, url_prefix='/api/search')
+    # Register with versioned URL prefixes
+    app.register_blueprint(auth_bp, url_prefix='/api/v1/auth')
+    app.register_blueprint(companies_bp, url_prefix='/api/v1/companies')
+    app.register_blueprint(data_types_bp, url_prefix='/api/v1/data-types')
+    app.register_blueprint(user_preferences_bp, url_prefix='/api/v1/user-preferences')
+    app.register_blueprint(data_sharing_terms_bp, url_prefix='/api/v1/data-sharing-terms')
+    app.register_blueprint(users_bp, url_prefix='/api/v1/users')
+    app.register_blueprint(search_bp, url_prefix='/api/v1/search')
     
-    # Create database tables if they don't exist
-    @app.before_first_request
-    def create_tables():
+    # Create database tables if they don't exist - Updated for Flask 2.3+
+    with app.app_context():
         db.create_all()
+    
+    @app.route('/api/health')
+    def health_check():
+        """Health check endpoint for AWS load balancer"""
+        return {'status': 'healthy'}, 200
     
     return app 
