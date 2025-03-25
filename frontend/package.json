@@ -16,6 +16,7 @@
     "@typescript-eslint/eslint-plugin": "^8.28.0",
     "@typescript-eslint/parser": "^8.28.0",
     "autoprefixer": "^10.4.16",
+    "cross-env": "^7.0.3",
     "eslint": "^9.23.0",
     "eslint-config-next": "^15.2.4",
     "postcss": "^8.4.32",
@@ -24,8 +25,8 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "NODE_ENV=production next build",
-    "start": "NODE_ENV=production next start",
+    "build": "cross-env NODE_ENV=production next build",
+    "start": "cross-env NODE_ENV=production next start",
     "lint": "next lint"
   },
   "eslintConfig": {
