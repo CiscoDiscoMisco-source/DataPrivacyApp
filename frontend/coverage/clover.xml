@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1742939673829" clover="3.2.0">
+  <project timestamp="1742939673829" name="All files">
+    <metrics statements="13" coveredstatements="13" conditionals="11" coveredconditionals="10" methods="4" coveredmethods="4" elements="28" coveredelements="27" complexity="0" loc="13" ncloc="13" packages="1" files="3" classes="3"/>
+    <file name="Layout.tsx" path="C:\Users\vicen\Documents\JavaScript Course\Data Privacy App AWS Native\Data-Privacy-App\frontend\components\Layout.tsx">
+      <metrics statements="2" coveredstatements="2" conditionals="1" coveredconditionals="1" methods="1" coveredmethods="1"/>
+      <line num="10" count="1" type="stmt"/>
+      <line num="14" count="2" type="stmt"/>
+    </file>
+    <file name="NavLink.tsx" path="C:\Users\vicen\Documents\JavaScript Course\Data Privacy App AWS Native\Data-Privacy-App\frontend\components\NavLink.tsx">
+      <metrics statements="6" coveredstatements="6" conditionals="8" coveredconditionals="8" methods="1" coveredmethods="1"/>
+      <line num="12" count="1" type="stmt"/>
+      <line num="18" count="5" type="stmt"/>
+      <line num="19" count="5" type="stmt"/>
+      <line num="22" count="5" type="stmt"/>
+      <line num="29" count="5" type="stmt"/>
+      <line num="35" count="5" type="stmt"/>
+    </file>
+    <file name="Navigation.tsx" path="C:\Users\vicen\Documents\JavaScript Course\Data Privacy App AWS Native\Data-Privacy-App\frontend\components\Navigation.tsx">
+      <metrics statements="5" coveredstatements="5" conditionals="2" coveredconditionals="1" methods="2" coveredmethods="2"/>
+      <line num="4" count="1" type="stmt"/>
+      <line num="5" count="3" type="stmt"/>
+      <line num="7" count="3" type="stmt"/>
+      <line num="14" count="3" type="stmt"/>
+      <line num="25" count="12" type="stmt"/>
+    </file>
+  </project>
+</coverage>
