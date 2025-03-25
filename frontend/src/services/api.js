@@ -7,9 +7,7 @@ const API_BASE_URL = '/api';
 const API_VERSION = 'v1';
 
 // Helper function to get auth token
-const getAuthToken = () => {
-  return localStorage.getItem('dp_access_token');
-};
+const getAuthToken = () => localStorage.getItem('dp_access_token');
 
 // Helper to build headers with authentication
 const buildHeaders = (customHeaders = {}) => {
@@ -36,6 +34,21 @@ const buildApiUrl = (endpoint) => {
   return `${API_BASE_URL}/${API_VERSION}${endpoint}`;
 };
 
+// Helper to handle API responses
+const handleResponse = async (response) => {
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    console.error('API error details:', {
+      status: response.status,
+      statusText: response.statusText,
+      errorData
+    });
+    throw new Error(errorData.message || `API error: ${response.status} - ${response.statusText}`);
+  }
+  
+  return await response.json();
+};
+
 /**
  * Send a GET request to the API
  * @param {string} endpoint - API endpoint
@@ -57,12 +70,7 @@ export const get = async (endpoint, params = {}) => {
       credentials: 'include'
     });
     
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `API error: ${response.status}`);
-    }
-    
-    return await response.json();
+    return await handleResponse(response);
   } catch (error) {
     console.error('API request failed:', error);
     throw error;
@@ -84,18 +92,7 @@ export const post = async (endpoint, data = {}) => {
       body: JSON.stringify(data)
     });
     
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('API error details:', {
-        status: response.status,
-        statusText: response.statusText,
-        endpoint,
-        errorData
-      });
-      throw new Error(errorData.message || `API error: ${response.status} - ${response.statusText}`);
-    }
-    
-    return await response.json();
+    return await handleResponse(response);
   } catch (error) {
     console.error('API request failed:', error);
     throw error;
@@ -117,12 +114,7 @@ export const put = async (endpoint, data = {}) => {
       body: JSON.stringify(data)
     });
     
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `API error: ${response.status}`);
-    }
-    
-    return await response.json();
+    return await handleResponse(response);
   } catch (error) {
     console.error('API request failed:', error);
     throw error;
@@ -142,12 +134,7 @@ export const del = async (endpoint) => {
       credentials: 'include'
     });
     
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `API error: ${response.status}`);
-    }
-    
-    return await response.json();
+    return await handleResponse(response);
   } catch (error) {
     console.error('API request failed:', error);
     throw error;

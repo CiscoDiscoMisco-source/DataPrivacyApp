@@ -1,82 +1,33 @@
 import React from 'react';
+import DataUsageSection from '../components/preference/DataUsageSection';
+import CommunicationSection from '../components/preference/CommunicationSection';
+import CompanyPreferencesList from '../components/preference/CompanyPreferencesList';
 
 const PreferencesPage = () => {
   return (
-    <div className="preferences-page">
-      <h2>My Privacy Preferences</h2>
+    <div>
+      <h2 className="text-2xl font-semibold text-gray-800 mb-6">My Privacy Preferences</h2>
       
-      <div className="form-container">
-        <p className="mb-4">
+      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <p className="text-gray-600 mb-6">
           Manage your global privacy preferences across all companies. 
           These settings will be applied as defaults when a new company is added to the system.
         </p>
         
-        <h3 className="mb-3">Data Usage Preferences</h3>
+        <DataUsageSection />
+        <CommunicationSection />
         
-        <div className="mb-4">
-          <div className="form-check mb-2">
-            <input className="form-check-input" type="checkbox" id="marketingPref" />
-            <label className="form-check-label" htmlFor="marketingPref">
-              Allow marketing communications
-            </label>
-          </div>
-          <div className="form-check mb-2">
-            <input className="form-check-input" type="checkbox" id="analyticsPref" />
-            <label className="form-check-label" htmlFor="analyticsPref">
-              Allow analytics and usage data collection
-            </label>
-          </div>
-          <div className="form-check mb-2">
-            <input className="form-check-input" type="checkbox" id="thirdPartyPref" />
-            <label className="form-check-label" htmlFor="thirdPartyPref">
-              Allow sharing data with third parties
-            </label>
-          </div>
-        </div>
-        
-        <h3 className="mb-3">Communication Preferences</h3>
-        
-        <div className="mb-4">
-          <div className="form-check mb-2">
-            <input className="form-check-input" type="checkbox" id="emailPref" />
-            <label className="form-check-label" htmlFor="emailPref">
-              Email notifications
-            </label>
-          </div>
-          <div className="form-check mb-2">
-            <input className="form-check-input" type="checkbox" id="smsPref" />
-            <label className="form-check-label" htmlFor="smsPref">
-              SMS notifications
-            </label>
-          </div>
-        </div>
-        
-        <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-          <button className="btn btn-primary" type="button">
+        <div className="flex justify-end mt-6">
+          <button 
+            className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50" 
+            type="button"
+          >
             Save Preferences
           </button>
         </div>
       </div>
       
-      <div className="mt-5">
-        <h3>Company-Specific Preferences</h3>
-        <p>You have set custom preferences for the following companies:</p>
-        
-        <div className="list-group">
-          <a href="#" className="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-            Acme Corporation
-            <span className="badge bg-primary rounded-pill">Custom</span>
-          </a>
-          <a href="#" className="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-            Tech Innovations Inc
-            <span className="badge bg-primary rounded-pill">Custom</span>
-          </a>
-          <a href="#" className="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-            Global Data Systems
-            <span className="badge bg-primary rounded-pill">Custom</span>
-          </a>
-        </div>
-      </div>
+      <CompanyPreferencesList />
     </div>
   );
 };

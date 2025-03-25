@@ -5,7 +5,7 @@ import api from './api';
 export const getCompanies = async () => {
   try {
     const response = await api.get('/companies');
-    return response.data;
+    return response.companies || response;
   } catch (error) {
     console.error('Error fetching companies:', error);
     throw error;
@@ -16,7 +16,7 @@ export const getCompanies = async () => {
 export const getCompanyById = async (id) => {
   try {
     const response = await api.get(`/companies/${id}`);
-    return response.data;
+    return response.company || response;
   } catch (error) {
     console.error(`Error fetching company ${id}:`, error);
     throw error;
@@ -26,8 +26,8 @@ export const getCompanyById = async (id) => {
 // Fetch user preferences for a specific company
 export const getCompanyPreferences = async (companyId) => {
   try {
-    const response = await api.get(`/companies/${companyId}/preferences`);
-    return response.data;
+    const response = await api.get(`/user-preferences/companies/${companyId}`);
+    return response.preferences || response;
   } catch (error) {
     console.error(`Error fetching preferences for company ${companyId}:`, error);
     throw error;
@@ -37,8 +37,8 @@ export const getCompanyPreferences = async (companyId) => {
 // Update user preferences for a specific company
 export const updateCompanyPreferences = async (companyId, preferences) => {
   try {
-    const response = await api.put(`/companies/${companyId}/preferences`, preferences);
-    return response.data;
+    const response = await api.put(`/user-preferences/companies/${companyId}`, preferences);
+    return response.preferences || response;
   } catch (error) {
     console.error(`Error updating preferences for company ${companyId}:`, error);
     throw error;
@@ -48,8 +48,8 @@ export const updateCompanyPreferences = async (companyId, preferences) => {
 // Fetch global user preferences
 export const getGlobalPreferences = async () => {
   try {
-    const response = await api.get('/preferences/global');
-    return response.data;
+    const response = await api.get('/user-preferences/global');
+    return response.preferences || response;
   } catch (error) {
     console.error('Error fetching global preferences:', error);
     throw error;
@@ -59,8 +59,8 @@ export const getGlobalPreferences = async () => {
 // Update global user preferences
 export const updateGlobalPreferences = async (preferences) => {
   try {
-    const response = await api.put('/preferences/global', preferences);
-    return response.data;
+    const response = await api.put('/user-preferences/global', preferences);
+    return response.preferences || response;
   } catch (error) {
     console.error('Error updating global preferences:', error);
     throw error;
@@ -70,8 +70,8 @@ export const updateGlobalPreferences = async (preferences) => {
 // Fetch user tokens
 export const getTokens = async () => {
   try {
-    const response = await api.get('/tokens');
-    return response.data;
+    const response = await api.get('/auth/tokens');
+    return response.tokens || response;
   } catch (error) {
     console.error('Error fetching tokens:', error);
     throw error;
@@ -81,8 +81,8 @@ export const getTokens = async () => {
 // Create a new token
 export const createToken = async (tokenData) => {
   try {
-    const response = await api.post('/tokens', tokenData);
-    return response.data;
+    const response = await api.post('/auth/tokens', tokenData);
+    return response.token || response;
   } catch (error) {
     console.error('Error creating token:', error);
     throw error;
@@ -92,7 +92,7 @@ export const createToken = async (tokenData) => {
 // Delete a token
 export const deleteToken = async (tokenId) => {
   try {
-    await api.delete(`/tokens/${tokenId}`);
+    await api.delete(`/auth/tokens/${tokenId}`);
     return true;
   } catch (error) {
     console.error(`Error deleting token ${tokenId}:`, error);

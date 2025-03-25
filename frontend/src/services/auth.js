@@ -12,8 +12,6 @@ const USER_KEY = 'dp_user';
 
 // Helper for handling API errors
 const handleApiError = (error) => {
-  console.error('Auth API error:', error);
-  
   // Try to extract a meaningful message
   let message = 'Authentication failed. Please try again.';
   
@@ -35,6 +33,17 @@ const handleApiError = (error) => {
   throw new Error(message);
 };
 
+// Helper to store user session data
+const storeUserSession = (response) => {
+  if (response && response.access_token) {
+    localStorage.setItem(ACCESS_TOKEN_KEY, response.access_token);
+    localStorage.setItem(REFRESH_TOKEN_KEY, response.refresh_token || '');
+    localStorage.setItem(USER_KEY, JSON.stringify(response.user || {}));
+    return true;
+  }
+  return false;
+};
+
 // Authentication service
 const AuthService = {
   /**
@@ -45,14 +54,7 @@ const AuthService = {
   register: async (userData) => {
     try {
       const response = await ApiService.post('/auth/register', userData);
-      
-      // Store tokens and user data if successful
-      if (response && response.access_token) {
-        localStorage.setItem(ACCESS_TOKEN_KEY, response.access_token);
-        localStorage.setItem(REFRESH_TOKEN_KEY, response.refresh_token);
-        localStorage.setItem(USER_KEY, JSON.stringify(response.user));
-      }
-      
+      storeUserSession(response);
       return response;
     } catch (error) {
       return handleApiError(error);
@@ -67,14 +69,7 @@ const AuthService = {
   login: async (credentials) => {
     try {
       const response = await ApiService.post('/auth/login', credentials);
-      
-      // Store tokens and user data if successful
-      if (response && response.access_token) {
-        localStorage.setItem(ACCESS_TOKEN_KEY, response.access_token);
-        localStorage.setItem(REFRESH_TOKEN_KEY, response.refresh_token);
-        localStorage.setItem(USER_KEY, JSON.stringify(response.user));
-      }
-      
+      storeUserSession(response);
       return response;
     } catch (error) {
       return handleApiError(error);
@@ -103,17 +98,13 @@ const AuthService = {
    * Check if a user is currently logged in
    * @returns {boolean} - True if user is logged in
    */
-  isLoggedIn: () => {
-    return !!localStorage.getItem(ACCESS_TOKEN_KEY);
-  },
+  isLoggedIn: () => !!localStorage.getItem(ACCESS_TOKEN_KEY),
   
   /**
    * Get the current access token
    * @returns {string|null} - Current access token or null
    */
-  getAccessToken: () => {
-    return localStorage.getItem(ACCESS_TOKEN_KEY);
-  },
+  getAccessToken: () => localStorage.getItem(ACCESS_TOKEN_KEY),
   
   /**
    * Refresh the access token using the refresh token
@@ -121,7 +112,10 @@ const AuthService = {
    */
   refreshToken: async () => {
     try {
-      const response = await ApiService.post('/auth/refresh');
+      const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+      if (!refreshToken) throw new Error('No refresh token available');
+      
+      const response = await ApiService.post('/auth/refresh', { refresh_token: refreshToken });
       
       if (response && response.access_token) {
         localStorage.setItem(ACCESS_TOKEN_KEY, response.access_token);
