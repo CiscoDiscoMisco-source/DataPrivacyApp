@@ -20,7 +20,8 @@ def create_app(config_name=None):
         config_name = os.environ.get('FLASK_ENV', 'development')
     
     if config_name == 'production':
-        app.config.from_object('app.config.ProductionConfig')
+        from app.config.production import ProductionConfig
+        app.config.from_object(ProductionConfig)
         
         # If using Supabase's connection pooler in horizontally scaling environments
         if 'pooler.supabase.co' in os.environ.get('POSTGRES_URL', ''):
@@ -29,9 +30,11 @@ def create_app(config_name=None):
                 'poolclass': NullPool
             }
     elif config_name == 'testing':
-        app.config.from_object('app.config.TestingConfig')
+        from app.config.testing import TestingConfig
+        app.config.from_object(TestingConfig)
     else:
-        app.config.from_object('app.config.DevelopmentConfig')
+        from app.config.development import DevelopmentConfig
+        app.config.from_object(DevelopmentConfig)
     
     # Ensure SQLALCHEMY_DATABASE_URI is set - fallback if environment variables are not loaded
     if not app.config.get('SQLALCHEMY_DATABASE_URI'):
