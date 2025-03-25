@@ -16,6 +16,8 @@
 .env.local
 .env.test.local
 .env.production.local
+.env.production
+.env.development.local
 
 npm-debug.log*
 yarn-debug.log*
@@ -40,6 +42,8 @@ terraform.tfvars
 
 # ENV
 .env
+.env.production
+.env.development.local
 
 # IDE
 .idea/
