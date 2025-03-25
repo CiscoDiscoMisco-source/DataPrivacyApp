@@ -6,6 +6,7 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 import os
 import sys
+from dotenv import load_dotenv
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -15,6 +16,12 @@ jwt = JWTManager()
 
 def create_app(config_name=None):
     app = Flask(__name__)
+    
+    # Load environment variables from .env.production in production
+    if os.environ.get('FLASK_ENV') == 'production':
+        load_dotenv('.env.production')
+    else:
+        load_dotenv()
     
     # Load configuration based on environment
     if config_name is None:
@@ -49,7 +56,7 @@ def create_app(config_name=None):
         app.config['SQLALCHEMY_DATABASE_URI'] = app.config.get('SQLALCHEMY_DATABASE_URI').replace('postgres://', 'postgresql://', 1)
     
     # Ensure Supabase credentials are set - fail if not found
-    if not app.config.get('SUPABASE_URL') or not app.config.get('SUPABASE_KEY'):
+    if not app.config.get('SUPABASE_URL') or not app.config.get('SUPABASE_ANON_KEY'):
         print("ERROR: Supabase credentials are not set!")
         print("Please set the SUPABASE_URL and SUPABASE_KEY environment variables")
         print("Exiting application...")
