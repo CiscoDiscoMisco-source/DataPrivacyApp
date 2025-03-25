@@ -9,7 +9,6 @@ const Navigation = () => {
     { name: 'Companies', path: '/companies' },
     { name: 'Settings', path: '/settings' },
     { name: 'Preferences', path: '/preferences' },
-    { name: 'Design', path: '/design' },
   ];
 
   return (
@@ -18,7 +17,7 @@ const Navigation = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <span className="glass-heading text-xl">Data Privacy App</span>
+              <span className="text-xl font-bold text-primary-50">Data Privacy App</span>
             </Link>
           </div>
           <div className="flex items-center space-x-4">
@@ -28,8 +27,8 @@ const Navigation = () => {
                 href={item.path}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                   router.pathname === item.path
-                    ? 'glass-button'
-                    : 'text-primary-dark hover:text-primary-light hover:bg-primary-frosted'
+                    ? 'bg-primary-600/30 text-primary-50 backdrop-blur-md border border-primary-400/30'
+                    : 'text-primary-100 hover:bg-primary-500/20 hover:text-white'
                 }`}
               >
                 {item.name}
