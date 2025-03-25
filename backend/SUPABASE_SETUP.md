@@ -40,7 +40,7 @@ This guide helps you set up your application to work with Supabase as your Postg
    ```
    POSTGRES_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres
    SUPABASE_URL=https://[YOUR-PROJECT-REF].supabase.co
-   SUPABASE_KEY=[YOUR-ANON-KEY]
+   SUPABASE_ANON_KEY=[YOUR-ANON-KEY]
    SUPABASE_JWT_SECRET=[YOUR-JWT-SECRET]
    ```
 

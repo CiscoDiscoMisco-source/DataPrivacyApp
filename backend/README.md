@@ -1,6 +1,6 @@
 # Data Privacy App - Backend
 
-This is the backend for the Data Privacy App, built with Python, Flask, and PostgreSQL.
+This is the backend for the Data Privacy App, built with Python, Flask, and Supabase.
 
 ## Structure
 
@@ -11,18 +11,16 @@ backend/
 │   │   ├── v1/        # API version 1
 │   │   └── __init__.py
 │   ├── models/        # Database models
-│   ├── schemas/       # Validation schemas
+│   ├── schemas/       # Pydantic validation schemas
 │   ├── services/      # Business logic
 │   ├── utils/         # Utility functions
 │   └── __init__.py    # App factory
-├── migrations/        # Database migrations
 ├── tests/             # Test directory
 │   ├── unit/          # Unit tests
 │   └── integration/   # Integration tests
 ├── app.py             # Application entry point
 ├── config.py          # Configuration
-├── requirements.txt   # Production dependencies
-└── requirements-dev.txt # Development dependencies
+└── requirements.txt   # Dependencies
 ```
 
 ## Setup
@@ -44,18 +42,12 @@ source venv/bin/activate
 3. Install dependencies:
 ```
 pip install -r requirements.txt
-pip install -r requirements-dev.txt  # for development
 ```
 
 4. Set up environment variables:
 ```
 cp .env.template .env
 # Then edit .env with your configuration
-```
-
-5. Run database migrations:
-```
-flask db upgrade
 ```
 
 ## Running the App
@@ -80,7 +72,8 @@ pytest tests/
 The backend uses the following environment variables:
 
 - `FLASK_ENV`: The environment (development, testing, production)
-- `POSTGRES_URL`: PostgreSQL database connection string
+- `SUPABASE_URL`: Supabase project URL
+- `SUPABASE_ANON_KEY`: Supabase project anonymous key
 - `SECRET_KEY`: Secret key for JWT tokens
 - `JWT_SECRET_KEY`: Secret key for JWT
 - `ELASTICSEARCH_URL`: Elasticsearch connection string
@@ -90,10 +83,22 @@ The backend uses the following environment variables:
 The API is versioned, with all endpoints prefixed with `/api/v1/`.
 
 Main endpoints:
-- `/api/auth/`: Authentication endpoints
-- `/api/companies/`: Company data
-- `/api/data-types/`: Data type definitions
-- `/api/user-preferences/`: User preferences
-- `/api/data-sharing-terms/`: Data sharing terms
-- `/api/users/`: User management
-- `/api/search/`: Search functionality 
+- `/api/v1/auth/`: Authentication endpoints
+- `/api/v1/companies/`: Company data
+- `/api/v1/data-types/`: Data type definitions
+- `/api/v1/user-preferences/`: User preferences
+- `/api/v1/data-sharing-terms/`: Data sharing terms
+- `/api/v1/users/`: User management
+- `/api/v1/search/`: Search functionality
+
+## Dependencies
+
+Key dependencies include:
+- Flask: Web framework
+- Flask-Cors: CORS support
+- Flask-Bcrypt: Password hashing
+- Flask-JWT-Extended: JWT authentication
+- Supabase: Database and authentication
+- Elasticsearch: Search functionality
+- Pydantic: Data validation
+- email-validator: Email validation 

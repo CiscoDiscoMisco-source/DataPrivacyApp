@@ -17,10 +17,10 @@ def check_connection():
     
     # Get Supabase credentials from environment
     supabase_url = os.environ.get('SUPABASE_URL')
-    supabase_key = os.environ.get('SUPABASE_KEY')
+    supabase_key = os.environ.get('SUPABASE_ANON_KEY')
     
     if not supabase_url or not supabase_key:
-        print("❌ Error: SUPABASE_URL and SUPABASE_KEY environment variables must be set")
+        print("❌ Error: SUPABASE_URL and SUPABASE_ANON_KEY environment variables must be set")
         return False
     
     try:
