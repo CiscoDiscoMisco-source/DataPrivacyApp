@@ -44,15 +44,26 @@ def create_app(config_name=None):
     # Ensure Supabase credentials are set - fail if not found
     if not app.config.get('SUPABASE_URL') or not app.config.get('SUPABASE_ANON_KEY'):
         logger.error("Supabase credentials are not set!")
-        logger.error("Please set the SUPABASE_URL and SUPABASE_KEY environment variables")
+        logger.error("Please set the SUPABASE_URL and SUPABASE_ANON_KEY environment variables")
         sys.exit(1)
     
-    # Initialize Supabase client
+    # Initialize Supabase clients
     supabase: Client = create_client(
         app.config.get('SUPABASE_URL'),
         app.config.get('SUPABASE_ANON_KEY')
     )
     app.supabase = supabase
+    
+    # Initialize Supabase admin client with service role key if available
+    if app.config.get('SUPABASE_SERVICE_ROLE_KEY'):
+        supabase_admin: Client = create_client(
+            app.config.get('SUPABASE_URL'),
+            app.config.get('SUPABASE_SERVICE_ROLE_KEY')
+        )
+        app.supabase_admin = supabase_admin
+    else:
+        logger.warning("SUPABASE_SERVICE_ROLE_KEY not set. Admin operations will not be available.")
+        app.supabase_admin = None
     
     # Enable CORS
     CORS(app)
