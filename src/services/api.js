@@ -3,7 +3,7 @@
  * Handles all communication with the backend
  */
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = '/api/v1';
 
 // Helper function to get auth token
 const getAuthToken = () => {

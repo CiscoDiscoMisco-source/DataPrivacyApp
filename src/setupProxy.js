@@ -6,6 +6,7 @@ module.exports = function(app) {
     createProxyMiddleware({
       target: 'http://localhost:5001',
       changeOrigin: true,
+      pathRewrite: { '^/api': '/api' }, // Keep the /api prefix when forwarding
       timeout: 60000,  // Increase timeout to 60 seconds
       logLevel: 'debug', // Enable more detailed logging
       onProxyReq: (proxyReq, req, res) => {
