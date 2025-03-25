@@ -1,42 +1,40 @@
-import React from 'react';
-import NavLink from './NavLink';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 
-const Navigation: React.FC = () => {
+const Navigation = () => {
+  const router = useRouter();
+
   const navItems = [
-    { href: '/companies', label: 'Companies' },
-    { href: '/preferences', label: 'Preferences' },
-    { href: '/settings', label: 'Settings' }
+    { name: 'Home', path: '/' },
+    { name: 'Companies', path: '/companies' },
+    { name: 'Settings', path: '/settings' },
+    { name: 'Preferences', path: '/preferences' },
   ];
-  
+
   return (
-    <nav className="py-4 mb-6">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="glass-card-dark">
-          <div className="flex justify-between items-center">
-            <div className="flex">
-              <div className="flex-shrink-0 flex items-center">
-                <span className="glass-heading text-xl">Data Privacy App</span>
-              </div>
-              <div className="hidden sm:ml-10 sm:flex sm:space-x-8">
-                {navItems.map(item => (
-                  <NavLink key={item.href} href={item.href}>
-                    {item.label}
-                  </NavLink>
-                ))}
-              </div>
+    <nav className="bg-white shadow-lg">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex justify-between h-16">
+          <div className="flex">
+            <div className="flex-shrink-0 flex items-center">
+              <span className="text-xl font-bold text-gray-800">Data Privacy App</span>
+            </div>
+            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                    router.pathname === item.path
+                      ? 'border-indigo-500 text-gray-900'
+                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
             </div>
           </div>
-        </div>
-      </div>
-      
-      {/* Mobile menu */}
-      <div className="sm:hidden mt-2">
-        <div className="space-y-2 px-4">
-          {navItems.map(item => (
-            <NavLink key={item.href} href={item.href} mobileView>
-              {item.label}
-            </NavLink>
-          ))}
         </div>
       </div>
     </nav>
