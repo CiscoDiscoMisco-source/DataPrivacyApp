@@ -9,12 +9,16 @@ module.exports = {
     extend: {
       colors: {
         'primary': {
-          DEFAULT: '#4debacff',
-          light: '#d7ebe3ff',
-          dark: '#1e9061ff',
-          glow: 'rgba(77, 235, 172, 0.7)',
-          shadow: 'rgba(30, 144, 97, 0.2)',
-          frosted: 'rgba(215, 235, 227, 0.3)',
+          50: '#f0fdf4',
+          100: '#d7ebe3',
+          200: '#b3d7c7',
+          300: '#8fc3ab',
+          400: '#6baf8f',
+          500: '#4debac',
+          600: '#1e9061',
+          700: '#1a7a54',
+          800: '#166447',
+          900: '#124e3a',
         },
       },
       boxShadow: {

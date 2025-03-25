@@ -4,8 +4,8 @@
 
 @layer base {
   body {
-    @apply bg-primary-dark text-primary-light;
-    background: linear-gradient(135deg, #1e9061ff 0%, #4debacff 100%);
+    @apply bg-primary-600 text-primary-100;
+    background: linear-gradient(135deg, #1e9061 0%, #4debac 100%);
     min-height: 100vh;
   }
 }
@@ -118,18 +118,18 @@
   }
 
   .glass-text {
-    @apply text-primary-dark;
+    @apply text-primary-600;
     text-shadow: 0 1px 2px rgba(30, 144, 97, 0.1);
   }
 
   .glass-heading {
     @apply text-2xl font-bold mb-4;
-    color: #1e9061ff;
+    color: #1e9061;
     text-shadow: 0 2px 4px rgba(30, 144, 97, 0.1);
   }
 
   .glass-container {
-    @apply bg-primary-frosted backdrop-blur-glass rounded-xl p-6;
+    @apply bg-primary-100/30 backdrop-blur-glass rounded-xl p-6;
     box-shadow: 0 8px 32px rgba(30, 144, 97, 0.2);
     border: 1px solid rgba(77, 235, 172, 0.5);
   }
