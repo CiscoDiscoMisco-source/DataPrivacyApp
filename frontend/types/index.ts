@@ -63,11 +63,13 @@ export interface LegacyUserPreference {
 
 // Settings types
 export interface UserSettings {
-  id: string;
-  userId: string;
-  darkMode: boolean;
   notificationsEnabled: boolean;
   emailFrequency: 'daily' | 'weekly' | 'monthly' | 'never';
+  darkMode: boolean;
+  emailNotifications: boolean;
+  pushNotifications: boolean;
+  twoFactorAuth: boolean;
+  loginNotifications: boolean;
 }
 
 // API response types

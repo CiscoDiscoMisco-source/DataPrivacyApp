@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ApiService from '../services/api';
 import { UserPreference, UserProfilePreference, Company } from '../types';
+import { useRouter } from 'next/router';
 
 interface PreferencesApiResponse {
   data_preferences: UserPreference[];
@@ -8,16 +9,21 @@ interface PreferencesApiResponse {
 }
 
 const PreferencesPage: React.FC = () => {
+  const router = useRouter();
+  const { companyId } = router.query;
   const [dataPreferences, setDataPreferences] = useState<UserPreference[]>([]);
   const [profilePreferences, setProfilePreferences] = useState<UserProfilePreference | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPreferences = async () => {
       try {
         setLoading(true);
-        const response = await ApiService.get<PreferencesApiResponse>('/user-preferences');
+        const response = await ApiService.get<PreferencesApiResponse>(
+          companyId ? `/user-preferences?company_id=${companyId}` : '/user-preferences'
+        );
         setDataPreferences(response.data_preferences);
         setProfilePreferences(response.profile_preferences);
         setError(null);
@@ -30,7 +36,7 @@ const PreferencesPage: React.FC = () => {
     };
 
     fetchPreferences();
-  }, []);
+  }, [companyId]);
 
   const updatePreference = async (preferenceId: string, allowed: boolean) => {
     try {
@@ -38,10 +44,14 @@ const PreferencesPage: React.FC = () => {
       await ApiService.put<UserPreference>(`/user-preferences/data/${preferenceId}`, { allowed });
       
       // Refresh the list after update
-      const response = await ApiService.get<PreferencesApiResponse>('/user-preferences');
+      const response = await ApiService.get<PreferencesApiResponse>(
+        companyId ? `/user-preferences?company_id=${companyId}` : '/user-preferences'
+      );
       setDataPreferences(response.data_preferences);
       setProfilePreferences(response.profile_preferences);
       setError(null);
+      setSuccessMessage('Preferences updated successfully');
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       console.error('Failed to update preference:', err);
       setError('Failed to update preference. Please try again.');
@@ -50,14 +60,40 @@ const PreferencesPage: React.FC = () => {
     }
   };
 
+  const updateProfilePreferences = async (updates: Partial<UserProfilePreference>) => {
+    try {
+      setLoading(true);
+      await ApiService.put('/user-preferences/profile', updates);
+      const response = await ApiService.get<PreferencesApiResponse>('/user-preferences');
+      setProfilePreferences(response.profile_preferences);
+      setError(null);
+      setSuccessMessage('Profile preferences updated successfully');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      console.error('Failed to update profile preferences:', err);
+      setError('Failed to update profile preferences. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6">My Privacy Preferences</h2>
+      <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+        {companyId ? 'Company Privacy Preferences' : 'My Privacy Preferences'}
+      </h2>
+      
+      {successMessage && (
+        <div className="p-4 mb-4 neu-concave bg-green-50 text-green-700 rounded-lg border-l-4 border-green-500" role="alert">
+          {successMessage}
+        </div>
+      )}
       
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
         <p className="text-gray-600 mb-6">
-          Manage your global privacy preferences across all companies. 
-          These settings will be applied as defaults when a new company is added to the system.
+          {companyId 
+            ? 'Manage your privacy preferences for this specific company.'
+            : 'Manage your global privacy preferences across all companies. These settings will be applied as defaults when a new company is added to the system.'}
         </p>
         
         {/* Profile Preferences Section */}
@@ -72,8 +108,7 @@ const PreferencesPage: React.FC = () => {
                     id="email-notifications"
                     checked={profilePreferences.email_notifications}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    // Will implement handler later
-                    onChange={() => {}}
+                    onChange={(e) => updateProfilePreferences({ email_notifications: e.target.checked })}
                   />
                   <label htmlFor="email-notifications" className="ml-2 block text-sm text-gray-900">
                     Receive email notifications
@@ -91,8 +126,7 @@ const PreferencesPage: React.FC = () => {
                     id="auto-delete"
                     checked={profilePreferences.auto_delete_data}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    // Will implement handler later
-                    onChange={() => {}}
+                    onChange={(e) => updateProfilePreferences({ auto_delete_data: e.target.checked })}
                   />
                   <label htmlFor="auto-delete" className="ml-2 block text-sm text-gray-900">
                     Auto-delete my data
@@ -102,15 +136,6 @@ const PreferencesPage: React.FC = () => {
             </div>
           </>
         )}
-        
-        <div className="flex justify-end mt-6">
-          <button 
-            className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50" 
-            type="button"
-          >
-            Save Preferences
-          </button>
-        </div>
       </div>
       
       {/* Data Type Preferences List */}

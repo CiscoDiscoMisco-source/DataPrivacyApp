@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ApiService from '../services/api';
 import AddCompanyForm from './AddCompanyForm';
+import { useRouter } from 'next/router';
 
 interface Company {
   id: string;
@@ -17,6 +18,7 @@ interface CompaniesPageProps {
 }
 
 const CompaniesPage: React.FC<CompaniesPageProps> = ({ searchTerm }) => {
+  const router = useRouter();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -76,13 +78,11 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ searchTerm }) => {
   }, [searchTerm]);
   
   const handleViewDetails = (companyId: string): void => {
-    console.log('View company details:', companyId);
-    // Implementation will be added later
+    router.push(`/companies/${companyId}`);
   };
   
   const handleManagePreferences = (companyId: string): void => {
-    console.log('Manage preferences:', companyId);
-    // Implementation will be added later
+    router.push(`/preferences/${companyId}`);
   };
   
   const handleAddCompanySuccess = (): void => {
