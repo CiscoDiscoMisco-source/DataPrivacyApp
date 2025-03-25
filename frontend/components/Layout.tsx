@@ -12,7 +12,7 @@ const Layout: React.FC<LayoutProps> = ({
   title = 'Data Privacy App' 
 }) => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-primary-100">
       <Head>
         <title>{title}</title>
         <meta name="description" content="Manage your data privacy settings across companies" />
@@ -21,15 +21,15 @@ const Layout: React.FC<LayoutProps> = ({
       
       <Navigation />
       
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+      <main className="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
+        <div className="neu-flat-contrast px-6 py-8">
           {children}
         </div>
       </main>
       
-      <footer className="bg-white shadow-inner mt-auto">
+      <footer className="mt-12 py-6 border-t-2 border-primary-300">
         <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-sm text-gray-500">
+          <p className="text-center text-sm text-primary-800 font-medium">
             &copy; {new Date().getFullYear()} Data Privacy App. All rights reserved.
           </p>
         </div>

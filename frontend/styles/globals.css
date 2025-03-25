@@ -1,3 +1,67 @@
 @tailwind base;
 @tailwind components;
-@tailwind utilities; 
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-primary-100;
+    color: #333;
+  }
+}
+
+@layer components {
+  .neu-flat {
+    @apply bg-primary-100 shadow-neu-flat rounded-xl;
+  }
+  
+  .neu-pressed {
+    @apply bg-primary-100 shadow-neu-pressed rounded-xl;
+  }
+  
+  .neu-concave {
+    @apply bg-primary-100 shadow-neu-concave rounded-xl;
+  }
+  
+  .neu-button {
+    @apply px-4 py-2 bg-primary-100 shadow-neu-flat rounded-lg 
+           text-primary-700 font-medium transition-all duration-200 
+           hover:shadow-neu-pressed hover:text-primary-800 
+           focus:outline-none focus:shadow-neu-pressed;
+  }
+  
+  .neu-input {
+    @apply px-4 py-2 bg-primary-50 shadow-neu-pressed rounded-lg 
+           text-gray-700 w-full focus:outline-none focus:ring-2 
+           focus:ring-primary-300 transition-all duration-200;
+  }
+
+  /* Higher contrast variants */
+  .neu-flat-contrast {
+    @apply bg-primary-100 shadow-neu-flat rounded-xl border-2 border-primary-300;
+  }
+
+  .neu-button-contrast {
+    @apply px-4 py-2 bg-primary-200 shadow-neu-flat rounded-lg 
+           text-primary-800 font-semibold transition-all duration-200 
+           hover:shadow-neu-pressed hover:bg-primary-300 hover:text-primary-900
+           focus:outline-none focus:shadow-neu-pressed border-b-4 border-primary-500;
+  }
+
+  .neu-input-contrast {
+    @apply px-4 py-2 bg-primary-50 shadow-neu-pressed rounded-lg 
+           text-gray-800 w-full focus:outline-none focus:ring-2 
+           focus:ring-primary-500 border-2 border-primary-300 transition-all duration-200;
+  }
+
+  .neu-card-contrast {
+    @apply bg-primary-100 shadow-neu-flat rounded-xl border-l-4 border-primary-500;
+  }
+
+  .text-contrast {
+    @apply text-primary-900 font-semibold;
+  }
+
+  .heading-contrast {
+    @apply text-primary-800 font-bold border-b-2 border-primary-300 pb-2;
+  }
+} 

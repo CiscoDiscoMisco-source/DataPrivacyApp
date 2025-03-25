@@ -104,11 +104,11 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ searchTerm }) => {
   };
   
   return (
-    <div className="company-list">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Companies with your data</h2>
+    <div>
+      <div className="flex justify-between items-center mb-6 pb-3 border-b-2 border-primary-300">
+        <h2 className="text-2xl font-bold text-primary-800 heading-contrast">Companies with your data</h2>
         <button 
-          className="btn btn-primary" 
+          className="neu-button-contrast" 
           onClick={() => setIsAddingCompany(true)}
           disabled={isAddingCompany}
         >
@@ -117,7 +117,7 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ searchTerm }) => {
       </div>
       
       {isAddingCompany && (
-        <div className="mb-4">
+        <div className="mb-8">
           <AddCompanyForm 
             onSuccess={handleAddCompanySuccess} 
             onCancel={() => setIsAddingCompany(false)} 
@@ -126,45 +126,43 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ searchTerm }) => {
       )}
       
       {loading && !isAddingCompany && (
-        <div className="text-center py-5">
-          <div className="spinner-border" role="status">
-            <span className="visually-hidden">Loading...</span>
+        <div className="flex justify-center py-10">
+          <div className="inline-block animate-spin h-10 w-10 border-4 border-primary-600 border-t-transparent rounded-full" role="status">
+            <span className="sr-only">Loading...</span>
           </div>
         </div>
       )}
       
       {error && (
-        <div className="alert alert-danger m-3" role="alert">
+        <div className="p-4 mb-4 neu-concave bg-red-50 text-red-700 rounded-lg border-l-4 border-red-500" role="alert">
           {error}
         </div>
       )}
       
       {!loading && !error && companies.length === 0 && !isAddingCompany && (
-        <div className="alert alert-info m-3" role="alert">
+        <div className="p-4 mb-4 neu-concave bg-primary-50 text-primary-800 rounded-lg border-l-4 border-primary-500" role="alert">
           No companies found. You can add a company manually using the button above.
         </div>
       )}
       
-      <div className="row">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {companies.map(company => (
-          <div className="col-md-6 col-lg-4 mb-4" key={company.id}>
-            <div className="company-card">
-              <h3>{company.name}</h3>
-              <p>{company.description || 'No description available'}</p>
-              <div className="d-flex justify-content-between mt-3">
-                <button 
-                  className="btn btn-sm btn-outline-secondary" 
-                  onClick={() => handleViewDetails(company.id)}
-                >
-                  View Details
-                </button>
-                <button 
-                  className="btn btn-sm btn-primary" 
-                  onClick={() => handleManagePreferences(company.id)}
-                >
-                  Manage Preferences
-                </button>
-              </div>
+          <div className="neu-card-contrast p-5" key={company.id}>
+            <h3 className="text-xl font-semibold text-primary-800 mb-2 pb-2 border-b border-primary-300">{company.name}</h3>
+            <p className="text-gray-700 mb-4">{company.description || 'No description available'}</p>
+            <div className="flex justify-between mt-4 pt-3 border-t border-primary-200">
+              <button 
+                className="neu-button bg-primary-50 text-primary-700 border border-primary-300"
+                onClick={() => handleViewDetails(company.id)}
+              >
+                View Details
+              </button>
+              <button 
+                className="neu-button-contrast" 
+                onClick={() => handleManagePreferences(company.id)}
+              >
+                Manage Preferences
+              </button>
             </div>
           </div>
         ))}

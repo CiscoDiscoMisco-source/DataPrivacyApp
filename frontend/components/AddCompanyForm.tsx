@@ -66,21 +66,21 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
   };
   
   return (
-    <div className="add-company-form p-4 bg-light rounded shadow-sm">
-      <h3 className="mb-4">Add Company Manually</h3>
+    <div className="neu-flat-contrast p-6 border-t-4 border-primary-500">
+      <h3 className="text-xl font-bold text-primary-800 mb-6 pb-2 border-b-2 border-primary-300">Add Company Manually</h3>
       
       {error && (
-        <div className="alert alert-danger" role="alert">
-          {error}
+        <div className="p-4 mb-4 neu-concave bg-red-50 text-red-700 rounded-lg border-l-4 border-red-500" role="alert">
+          <span className="font-medium">{error}</span>
         </div>
       )}
       
       <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label htmlFor="name" className="form-label">Company Name *</label>
+        <div className="mb-4">
+          <label htmlFor="name" className="block text-primary-800 font-semibold mb-2">Company Name *</label>
           <input 
             type="text" 
-            className="form-control" 
+            className="neu-input-contrast" 
             id="name" 
             name="name" 
             value={company.name} 
@@ -89,11 +89,11 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           />
         </div>
         
-        <div className="mb-3">
-          <label htmlFor="industry" className="form-label">Industry</label>
+        <div className="mb-4">
+          <label htmlFor="industry" className="block text-primary-800 font-semibold mb-2">Industry</label>
           <input 
             type="text" 
-            className="form-control" 
+            className="neu-input-contrast" 
             id="industry" 
             name="industry" 
             value={company.industry || ''} 
@@ -101,11 +101,11 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           />
         </div>
         
-        <div className="mb-3">
-          <label htmlFor="website" className="form-label">Website</label>
+        <div className="mb-4">
+          <label htmlFor="website" className="block text-primary-800 font-semibold mb-2">Website</label>
           <input 
             type="url" 
-            className="form-control" 
+            className="neu-input-contrast" 
             id="website" 
             name="website" 
             value={company.website || ''} 
@@ -114,10 +114,10 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           />
         </div>
         
-        <div className="mb-3">
-          <label htmlFor="description" className="form-label">Description</label>
+        <div className="mb-4">
+          <label htmlFor="description" className="block text-primary-800 font-semibold mb-2">Description</label>
           <textarea 
-            className="form-control" 
+            className="neu-input-contrast resize-none" 
             id="description" 
             name="description" 
             value={company.description || ''} 
@@ -126,11 +126,11 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           />
         </div>
         
-        <div className="row mb-3">
-          <div className="col">
-            <label htmlFor="size_range" className="form-label">Company Size</label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label htmlFor="size_range" className="block text-primary-800 font-semibold mb-2">Company Size</label>
             <select 
-              className="form-select" 
+              className="neu-input-contrast" 
               id="size_range" 
               name="size_range" 
               value={company.size_range || ''} 
@@ -147,11 +147,11 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
             </select>
           </div>
           
-          <div className="col">
-            <label htmlFor="country" className="form-label">Country</label>
+          <div>
+            <label htmlFor="country" className="block text-primary-800 font-semibold mb-2">Country</label>
             <input 
               type="text" 
-              className="form-control" 
+              className="neu-input-contrast" 
               id="country" 
               name="country" 
               value={company.country || ''} 
@@ -160,12 +160,12 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           </div>
         </div>
         
-        <div className="row mb-3">
-          <div className="col">
-            <label htmlFor="city" className="form-label">City</label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label htmlFor="city" className="block text-primary-800 font-semibold mb-2">City</label>
             <input 
               type="text" 
-              className="form-control" 
+              className="neu-input-contrast" 
               id="city" 
               name="city" 
               value={company.city || ''} 
@@ -173,11 +173,11 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
             />
           </div>
           
-          <div className="col">
-            <label htmlFor="state" className="form-label">State/Province</label>
+          <div>
+            <label htmlFor="state" className="block text-primary-800 font-semibold mb-2">State/Province</label>
             <input 
               type="text" 
-              className="form-control" 
+              className="neu-input-contrast" 
               id="state" 
               name="state" 
               value={company.state || ''} 
@@ -186,11 +186,11 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           </div>
         </div>
         
-        <div className="mb-3">
-          <label htmlFor="logo" className="form-label">Logo URL</label>
+        <div className="mb-4">
+          <label htmlFor="logo" className="block text-primary-800 font-semibold mb-2">Logo URL</label>
           <input 
             type="url" 
-            className="form-control" 
+            className="neu-input-contrast" 
             id="logo" 
             name="logo" 
             value={company.logo || ''} 
@@ -199,10 +199,10 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           />
         </div>
         
-        <div className="d-flex justify-content-end gap-2 mt-4">
+        <div className="flex justify-end gap-4 mt-6 pt-4 border-t-2 border-primary-300">
           <button 
             type="button" 
-            className="btn btn-outline-secondary" 
+            className="neu-button bg-primary-50 text-primary-700 border border-primary-300" 
             onClick={onCancel}
             disabled={loading}
           >
@@ -210,12 +210,12 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           </button>
           <button 
             type="submit" 
-            className="btn btn-primary" 
+            className="neu-button-contrast" 
             disabled={loading}
           >
             {loading ? (
               <>
-                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <span className="inline-block animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" role="status" aria-hidden="true"></span>
                 Saving...
               </>
             ) : 'Add Company'}

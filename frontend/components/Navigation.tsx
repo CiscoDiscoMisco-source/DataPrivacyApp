@@ -10,78 +10,80 @@ const Navigation: React.FC = () => {
   };
   
   return (
-    <nav className="bg-white shadow">
+    <nav className="py-4 mb-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <span className="text-xl font-bold text-blue-600">Data Privacy App</span>
-            </div>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <Link 
-                href="/companies"
-                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                  isActive('/companies') 
-                    ? 'border-blue-500 text-gray-900' 
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                }`}
-              >
-                Companies
-              </Link>
-              <Link 
-                href="/preferences"
-                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                  isActive('/preferences') 
-                    ? 'border-blue-500 text-gray-900' 
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                }`}
-              >
-                Preferences
-              </Link>
-              <Link 
-                href="/settings"
-                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                  isActive('/settings') 
-                    ? 'border-blue-500 text-gray-900' 
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                }`}
-              >
-                Settings
-              </Link>
+        <div className="neu-flat-contrast p-4 border-b-4 border-primary-500">
+          <div className="flex justify-between items-center">
+            <div className="flex">
+              <div className="flex-shrink-0 flex items-center">
+                <span className="text-xl font-bold text-primary-800">Data Privacy App</span>
+              </div>
+              <div className="hidden sm:ml-10 sm:flex sm:space-x-8">
+                <Link 
+                  href="/companies"
+                  className={`px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    isActive('/companies') 
+                      ? 'shadow-neu-pressed text-primary-900 bg-primary-200 border-b-2 border-primary-500' 
+                      : 'shadow-neu-flat text-primary-700 hover:shadow-neu-concave hover:text-primary-800'
+                  }`}
+                >
+                  Companies
+                </Link>
+                <Link 
+                  href="/preferences"
+                  className={`px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    isActive('/preferences') 
+                      ? 'shadow-neu-pressed text-primary-900 bg-primary-200 border-b-2 border-primary-500' 
+                      : 'shadow-neu-flat text-primary-700 hover:shadow-neu-concave hover:text-primary-800'
+                  }`}
+                >
+                  Preferences
+                </Link>
+                <Link 
+                  href="/settings"
+                  className={`px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    isActive('/settings') 
+                      ? 'shadow-neu-pressed text-primary-900 bg-primary-200 border-b-2 border-primary-500' 
+                      : 'shadow-neu-flat text-primary-700 hover:shadow-neu-concave hover:text-primary-800'
+                  }`}
+                >
+                  Settings
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </div>
       
       {/* Mobile menu */}
-      <div className="sm:hidden">
-        <div className="pt-2 pb-3 space-y-1">
+      <div className="sm:hidden mt-2">
+        <div className="space-y-2 px-4">
           <Link 
             href="/companies"
-            className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+            className={`block p-3 neu-flat text-center ${
               isActive('/companies') 
-                ? 'bg-indigo-50 border-blue-500 text-blue-700' 
-                : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'
+                ? 'shadow-neu-pressed text-primary-900 bg-primary-200 border-l-4 border-primary-500' 
+                : 'text-primary-700 hover:shadow-neu-concave hover:text-primary-800'
             }`}
           >
             Companies
           </Link>
           <Link 
             href="/preferences"
-            className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+            className={`block p-3 neu-flat text-center ${
               isActive('/preferences') 
-                ? 'bg-indigo-50 border-blue-500 text-blue-700' 
-                : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'
+                ? 'shadow-neu-pressed text-primary-900 bg-primary-200 border-l-4 border-primary-500' 
+                : 'text-primary-700 hover:shadow-neu-concave hover:text-primary-800'
             }`}
           >
             Preferences
           </Link>
           <Link 
             href="/settings"
-            className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+            className={`block p-3 neu-flat text-center ${
               isActive('/settings') 
-                ? 'bg-indigo-50 border-blue-500 text-blue-700' 
-                : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'
+                ? 'shadow-neu-pressed text-primary-900 bg-primary-200 border-l-4 border-primary-500' 
+                : 'text-primary-700 hover:shadow-neu-concave hover:text-primary-800'
             }`}
           >
             Settings
