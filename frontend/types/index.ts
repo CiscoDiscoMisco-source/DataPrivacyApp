@@ -6,7 +6,14 @@
 export interface Company {
   id: string;
   name: string;
+  logo?: string;
+  industry?: string;
+  website?: string;
   description?: string;
+  size_range?: string;
+  city?: string;
+  state?: string;
+  country?: string;
   dataCollected?: string[];
   privacyUrl?: string;
   contactEmail?: string;
@@ -22,8 +29,7 @@ export interface UserPreference {
   allowDataSharing: boolean;
   allowMarketing: boolean;
   allowProfiling: boolean;
-  createdAt?: string;
-  updatedAt?: string;
+  updatedAt: string;
   company?: Company;
 }
 
@@ -31,11 +37,9 @@ export interface UserPreference {
 export interface UserSettings {
   id: string;
   userId: string;
+  darkMode: boolean;
   notificationsEnabled: boolean;
   emailFrequency: 'daily' | 'weekly' | 'monthly' | 'never';
-  darkMode: boolean;
-  createdAt?: string;
-  updatedAt?: string;
 }
 
 // API response types
@@ -51,4 +55,11 @@ export interface PaginatedResponse<T> {
   page: number;
   pageSize: number;
   totalPages: number;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email?: string;
+  isAdmin: boolean;
 } 

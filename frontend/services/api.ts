@@ -67,37 +67,55 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
   return await response.json() as T;
 };
 
-/**
- * Send a GET request to the API
- * @param {string} endpoint - API endpoint
- * @param {Object} params - Query parameters
- * @returns {Promise<T>} - Response data
- */
-export const get = async <T>(endpoint: string, params: Record<string, string> = {}): Promise<T> => {
+// Generic request function to reduce duplication
+const request = async <T>(
+  method: string,
+  endpoint: string,
+  data?: Record<string, any>,
+  params?: Record<string, string>
+): Promise<T> => {
+  // Skip API calls during server-side rendering
   if (typeof window === 'undefined') {
-    return Promise.resolve([] as unknown as T);
+    return Promise.resolve((method === 'GET' ? [] : {}) as unknown as T);
   }
   
   const url = new URL(buildApiUrl(endpoint), window.location.origin);
   
-  // Add query parameters
-  Object.keys(params).forEach(key => {
-    url.searchParams.append(key, params[key]);
-  });
+  // Add query parameters for GET requests
+  if (params && Object.keys(params).length > 0) {
+    Object.keys(params).forEach(key => {
+      url.searchParams.append(key, params[key]);
+    });
+  }
+  
+  const options: RequestInit = {
+    method,
+    headers: buildHeaders(),
+    credentials: 'include'
+  };
+  
+  // Add body for non-GET requests
+  if (method !== 'GET' && data) {
+    options.body = JSON.stringify(data);
+  }
   
   try {
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers: buildHeaders(),
-      credentials: 'include'
-    });
-    
+    const response = await fetch(url.toString(), options);
     return await handleResponse<T>(response);
   } catch (error) {
     console.error('API request failed:', error);
     throw error;
   }
 };
+
+/**
+ * Send a GET request to the API
+ * @param {string} endpoint - API endpoint
+ * @param {Object} params - Query parameters
+ * @returns {Promise<T>} - Response data
+ */
+export const get = <T>(endpoint: string, params: Record<string, string> = {}): Promise<T> => 
+  request<T>('GET', endpoint, undefined, params);
 
 /**
  * Send a POST request to the API
@@ -105,25 +123,8 @@ export const get = async <T>(endpoint: string, params: Record<string, string> = 
  * @param {Object} data - Request body data
  * @returns {Promise<T>} - Response data
  */
-export const post = async <T>(endpoint: string, data: Record<string, any> = {}): Promise<T> => {
-  if (typeof window === 'undefined') {
-    return Promise.resolve({} as T);
-  }
-  
-  try {
-    const response = await fetch(buildApiUrl(endpoint), {
-      method: 'POST',
-      headers: buildHeaders(),
-      credentials: 'include',
-      body: JSON.stringify(data)
-    });
-    
-    return await handleResponse<T>(response);
-  } catch (error) {
-    console.error('API request failed:', error);
-    throw error;
-  }
-};
+export const post = <T>(endpoint: string, data: Record<string, any> = {}): Promise<T> => 
+  request<T>('POST', endpoint, data);
 
 /**
  * Send a PUT request to the API
@@ -131,49 +132,16 @@ export const post = async <T>(endpoint: string, data: Record<string, any> = {}):
  * @param {Object} data - Request body data
  * @returns {Promise<T>} - Response data
  */
-export const put = async <T>(endpoint: string, data: Record<string, any> = {}): Promise<T> => {
-  if (typeof window === 'undefined') {
-    return Promise.resolve({} as T);
-  }
-  
-  try {
-    const response = await fetch(buildApiUrl(endpoint), {
-      method: 'PUT',
-      headers: buildHeaders(),
-      credentials: 'include',
-      body: JSON.stringify(data)
-    });
-    
-    return await handleResponse<T>(response);
-  } catch (error) {
-    console.error('API request failed:', error);
-    throw error;
-  }
-};
+export const put = <T>(endpoint: string, data: Record<string, any> = {}): Promise<T> => 
+  request<T>('PUT', endpoint, data);
 
 /**
  * Send a DELETE request to the API
  * @param {string} endpoint - API endpoint
  * @returns {Promise<T>} - Response data
  */
-export const del = async <T>(endpoint: string): Promise<T> => {
-  if (typeof window === 'undefined') {
-    return Promise.resolve({} as T);
-  }
-  
-  try {
-    const response = await fetch(buildApiUrl(endpoint), {
-      method: 'DELETE',
-      headers: buildHeaders(),
-      credentials: 'include'
-    });
-    
-    return await handleResponse<T>(response);
-  } catch (error) {
-    console.error('API request failed:', error);
-    throw error;
-  }
-};
+export const del = <T>(endpoint: string): Promise<T> => 
+  request<T>('DELETE', endpoint);
 
 const ApiService = {
   get,

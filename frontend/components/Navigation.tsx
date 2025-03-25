@@ -1,13 +1,12 @@
 import React from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
+import NavLink from './NavLink';
 
 const Navigation: React.FC = () => {
-  const router = useRouter();
-  
-  const isActive = (path: string): boolean => {
-    return router.pathname === path;
-  };
+  const navItems = [
+    { href: '/companies', label: 'Companies' },
+    { href: '/preferences', label: 'Preferences' },
+    { href: '/settings', label: 'Settings' }
+  ];
   
   return (
     <nav className="py-4 mb-6">
@@ -19,36 +18,11 @@ const Navigation: React.FC = () => {
                 <span className="text-xl font-bold text-primary-800">Data Privacy App</span>
               </div>
               <div className="hidden sm:ml-10 sm:flex sm:space-x-8">
-                <Link 
-                  href="/companies"
-                  className={`px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    isActive('/companies') 
-                      ? 'shadow-neu-pressed text-primary-900 bg-primary-200 border-b-2 border-primary-500' 
-                      : 'shadow-neu-flat text-primary-700 hover:shadow-neu-concave hover:text-primary-800'
-                  }`}
-                >
-                  Companies
-                </Link>
-                <Link 
-                  href="/preferences"
-                  className={`px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    isActive('/preferences') 
-                      ? 'shadow-neu-pressed text-primary-900 bg-primary-200 border-b-2 border-primary-500' 
-                      : 'shadow-neu-flat text-primary-700 hover:shadow-neu-concave hover:text-primary-800'
-                  }`}
-                >
-                  Preferences
-                </Link>
-                <Link 
-                  href="/settings"
-                  className={`px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    isActive('/settings') 
-                      ? 'shadow-neu-pressed text-primary-900 bg-primary-200 border-b-2 border-primary-500' 
-                      : 'shadow-neu-flat text-primary-700 hover:shadow-neu-concave hover:text-primary-800'
-                  }`}
-                >
-                  Settings
-                </Link>
+                {navItems.map(item => (
+                  <NavLink key={item.href} href={item.href}>
+                    {item.label}
+                  </NavLink>
+                ))}
               </div>
             </div>
           </div>
@@ -58,36 +32,11 @@ const Navigation: React.FC = () => {
       {/* Mobile menu */}
       <div className="sm:hidden mt-2">
         <div className="space-y-2 px-4">
-          <Link 
-            href="/companies"
-            className={`block p-3 neu-flat text-center ${
-              isActive('/companies') 
-                ? 'shadow-neu-pressed text-primary-900 bg-primary-200 border-l-4 border-primary-500' 
-                : 'text-primary-700 hover:shadow-neu-concave hover:text-primary-800'
-            }`}
-          >
-            Companies
-          </Link>
-          <Link 
-            href="/preferences"
-            className={`block p-3 neu-flat text-center ${
-              isActive('/preferences') 
-                ? 'shadow-neu-pressed text-primary-900 bg-primary-200 border-l-4 border-primary-500' 
-                : 'text-primary-700 hover:shadow-neu-concave hover:text-primary-800'
-            }`}
-          >
-            Preferences
-          </Link>
-          <Link 
-            href="/settings"
-            className={`block p-3 neu-flat text-center ${
-              isActive('/settings') 
-                ? 'shadow-neu-pressed text-primary-900 bg-primary-200 border-l-4 border-primary-500' 
-                : 'text-primary-700 hover:shadow-neu-concave hover:text-primary-800'
-            }`}
-          >
-            Settings
-          </Link>
+          {navItems.map(item => (
+            <NavLink key={item.href} href={item.href} mobileView>
+              {item.label}
+            </NavLink>
+          ))}
         </div>
       </div>
     </nav>
