@@ -96,18 +96,18 @@ const PreferencesPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">
+        <h1 className="text-2xl font-semibold text-primary-700">
           {companyId ? 'Company Privacy Preferences' : 'My Privacy Preferences'}
         </h1>
       </div>
 
       {successMessage && (
-        <div className="bg-green-50 border border-green-200 text-green-800 rounded-lg p-4" role="alert">
+        <div className="bg-primary-50 border border-primary-200 text-primary-700 rounded-md p-4" role="alert">
           {successMessage}
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+      <div className="bg-white rounded-md border border-gray-200">
         <div className="p-6">
           <p className="text-gray-600 mb-6">
             {companyId 
@@ -119,15 +119,15 @@ const PreferencesPage: React.FC = () => {
           {profilePreferences && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Notification Preferences</h3>
-                <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="text-lg font-medium text-primary-700 mb-4">Notification Preferences</h3>
+                <div className="bg-gray-50 rounded-md p-4">
                   <div className="flex items-center">
                     <input
                       type="checkbox"
                       id="email-notifications"
                       checked={profilePreferences.email_notifications}
                       onChange={(e) => updateProfilePreferences({ email_notifications: e.target.checked })}
-                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
                     />
                     <label htmlFor="email-notifications" className="ml-2 text-sm text-gray-700">
                       Receive email notifications
@@ -137,15 +137,15 @@ const PreferencesPage: React.FC = () => {
               </div>
 
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Privacy Settings</h3>
-                <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="text-lg font-medium text-primary-700 mb-4">Privacy Settings</h3>
+                <div className="bg-gray-50 rounded-md p-4">
                   <div className="flex items-center">
                     <input
                       type="checkbox"
                       id="auto-delete"
                       checked={profilePreferences.auto_delete_data}
                       onChange={(e) => updateProfilePreferences({ auto_delete_data: e.target.checked })}
-                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
                     />
                     <label htmlFor="auto-delete" className="ml-2 text-sm text-gray-700">
                       Auto-delete my data
@@ -159,9 +159,9 @@ const PreferencesPage: React.FC = () => {
       </div>
 
       {/* Data Type Preferences List */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+      <div className="bg-white rounded-md border border-gray-200">
         <div className="p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Data Sharing Preferences</h3>
+          <h3 className="text-lg font-medium text-primary-700 mb-4">Data Sharing Preferences</h3>
           <p className="text-gray-600 mb-6">
             Control how your data is shared with companies.
           </p>
@@ -169,10 +169,10 @@ const PreferencesPage: React.FC = () => {
             {dataPreferences.map((preference) => (
               <div 
                 key={preference.id} 
-                className="bg-gray-50 rounded-lg p-4 border border-gray-200"
+                className="bg-gray-50 rounded-md p-4 border border-gray-200"
               >
                 <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium text-gray-900">
+                  <h4 className="text-sm font-medium text-primary-700">
                     {preference.company?.name || 'Global Setting'}
                   </h4>
                   <div className="flex items-center">
@@ -181,11 +181,11 @@ const PreferencesPage: React.FC = () => {
                       id={`data-sharing-${preference.id}`}
                       checked={preference.allowed}
                       onChange={(e) => updatePreference(preference.id, e.target.checked)}
-                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 focus:ring-offset-0"
                     />
                     <label 
                       htmlFor={`data-sharing-${preference.id}`} 
-                      className="ml-2 text-sm text-gray-700"
+                      className="ml-2 text-sm text-gray-600"
                     >
                       Allow data sharing
                     </label>
