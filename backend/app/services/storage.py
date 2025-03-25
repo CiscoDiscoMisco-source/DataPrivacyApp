@@ -1,16 +1,15 @@
-from supabase import create_client, Client
+from supabase import Client
 import os
 from flask import current_app
 import io
+from app.utils.supabase_client import get_supabase_client
 
 class SupabaseStorageService:
     """Service for interacting with Supabase Storage."""
     
     def __init__(self):
         """Initialize Supabase client and storage."""
-        url = current_app.config.get('SUPABASE_URL')
-        key = current_app.config.get('SUPABASE_KEY')
-        self.supabase = create_client(url, key)
+        self.supabase = get_supabase_client()
         self.bucket = 'uploads'  # Default bucket name
         
         # Ensure the bucket exists
