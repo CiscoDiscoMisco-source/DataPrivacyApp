@@ -92,14 +92,14 @@ const SettingsPage: React.FC = () => {
   if (loading && !settings) {
     return (
       <div className="flex justify-center py-10">
-        <div className="inline-block animate-spin h-10 w-10 border-4 border-primary-600 border-t-transparent rounded-full"></div>
+        <div className="inline-block animate-spin h-10 w-10 border-4 border-primary-300 border-t-transparent rounded-full"></div>
       </div>
     );
   }
   
   if (error && !settings) {
     return (
-      <div className="p-4 mb-4 neu-concave bg-red-50 text-red-700 rounded-lg border-l-4 border-red-500" role="alert">
+      <div className="glass-dark p-4 mb-4 text-red-100 rounded-lg" role="alert">
         <span className="block sm:inline">{error}</span>
       </div>
     );
@@ -107,7 +107,7 @@ const SettingsPage: React.FC = () => {
   
   if (!settings) {
     return (
-      <div className="p-4 mb-4 neu-concave bg-primary-50 text-primary-800 rounded-lg border-l-4 border-primary-500" role="alert">
+      <div className="glass p-4 mb-4 text-primary-100 rounded-lg" role="alert">
         <span className="block sm:inline">No settings found. Please try again later.</span>
       </div>
     );
@@ -115,50 +115,50 @@ const SettingsPage: React.FC = () => {
   
   return (
     <div>
-      <h2 className="text-2xl font-bold text-primary-800 heading-contrast mb-6">Settings</h2>
+      <h2 className="glass-heading text-2xl mb-6">Settings</h2>
       
-      <div className="neu-flat-contrast p-6 mb-8">
+      <div className="glass-card p-6 mb-8">
         {/* Account Section */}
         <div className="mb-8">
-          <h3 className="text-xl font-medium text-primary-800 mb-4 pb-2 border-b-2 border-primary-300">Account Settings</h3>
+          <h3 className="glass-heading text-xl mb-4">Account Settings</h3>
           <div className="space-y-4">
             {saveSuccess && (
-              <div className="p-4 neu-concave bg-green-50 text-green-700 rounded-lg border-l-4 border-green-500" role="alert">
+              <div className="glass p-4 text-green-100 rounded-lg" role="alert">
                 <span className="block sm:inline font-medium">Settings saved successfully!</span>
               </div>
             )}
             
             {error && (
-              <div className="p-4 neu-concave bg-red-50 text-red-700 rounded-lg border-l-4 border-red-500" role="alert">
+              <div className="glass-dark p-4 text-red-100 rounded-lg" role="alert">
                 <span className="block sm:inline font-medium">{error}</span>
               </div>
             )}
             
-            <div className="mb-4 p-4 neu-flat-contrast">
+            <div className="mb-4 p-4 glass">
               <div className="flex items-center mb-2">
                 <input
                   type="checkbox"
                   id="notificationsEnabled"
                   checked={settings.notificationsEnabled}
                   onChange={(e) => handleChange('notificationsEnabled', e.target.checked)}
-                  className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-primary-400 rounded shadow-neu-pressed"
+                  className="h-5 w-5 text-primary-300 focus:ring-primary-300 border-primary-300/30 rounded"
                 />
-                <label htmlFor="notificationsEnabled" className="ml-3 block text-primary-800 font-semibold">
+                <label htmlFor="notificationsEnabled" className="ml-3 block glass-text font-semibold">
                   Enable notifications
                 </label>
               </div>
-              <p className="text-gray-700 text-sm ml-8">Receive notifications about privacy changes from companies.</p>
+              <p className="glass-text text-sm ml-8">Receive notifications about privacy changes from companies.</p>
             </div>
             
-            <div className="mb-4 p-4 neu-flat-contrast">
-              <label htmlFor="emailFrequency" className="block text-primary-800 font-semibold mb-2">
+            <div className="mb-4 p-4 glass">
+              <label htmlFor="emailFrequency" className="block glass-text font-semibold mb-2">
                 Email frequency
               </label>
               <select
                 id="emailFrequency"
                 value={settings.emailFrequency}
                 onChange={(e) => handleChange('emailFrequency', e.target.value)}
-                className="neu-input-contrast"
+                className="glass-input"
               >
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
@@ -167,16 +167,16 @@ const SettingsPage: React.FC = () => {
               </select>
             </div>
             
-            <div className="mb-4 p-4 neu-flat-contrast">
+            <div className="mb-4 p-4 glass">
               <div className="flex items-center">
                 <input
                   type="checkbox"
                   id="darkMode"
                   checked={settings.darkMode}
                   onChange={(e) => handleChange('darkMode', e.target.checked)}
-                  className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-primary-400 rounded shadow-neu-pressed"
+                  className="h-5 w-5 text-primary-300 focus:ring-primary-300 border-primary-300/30 rounded"
                 />
-                <label htmlFor="darkMode" className="ml-3 block text-primary-800 font-semibold">
+                <label htmlFor="darkMode" className="ml-3 block glass-text font-semibold">
                   Dark mode
                 </label>
               </div>
@@ -186,155 +186,120 @@ const SettingsPage: React.FC = () => {
         
         {/* Notification Section */}
         <div className="mb-8">
-          <h3 className="text-xl font-medium text-primary-800 mb-4 pb-2 border-b-2 border-primary-300">Notification Settings</h3>
+          <h3 className="glass-heading text-xl mb-4">Notification Settings</h3>
           <div className="space-y-4">
-            <div className="p-4 neu-flat-contrast">
+            <div className="p-4 glass">
               <div className="flex items-center mb-2">
                 <input
                   type="checkbox"
                   id="emailNotifications"
                   checked={settings.emailNotifications}
                   onChange={(e) => handleChange('emailNotifications', e.target.checked)}
-                  className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-primary-400 rounded shadow-neu-pressed"
+                  className="h-5 w-5 text-primary-300 focus:ring-primary-300 border-primary-300/30 rounded"
                 />
-                <label htmlFor="emailNotifications" className="ml-3 block text-primary-800 font-semibold">
+                <label htmlFor="emailNotifications" className="ml-3 block glass-text font-semibold">
                   Email notifications
                 </label>
               </div>
-              <p className="text-gray-700 text-sm ml-8">Receive email notifications about your privacy settings.</p>
+              <p className="glass-text text-sm ml-8">Receive email notifications about your privacy settings.</p>
             </div>
             
-            <div className="p-4 neu-flat-contrast">
+            <div className="p-4 glass">
               <div className="flex items-center mb-2">
                 <input
                   type="checkbox"
                   id="pushNotifications"
                   checked={settings.pushNotifications}
                   onChange={(e) => handleChange('pushNotifications', e.target.checked)}
-                  className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-primary-400 rounded shadow-neu-pressed"
+                  className="h-5 w-5 text-primary-300 focus:ring-primary-300 border-primary-300/30 rounded"
                 />
-                <label htmlFor="pushNotifications" className="ml-3 block text-primary-800 font-semibold">
+                <label htmlFor="pushNotifications" className="ml-3 block glass-text font-semibold">
                   Push notifications
                 </label>
               </div>
-              <p className="text-gray-700 text-sm ml-8">Receive push notifications on your device.</p>
+              <p className="glass-text text-sm ml-8">Receive push notifications on your device.</p>
             </div>
           </div>
         </div>
         
         {/* Security Section */}
         <div className="mb-8">
-          <h3 className="text-xl font-medium text-primary-800 mb-4 pb-2 border-b-2 border-primary-300">Security Settings</h3>
+          <h3 className="glass-heading text-xl mb-4">Security Settings</h3>
           <div className="space-y-4">
-            <div className="p-4 neu-flat-contrast">
+            <div className="p-4 glass">
               <div className="flex items-center mb-2">
                 <input
                   type="checkbox"
                   id="twoFactorAuth"
                   checked={settings.twoFactorAuth}
                   onChange={(e) => handleChange('twoFactorAuth', e.target.checked)}
-                  className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-primary-400 rounded shadow-neu-pressed"
+                  className="h-5 w-5 text-primary-300 focus:ring-primary-300 border-primary-300/30 rounded"
                 />
-                <label htmlFor="twoFactorAuth" className="ml-3 block text-primary-800 font-semibold">
+                <label htmlFor="twoFactorAuth" className="ml-3 block glass-text font-semibold">
                   Two-factor authentication
                 </label>
               </div>
-              <p className="text-gray-700 text-sm ml-8">Add an extra layer of security to your account.</p>
+              <p className="glass-text text-sm ml-8">Add an extra layer of security to your account.</p>
             </div>
             
-            <div className="p-4 neu-flat-contrast">
+            <div className="p-4 glass">
               <div className="flex items-center mb-2">
                 <input
                   type="checkbox"
                   id="loginNotifications"
                   checked={settings.loginNotifications}
                   onChange={(e) => handleChange('loginNotifications', e.target.checked)}
-                  className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-primary-400 rounded shadow-neu-pressed"
+                  className="h-5 w-5 text-primary-300 focus:ring-primary-300 border-primary-300/30 rounded"
                 />
-                <label htmlFor="loginNotifications" className="ml-3 block text-primary-800 font-semibold">
+                <label htmlFor="loginNotifications" className="ml-3 block glass-text font-semibold">
                   Login notifications
                 </label>
               </div>
-              <p className="text-gray-700 text-sm ml-8">Get notified when someone logs into your account.</p>
+              <p className="glass-text text-sm ml-8">Get notified when someone logs into your account.</p>
             </div>
           </div>
         </div>
         
-        <div className="flex justify-end mt-8 pt-4 border-t-2 border-primary-300">
+        {/* Data Management Section */}
+        <div className="mb-8">
+          <h3 className="glass-heading text-xl mb-4">Data Management</h3>
+          <div className="space-y-4">
+            <div className="p-4 glass">
+              <button
+                onClick={exportUserData}
+                disabled={exportLoading}
+                className="glass-button"
+              >
+                {exportLoading ? 'Exporting...' : 'Export My Data'}
+              </button>
+            </div>
+            
+            <div className="p-4 glass">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="glass-text font-semibold mb-2">Delete Account</h4>
+                  <p className="glass-text text-sm">Permanently delete your account and all associated data.</p>
+                </div>
+                <button
+                  onClick={() => setDeleteAccountConfirm(true)}
+                  className="glass-button"
+                >
+                  Delete Account
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Save Button */}
+        <div className="flex justify-end">
           <button
-            type="button"
             onClick={saveSettings}
             disabled={loading}
-            className={`neu-button-contrast ${
-              loading ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
+            className="glass-button"
           >
-            {loading ? 'Saving...' : 'Save Settings'}
+            {loading ? 'Saving...' : 'Save Changes'}
           </button>
-        </div>
-      </div>
-      
-      {/* Data Export Section */}
-      <div className="neu-flat-contrast p-6 mb-8">
-        <h3 className="text-xl font-medium text-primary-800 mb-4 pb-2 border-b-2 border-primary-300">Data Export</h3>
-        <div className="p-4 neu-flat-contrast">
-          <p className="text-gray-700 mb-4">
-            Download all your data in JSON format. This includes your preferences, settings, and company relationships.
-          </p>
-          <button
-            type="button"
-            onClick={exportUserData}
-            disabled={exportLoading}
-            className={`neu-button-contrast ${
-              exportLoading ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-          >
-            {exportLoading ? 'Exporting...' : 'Export My Data'}
-          </button>
-        </div>
-      </div>
-      
-      {/* Danger Zone Section */}
-      <div className="neu-flat-contrast p-6 border-2 border-red-300">
-        <h3 className="text-xl font-medium text-red-700 mb-4 pb-2 border-b-2 border-red-300">Danger Zone</h3>
-        <p className="text-gray-700 mb-4 font-medium">
-          Actions here can't be undone. Please proceed with caution.
-        </p>
-        <div className="space-y-4">
-          <div className="p-4 neu-flat-contrast text-gray-700 border-l-4 border-red-400">
-            <h4 className="font-medium mb-2">Delete Account</h4>
-            <p className="mb-4">Once you delete your account, there is no going back. Please be certain.</p>
-            {!deleteAccountConfirm ? (
-              <button
-                type="button"
-                onClick={() => setDeleteAccountConfirm(true)}
-                className="neu-button bg-red-50 text-red-700 border border-red-300"
-              >
-                Delete Account
-              </button>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-red-700 font-medium">Are you sure you want to delete your account?</p>
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={deleteAccount}
-                    disabled={loading}
-                    className="neu-button bg-red-600 text-white"
-                  >
-                    Yes, Delete Account
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDeleteAccountConfirm(false)}
-                    className="neu-button bg-gray-50 text-gray-700 border border-gray-300"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>

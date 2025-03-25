@@ -55,21 +55,21 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
   };
   
   return (
-    <div className="neu-flat-contrast p-6 border-t-4 border-primary-500">
-      <h3 className="text-xl font-bold text-primary-800 mb-6 pb-2 border-b-2 border-primary-300">Add Company Manually</h3>
+    <div className="glass-card">
+      <h3 className="glass-heading text-xl mb-6">Add Company Manually</h3>
       
       {error && (
-        <div className="p-4 mb-4 neu-concave bg-red-50 text-red-700 rounded-lg border-l-4 border-red-500" role="alert">
+        <div className="glass-dark p-4 mb-4 text-red-100 rounded-lg" role="alert">
           <span className="font-medium">{error}</span>
         </div>
       )}
       
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label htmlFor="name" className="block text-primary-800 font-semibold mb-2">Company Name *</label>
+          <label htmlFor="name" className="glass-text block font-semibold mb-2">Company Name *</label>
           <input 
             type="text" 
-            className="neu-input-contrast" 
+            className="glass-input" 
             id="name" 
             name="name" 
             value={company.name} 
@@ -79,10 +79,10 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
         </div>
         
         <div className="mb-4">
-          <label htmlFor="industry" className="block text-primary-800 font-semibold mb-2">Industry</label>
+          <label htmlFor="industry" className="glass-text block font-semibold mb-2">Industry</label>
           <input 
             type="text" 
-            className="neu-input-contrast" 
+            className="glass-input" 
             id="industry" 
             name="industry" 
             value={company.industry || ''} 
@@ -91,10 +91,10 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
         </div>
         
         <div className="mb-4">
-          <label htmlFor="website" className="block text-primary-800 font-semibold mb-2">Website</label>
+          <label htmlFor="website" className="glass-text block font-semibold mb-2">Website</label>
           <input 
             type="url" 
-            className="neu-input-contrast" 
+            className="glass-input" 
             id="website" 
             name="website" 
             value={company.website || ''} 
@@ -104,9 +104,9 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
         </div>
         
         <div className="mb-4">
-          <label htmlFor="description" className="block text-primary-800 font-semibold mb-2">Description</label>
+          <label htmlFor="description" className="glass-text block font-semibold mb-2">Description</label>
           <textarea 
-            className="neu-input-contrast resize-none" 
+            className="glass-input resize-none" 
             id="description" 
             name="description" 
             value={company.description || ''} 
@@ -117,9 +117,9 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label htmlFor="size_range" className="block text-primary-800 font-semibold mb-2">Company Size</label>
+            <label htmlFor="size_range" className="glass-text block font-semibold mb-2">Company Size</label>
             <select 
-              className="neu-input-contrast" 
+              className="glass-input" 
               id="size_range" 
               name="size_range" 
               value={company.size_range || ''} 
@@ -137,10 +137,10 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           </div>
           
           <div>
-            <label htmlFor="country" className="block text-primary-800 font-semibold mb-2">Country</label>
+            <label htmlFor="country" className="glass-text block font-semibold mb-2">Country</label>
             <input 
               type="text" 
-              className="neu-input-contrast" 
+              className="glass-input" 
               id="country" 
               name="country" 
               value={company.country || ''} 
@@ -151,10 +151,10 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label htmlFor="city" className="block text-primary-800 font-semibold mb-2">City</label>
+            <label htmlFor="city" className="glass-text block font-semibold mb-2">City</label>
             <input 
               type="text" 
-              className="neu-input-contrast" 
+              className="glass-input" 
               id="city" 
               name="city" 
               value={company.city || ''} 
@@ -163,10 +163,10 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           </div>
           
           <div>
-            <label htmlFor="state" className="block text-primary-800 font-semibold mb-2">State/Province</label>
+            <label htmlFor="state" className="glass-text block font-semibold mb-2">State/Province</label>
             <input 
               type="text" 
-              className="neu-input-contrast" 
+              className="glass-input" 
               id="state" 
               name="state" 
               value={company.state || ''} 
@@ -176,10 +176,10 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
         </div>
         
         <div className="mb-4">
-          <label htmlFor="logo" className="block text-primary-800 font-semibold mb-2">Logo URL</label>
+          <label htmlFor="logo" className="glass-text block font-semibold mb-2">Logo URL</label>
           <input 
             type="url" 
-            className="neu-input-contrast" 
+            className="glass-input" 
             id="logo" 
             name="logo" 
             value={company.logo || ''} 
@@ -188,10 +188,10 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           />
         </div>
         
-        <div className="flex justify-end gap-4 mt-6 pt-4 border-t-2 border-primary-300">
+        <div className="flex justify-end gap-4 mt-6 pt-4 border-t border-primary-300/20">
           <button 
             type="button" 
-            className="neu-button bg-primary-50 text-primary-700 border border-primary-300" 
+            className="glass-button" 
             onClick={onCancel}
             disabled={loading}
           >
@@ -199,7 +199,7 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           </button>
           <button 
             type="submit" 
-            className="neu-button-contrast" 
+            className="glass-button" 
             disabled={loading}
           >
             {loading ? (

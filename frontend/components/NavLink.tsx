@@ -21,15 +21,15 @@ const NavLink: React.FC<NavLinkProps> = ({
   // Desktop styling
   const desktopClasses = `px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
     isActive 
-      ? 'shadow-neu-pressed text-primary-900 bg-primary-200 border-b-2 border-primary-500' 
-      : 'shadow-neu-flat text-primary-700 hover:shadow-neu-concave hover:text-primary-800'
+      ? 'glass-dark text-primary-50' 
+      : 'glass text-primary-100 hover:bg-primary-200/20 hover:text-primary-50'
   } ${className}`;
   
   // Mobile styling
-  const mobileClasses = `block p-3 neu-flat text-center ${
+  const mobileClasses = `block p-3 glass text-center ${
     isActive 
-      ? 'shadow-neu-pressed text-primary-900 bg-primary-200 border-l-4 border-primary-500' 
-      : 'text-primary-700 hover:shadow-neu-concave hover:text-primary-800'
+      ? 'glass-dark text-primary-50' 
+      : 'text-primary-100 hover:bg-primary-200/20 hover:text-primary-50'
   } ${className}`;
   
   return (
