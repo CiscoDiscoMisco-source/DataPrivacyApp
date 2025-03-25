@@ -8,14 +8,16 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    S3_BUCKET = os.environ.get('S3_BUCKET', 'data-privacy-app')
-    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
-    AWS_REGION = os.environ.get('AWS_REGION', 'us-east-1')
+    
+    # Supabase Configuration
+    SUPABASE_URL = os.environ.get('SUPABASE_URL')
+    SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
+    SUPABASE_JWT_SECRET = os.environ.get('SUPABASE_JWT_SECRET')
 
 class DevelopmentConfig(Config):
     """Development config."""
     DEBUG = True
+    # Use Supabase connection string if available, otherwise fallback to local SQLite
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL', 'sqlite:///dev.db')
     
 class TestingConfig(Config):
@@ -26,6 +28,14 @@ class TestingConfig(Config):
 class ProductionConfig(Config):
     """Production config."""
     DEBUG = False
+    # Connect to Supabase PostgreSQL database
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    # For horizontally scaling environments, use NullPool with transaction pooler
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_size': 10,
+        'max_overflow': 15,
+        'pool_timeout': 30,
+        'pool_recycle': 1800,
+    }
     SECRET_KEY = os.environ.get('SECRET_KEY')
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') 

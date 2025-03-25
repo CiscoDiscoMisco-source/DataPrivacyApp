@@ -21,6 +21,13 @@ def create_app(config_name=None):
     
     if config_name == 'production':
         app.config.from_object('app.config.ProductionConfig')
+        
+        # If using Supabase's connection pooler in horizontally scaling environments
+        if 'pooler.supabase.co' in os.environ.get('DATABASE_URL', ''):
+            from sqlalchemy.pool import NullPool
+            app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+                'poolclass': NullPool
+            }
     elif config_name == 'testing':
         app.config.from_object('app.config.TestingConfig')
     else:
@@ -59,7 +66,7 @@ def create_app(config_name=None):
     
     @app.route('/api/health')
     def health_check():
-        """Health check endpoint for AWS load balancer"""
+        """Health check endpoint for Vercel"""
         return {'status': 'healthy'}, 200
     
     return app 
