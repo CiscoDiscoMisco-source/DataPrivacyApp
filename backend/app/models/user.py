@@ -1,23 +1,21 @@
-from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
+from typing import Optional, Dict, Any
 from .base import BaseModel
 
-db = SQLAlchemy()
 bcrypt = Bcrypt()
 
 class User(BaseModel):
     """User model for authentication and profile data."""
     __tablename__ = 'users'
     
-    email = db.Column(db.String(255), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
-    first_name = db.Column(db.String(100), nullable=False)
-    last_name = db.Column(db.String(100), nullable=False)
-    is_admin = db.Column(db.Boolean, default=False)
-    tokens = db.Column(db.Integer, default=0)
-    
-    # Relationships
-    preferences = db.relationship('UserPreference', backref='user', lazy='dynamic', cascade='all, delete-orphan')
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.email = kwargs.get('email')
+        self.password_hash = kwargs.get('password_hash')
+        self.first_name = kwargs.get('first_name')
+        self.last_name = kwargs.get('last_name')
+        self.is_admin = kwargs.get('is_admin', False)
+        self.tokens = kwargs.get('tokens', 0)
     
     @property
     def password(self):
@@ -33,34 +31,36 @@ class User(BaseModel):
         """Check if hashed password matches actual password."""
         return bcrypt.check_password_hash(self.password_hash, password)
     
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         """Convert user to dictionary for API response."""
-        return {
-            'id': self.id,
+        base_dict = super().to_dict()
+        base_dict.update({
             'email': self.email,
             'first_name': self.first_name,
             'last_name': self.last_name,
             'is_admin': self.is_admin,
-            'tokens': self.tokens,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
-        }
+            'tokens': self.tokens
+        })
+        return base_dict
 
 class TokenPackage(BaseModel):
     """Token packages that users can purchase."""
     __tablename__ = 'token_packages'
     
-    name = db.Column(db.String(100), nullable=False)
-    amount = db.Column(db.Integer, nullable=False)
-    price = db.Column(db.Float, nullable=False)
-    description = db.Column(db.Text)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.name = kwargs.get('name')
+        self.amount = kwargs.get('amount')
+        self.price = kwargs.get('price')
+        self.description = kwargs.get('description')
     
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         """Convert token package to dictionary for API response."""
-        return {
-            'id': self.id,
+        base_dict = super().to_dict()
+        base_dict.update({
             'name': self.name,
             'amount': self.amount,
             'price': self.price,
             'description': self.description
-        } 
+        })
+        return base_dict 
