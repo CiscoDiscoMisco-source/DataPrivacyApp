@@ -100,14 +100,27 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ searchTerm }) => {
     // Refresh the company list
     setIsAddingCompany(false);
     setLoading(true);
-    ApiService.get<CompaniesResponse>('/companies')
+    
+    // Check connection to ensure we can fetch the latest data
+    ApiService.checkHealth()
+      .then(isConnected => {
+        if (isConnected) {
+          return ApiService.get<CompaniesResponse>('/companies');
+        } else {
+          throw new Error('No network connection available. Please check your internet connection and try again.');
+        }
+      })
       .then(data => {
         setCompanies(data.companies);
         setError(null);
       })
       .catch(err => {
         console.error('Failed to refresh companies:', err);
-        setError('Failed to refresh company list.');
+        if (err.message?.includes('network connection')) {
+          setError('Cannot connect to the server. Please check your internet connection and try again.');
+        } else {
+          setError('Failed to refresh company list.');
+        }
       })
       .finally(() => {
         setLoading(false);

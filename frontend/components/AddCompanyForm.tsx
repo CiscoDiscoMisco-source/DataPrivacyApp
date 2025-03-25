@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ApiService from '../services/api';
 import { Company, CompanyInput } from '../types';
+import { useRouter } from 'next/router';
 
 interface AddCompanyFormProps {
   onSuccess: () => void;
@@ -21,6 +22,7 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
   
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -47,6 +49,12 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
       setLoading(true);
       setError(null);
       
+      // Check connection to Supabase/API first
+      const isConnected = await ApiService.checkHealth();
+      if (!isConnected) {
+        throw new Error('No network connection available. Please check your internet connection and try again.');
+      }
+      
       // Clean up the data before sending
       const cleanCompany = {
         ...company,
@@ -63,12 +71,20 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
       const response = await ApiService.post('/companies', cleanCompany);
       console.log('Company added:', response);
       
-      // Call success callback to refresh list
+      // Call success callback to refresh list in the parent component
       onSuccess();
+      
+      // Small delay to ensure parent component has updated state
+      setTimeout(() => {
+        // Redirect to homepage (companies page)
+        router.push('/companies');
+      }, 100);
     } catch (err: any) {
       console.error('Failed to add company:', err);
       // Handle specific error cases
-      if (err.message?.includes('409')) {
+      if (err.message?.includes('network connection')) {
+        setError('Cannot connect to the server. Please check your internet connection and try again.');
+      } else if (err.message?.includes('409')) {
         setError('A company with this name already exists');
       } else if (err.message?.includes('403')) {
         setError('You do not have permission to create companies');
