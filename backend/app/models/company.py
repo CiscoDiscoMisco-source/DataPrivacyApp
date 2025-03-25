@@ -1,6 +1,7 @@
 from typing import Optional, List
 from app.schemas.company import CompanySchema, DataSharingPolicySchema
 from app.repositories.company import CompanyRepository, DataSharingPolicyRepository
+from flask_jwt_extended import get_jwt_identity
 
 # Table names for Supabase
 COMPANY_RELATIONSHIPS_TABLE = 'company_relationships'
@@ -20,6 +21,14 @@ class Company:
     @property
     def name(self) -> str:
         return self._schema.name
+    
+    @property
+    def user_id(self) -> Optional[str]:
+        return self._schema.user_id
+    
+    @user_id.setter
+    def user_id(self, value: str):
+        self._schema.user_id = value
     
     @property
     def logo(self) -> Optional[str]:
@@ -65,8 +74,22 @@ class Company:
         schemas = await CompanyRepository.get_all()
         return [cls(schema) for schema in schemas]
     
+    @classmethod
+    async def get_user_companies(cls, user_id: Optional[str] = None) -> List['Company']:
+        """Get all companies for a specific user."""
+        # Use current user if none specified
+        if user_id is None:
+            user_id = get_jwt_identity()
+            
+        schemas = await CompanyRepository.get_user_companies(user_id)
+        return [cls(schema) for schema in schemas]
+    
     async def save(self) -> 'Company':
         """Save the company."""
+        # Ensure user_id is set before saving
+        if not self.user_id:
+            self.user_id = get_jwt_identity()
+            
         if self.id:
             self._schema = await self._repository.update(self._schema)
         else:

@@ -14,6 +14,38 @@ const getAuthToken = (): string | null => {
   return null;
 };
 
+// Helper function to get the current user ID from local storage
+const getCurrentUserId = (): string | null => {
+  if (typeof window !== 'undefined') {
+    // Try to get from localStorage first
+    const userId = localStorage.getItem('dp_user_id');
+    if (userId) return userId;
+    
+    // If not in localStorage, try to parse from JWT token
+    const token = getAuthToken();
+    if (token) {
+      try {
+        // Extract payload from JWT (second part between dots)
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        
+        const payload = JSON.parse(jsonPayload);
+        // Store in localStorage for future use
+        if (payload.sub) {
+          localStorage.setItem('dp_user_id', payload.sub);
+          return payload.sub;
+        }
+      } catch (e) {
+        console.error('Failed to parse user ID from token:', e);
+      }
+    }
+  }
+  return null;
+};
+
 // Helper to build headers with authentication
 const buildHeaders = (customHeaders: Record<string, string> = {}): Record<string, string> => {
   const headers: Record<string, string> = {
@@ -103,8 +135,20 @@ const request = async <T>(
     credentials: 'include'
   };
   
-  // Add body for non-GET requests
+  // Add body for non-GET requests with user_id for RLS compatibility
   if (method !== 'GET' && data) {
+    // Only add user_id for endpoints that need it (companies, preferences, etc.)
+    const needsUserId = endpoint.includes('companies') || 
+                        endpoint.includes('preferences') || 
+                        endpoint.includes('settings');
+                      
+    if (needsUserId && !data.user_id) {
+      const userId = getCurrentUserId();
+      if (userId) {
+        data = { ...data, user_id: userId };
+      }
+    }
+    
     options.body = JSON.stringify(data);
   }
   

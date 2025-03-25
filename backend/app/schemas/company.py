@@ -6,6 +6,7 @@ class CompanySchema:
     def __init__(self, **kwargs):
         self.id: Optional[int] = kwargs.get('id')
         self.name: str = kwargs.get('name', '')
+        self.user_id: Optional[str] = kwargs.get('user_id')
         self.logo: Optional[str] = kwargs.get('logo')
         self.industry: Optional[str] = kwargs.get('industry')
         self.website: Optional[str] = kwargs.get('website')
@@ -27,6 +28,7 @@ class CompanySchema:
         return {
             'id': self.id,
             'name': self.name,
+            'user_id': self.user_id,
             'logo': self.logo,
             'industry': self.industry,
             'website': self.website,
