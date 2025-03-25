@@ -147,8 +147,5 @@ class DataSharingPolicy:
         """Convert policy to dictionary for API response."""
         return self.schema.to_dict()
 
-# Association table for many-to-many relationship between data sharing policies and third party companies
-data_sharing_third_parties = db.Table('data_sharing_third_parties',
-    db.Column('policy_id', db.BigInteger, db.ForeignKey('data_sharing_policies.id'), primary_key=True),
-    db.Column('company_id', db.BigInteger, db.ForeignKey('companies.id'), primary_key=True)
-) 
+# Table name for the many-to-many relationship between data sharing policies and third party companies
+DATA_SHARING_THIRD_PARTIES_TABLE = 'data_sharing_third_parties' 
