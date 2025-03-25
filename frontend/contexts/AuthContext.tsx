@@ -82,6 +82,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
+      // Check connection to Supabase/API first
+      const isConnected = await ApiService.checkHealth();
+      if (!isConnected) {
+        throw new Error('No network connection available. Please check your internet connection and try again.');
+      }
+      
       // Sign in with Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -91,10 +97,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
       
       if (data.user) {
-        // Get user profile data from our API
-        const userData = await ApiService.get<User>('/auth/me');
-        setUser(userData);
-        router.push('/companies');
+        try {
+          // Get user profile data from our API
+          const userData = await ApiService.get<User>('/auth/me');
+          setUser(userData);
+          router.push('/companies');
+        } catch (apiError) {
+          console.error('Error fetching user data:', apiError);
+          // Still consider login successful but with limited functionality
+          // We'll retry fetching user data later via the auth state listener
+          router.push('/companies');
+        }
       }
     } catch (error) {
       console.error('Login failed:', error);

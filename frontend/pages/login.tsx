@@ -30,7 +30,16 @@ const LoginPage: React.FC = () => {
       await login(email, password);
       // Redirect handled in login function
     } catch (err: any) {
-      setError(err.message || 'Failed to login. Please try again.');
+      console.error('Login error:', err);
+      
+      // Handle specific error types with user-friendly messages
+      if (err.message?.includes('network connection')) {
+        setError('Cannot connect to the server. Please check your internet connection and try again.');
+      } else if (err.message?.includes('Invalid login credentials')) {
+        setError('Incorrect email or password. Please try again.');
+      } else {
+        setError(err.message || 'Failed to login. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }

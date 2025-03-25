@@ -59,32 +59,62 @@ async function testConnection() {
     const healthUrl = `${SUPABASE_URL}/health`;
     console.log(`Testing connection to: ${healthUrl}`);
     
-    // Use node-fetch for Node.js environments
-    const fetch = require('node-fetch');
+    // Use https module since node-fetch might have issues
+    const https = require('https');
     
-    const response = await fetch(healthUrl);
+    const testHttpsRequest = () => {
+      return new Promise((resolve, reject) => {
+        const options = {
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        };
+        
+        https.get(healthUrl, options, (res) => {
+          let data = '';
+          
+          res.on('data', (chunk) => {
+            data += chunk;
+          });
+          
+          res.on('end', () => {
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+              try {
+                resolve({ ok: true, data: JSON.parse(data) });
+              } catch (err) {
+                resolve({ ok: true, data: data });
+              }
+            } else {
+              resolve({ ok: false, status: res.statusCode, statusText: res.statusMessage, data });
+            }
+          });
+        }).on('error', (err) => {
+          reject(err);
+        });
+      });
+    };
     
-    if (response.ok) {
-      const data = await response.json();
+    const result = await testHttpsRequest();
+    
+    if (result.ok) {
       console.log('✅ Successfully connected to Supabase!');
-      console.log('Response:', JSON.stringify(data, null, 2));
+      console.log('Response:', JSON.stringify(result.data, null, 2));
     } else {
-      console.error(`❌ Failed to connect to Supabase: ${response.status} ${response.statusText}`);
-      const text = await response.text();
-      console.error('Error details:', text);
+      console.error(`❌ Failed to connect to Supabase: ${result.status} ${result.statusText}`);
+      console.error('Error details:', result.data);
     }
   } catch (error) {
     console.error('❌ Connection test failed with error:');
     console.error(error);
     
     // Check for common issues
-    if (error.message && error.message.includes('fetch')) {
-      console.log('\nPossible causes:');
-      console.log('1. Network connectivity issues');
-      console.log('2. Supabase project is not running or accessible');
-      console.log('3. Firewall or security software is blocking the connection');
-      console.log('4. Supabase URL is incorrect');
-    }
+    console.log('\nPossible causes:');
+    console.log('1. Network connectivity issues');
+    console.log('2. Supabase project is not running or accessible');
+    console.log('3. Firewall or security software is blocking the connection');
+    console.log('4. Supabase URL is incorrect');
+    console.log('5. Certificate issues with HTTPS connection');
   }
 }
 

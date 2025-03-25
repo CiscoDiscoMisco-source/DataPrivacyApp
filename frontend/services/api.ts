@@ -69,7 +69,11 @@ const checkConnection = async (): Promise<boolean> => {
     const healthEndpoint = `${API_BASE_URL}/health`;
     const response = await fetch(healthEndpoint, {
       method: 'GET',
-      headers: { 'Accept': 'application/json' },
+      headers: { 
+        'Accept': 'application/json',
+        'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''}`
+      },
       mode: 'cors',
       // Short timeout to quickly detect connection issues
       signal: AbortSignal.timeout(3000)
@@ -77,12 +81,24 @@ const checkConnection = async (): Promise<boolean> => {
     
     // Update status based on response
     if (response.ok) {
-      // Also check that Supabase connection is working
-      const data = await response.json();
-      isOnline = data.database === 'connected';
+      // For Supabase health endpoint, a successful response with "Healthy" text
+      // or for our backend API with database connection info
+      isOnline = true;
       
-      if (!isOnline) {
-        console.warn('API server is online but database connection is not available', data);
+      try {
+        const data = await response.json();
+        // If our backend returns database status, check it
+        if (data && typeof data === 'object' && 'database' in data) {
+          isOnline = data.database === 'connected';
+          
+          if (!isOnline) {
+            console.warn('API server is online but database connection is not available', data);
+          }
+        }
+      } catch (e) {
+        // If the response is not JSON (like "Healthy" plain text from Supabase)
+        // We still consider it online since the response was successful
+        isOnline = true;
       }
     } else {
       isOnline = false;
