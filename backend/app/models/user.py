@@ -1,5 +1,9 @@
-from app import db, bcrypt
+from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
 from .base import BaseModel
+
+db = SQLAlchemy()
+bcrypt = Bcrypt()
 
 class User(BaseModel):
     """User model for authentication and profile data."""

@@ -1,5 +1,5 @@
 from datetime import datetime
-from app import db
+from .user import db
 
 class BaseModel(db.Model):
     """Base model with common attributes."""

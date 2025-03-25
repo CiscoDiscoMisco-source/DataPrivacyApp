@@ -2,6 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
+from flask_sqlalchemy import SQLAlchemy
 import os
 import sys
 from dotenv import load_dotenv
@@ -15,6 +16,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Initialize extensions
+db = SQLAlchemy()
 bcrypt = Bcrypt()
 jwt = JWTManager()
 
@@ -40,6 +42,9 @@ def create_app(config_name=None):
     else:
         from app.config.development import DevelopmentConfig
         app.config.from_object(DevelopmentConfig)
+    
+    # Initialize SQLAlchemy with app
+    db.init_app(app)
     
     # Ensure Supabase credentials are set - fail if not found
     if not app.config.get('SUPABASE_URL') or not app.config.get('SUPABASE_ANON_KEY'):
