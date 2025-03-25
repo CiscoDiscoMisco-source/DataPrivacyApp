@@ -6,6 +6,14 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const API_VERSION = 'v1';
 
+// Maximum number of retry attempts for failed requests
+const MAX_RETRIES = 3;
+// Delay between retries in milliseconds (starting value)
+const RETRY_DELAY = 1000;
+// Connection status tracking
+let isOnline = true;
+let lastConnectionCheck = 0;
+
 // Helper function to get auth token
 const getAuthToken = (): string | null => {
   if (typeof window !== 'undefined') {
@@ -44,6 +52,55 @@ const getCurrentUserId = (): string | null => {
     }
   }
   return null;
+};
+
+// Helper function to check if the network/backend is reachable
+const checkConnection = async (): Promise<boolean> => {
+  // Skip if we've checked recently (within the last 10 seconds)
+  const now = Date.now();
+  if (now - lastConnectionCheck < 10000) {
+    return isOnline;
+  }
+  
+  lastConnectionCheck = now;
+  
+  try {
+    // Try to reach the API health endpoint
+    const healthEndpoint = `${API_BASE_URL}/health`;
+    const response = await fetch(healthEndpoint, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      mode: 'cors',
+      // Short timeout to quickly detect connection issues
+      signal: AbortSignal.timeout(3000)
+    });
+    
+    // Update status based on response
+    if (response.ok) {
+      // Also check that Supabase connection is working
+      const data = await response.json();
+      isOnline = data.database === 'connected';
+      
+      if (!isOnline) {
+        console.warn('API server is online but database connection is not available', data);
+      }
+    } else {
+      isOnline = false;
+      console.warn(`API health endpoint returned status ${response.status}`);
+    }
+  } catch (error) {
+    isOnline = false;
+    console.warn('Failed to reach API health endpoint:', error);
+  }
+  
+  // Dispatch connection status event
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('api:connectionchange', { 
+      detail: { online: isOnline } 
+    }));
+  }
+  
+  return isOnline;
 };
 
 // Helper to build headers with authentication
@@ -112,6 +169,11 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
   return await response.json() as T;
 };
 
+// Helper function to delay execution
+const sleep = (ms: number): Promise<void> => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+};
+
 // Helper function to handle API errors
 const handleApiError = (error: any, endpoint: string): Error => {
   // Log error with context for debugging
@@ -132,7 +194,7 @@ const handleApiError = (error: any, endpoint: string): Error => {
   return error;
 };
 
-// Generic request function to reduce duplication
+// Generic request function with retry logic
 const request = async <T>(
   method: string,
   endpoint: string,
@@ -142,6 +204,12 @@ const request = async <T>(
   // Skip API calls during server-side rendering
   if (typeof window === 'undefined') {
     return Promise.resolve((method === 'GET' ? [] : {}) as unknown as T);
+  }
+  
+  // Check connection status before proceeding
+  const isConnectionAvailable = await checkConnection();
+  if (!isConnectionAvailable && !endpoint.includes('health')) {
+    throw new Error('No network connection available. Please check your internet connection and try again.');
   }
   
   // Build the complete URL directly rather than using window.location.origin
@@ -154,37 +222,77 @@ const request = async <T>(
     });
   }
   
-  const options: RequestInit = {
-    method,
-    headers: buildHeaders(),
-    credentials: 'include',
-    mode: 'cors'
-  };
+  // Implement retry logic for transient errors
+  let attempts = 0;
+  let lastError: Error | null = null;
   
-  // Add body for non-GET requests with user_id for RLS compatibility
-  if (method !== 'GET' && data) {
-    // Only add user_id for endpoints that need it (companies, preferences, etc.)
-    const needsUserId = endpoint.includes('companies') || 
-                        endpoint.includes('preferences') || 
-                        endpoint.includes('settings');
-                      
-    if (needsUserId && !data.user_id) {
-      const userId = getCurrentUserId();
-      if (userId) {
-        data = { ...data, user_id: userId };
+  while (attempts < MAX_RETRIES) {
+    try {
+      // Increase delay with each retry attempt (exponential backoff)
+      if (attempts > 0) {
+        const delay = RETRY_DELAY * Math.pow(2, attempts - 1);
+        console.log(`Retrying request to ${endpoint} (Attempt ${attempts + 1}/${MAX_RETRIES}) after ${delay}ms delay...`);
+        await sleep(delay);
+      }
+      
+      attempts++;
+      
+      const options: RequestInit = {
+        method,
+        headers: buildHeaders(),
+        credentials: 'include',
+        mode: 'cors'
+      };
+      
+      // Add body for non-GET requests with user_id for RLS compatibility
+      if (method !== 'GET' && data) {
+        // Only add user_id for endpoints that need it (companies, preferences, etc.)
+        const needsUserId = endpoint.includes('companies') || 
+                          endpoint.includes('preferences') || 
+                          endpoint.includes('settings');
+                        
+        if (needsUserId && !data.user_id) {
+          const userId = getCurrentUserId();
+          if (userId) {
+            data = { ...data, user_id: userId };
+          }
+        }
+        
+        options.body = JSON.stringify(data);
+      }
+      
+      console.log(`API ${method} request to: ${url.toString()}`);
+      const response = await fetch(url.toString(), options);
+      
+      // If we get here, the request was successful
+      isOnline = true;
+      return await handleResponse<T>(response);
+    } catch (error: any) {
+      lastError = error;
+      
+      // Don't retry for client errors (4xx)
+      if (error.message && error.message.includes('API error: 4')) {
+        break;
+      }
+      
+      // Don't retry for validation errors
+      if (error.message && (
+        error.message.includes('validation') || 
+        error.message.includes('invalid') ||
+        error.message.includes('not found')
+      )) {
+        break;
+      }
+      
+      // Continue retrying for network errors and server errors (5xx)
+      if (attempts >= MAX_RETRIES) {
+        console.error(`Request to ${endpoint} failed after ${MAX_RETRIES} attempts.`);
+        break;
       }
     }
-    
-    options.body = JSON.stringify(data);
   }
   
-  try {
-    console.log(`API ${method} request to: ${url.toString()}`);
-    const response = await fetch(url.toString(), options);
-    return await handleResponse<T>(response);
-  } catch (error) {
-    throw handleApiError(error, endpoint);
-  }
+  throw handleApiError(lastError!, endpoint);
 };
 
 /**
@@ -222,11 +330,18 @@ export const put = <T>(endpoint: string, data: Record<string, any> = {}): Promis
 export const del = <T>(endpoint: string): Promise<T> => 
   request<T>('DELETE', endpoint);
 
+/**
+ * Check if the API is currently reachable
+ * @returns {Promise<boolean>} - True if API is reachable
+ */
+export const checkApiHealth = (): Promise<boolean> => checkConnection();
+
 const ApiService = {
   get,
   post,
   put,
-  delete: del
+  delete: del,
+  checkHealth: checkApiHealth
 };
 
 export default ApiService; 

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
@@ -9,6 +9,7 @@ from app.utils.error_handlers import register_error_handlers
 from app.models.token import RevokedToken
 import logging
 from supabase import create_client, Client
+from app.db import init_supabase_client
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -47,20 +48,47 @@ def create_app(config_name=None):
         logger.error("Please set the SUPABASE_URL and SUPABASE_ANON_KEY environment variables")
         sys.exit(1)
     
-    # Initialize Supabase clients
-    supabase: Client = create_client(
-        app.config.get('SUPABASE_URL'),
-        app.config.get('SUPABASE_ANON_KEY')
+    # Initialize Supabase clients with enhanced connection handling
+    supabase_url = app.config.get('SUPABASE_URL')
+    supabase_anon_key = app.config.get('SUPABASE_ANON_KEY')
+    
+    # Regular client initialization with retry logic
+    supabase = init_supabase_client(
+        url=supabase_url,
+        key=supabase_anon_key,
+        is_admin=False,
+        max_retries=3
     )
+    
+    if not supabase:
+        logger.error("Failed to initialize Supabase client. Application cannot proceed.")
+        # In production, you might want to continue with degraded functionality
+        if config_name == 'production':
+            logger.warning("Continuing with degraded functionality in production mode.")
+            # Create the client anyway for production, but log the warning
+            supabase = create_client(supabase_url, supabase_anon_key)
+        else:
+            sys.exit(1)
+    
     app.supabase = supabase
     
     # Initialize Supabase admin client with service role key if available
     if app.config.get('SUPABASE_SERVICE_ROLE_KEY'):
-        supabase_admin: Client = create_client(
-            app.config.get('SUPABASE_URL'),
-            app.config.get('SUPABASE_SERVICE_ROLE_KEY')
+        supabase_service_key = app.config.get('SUPABASE_SERVICE_ROLE_KEY')
+        
+        # Admin client initialization with retry logic
+        supabase_admin = init_supabase_client(
+            url=supabase_url,
+            key=supabase_service_key,
+            is_admin=True,
+            max_retries=3
         )
-        app.supabase_admin = supabase_admin
+        
+        if not supabase_admin:
+            logger.warning("Failed to initialize Supabase admin client. Admin operations will not be available.")
+            app.supabase_admin = None
+        else:
+            app.supabase_admin = supabase_admin
     else:
         logger.warning("SUPABASE_SERVICE_ROLE_KEY not set. Admin operations will not be available.")
         app.supabase_admin = None
@@ -85,5 +113,24 @@ def create_app(config_name=None):
     app.register_blueprint(companies_bp, url_prefix='/api/v1/companies')
     app.register_blueprint(users_bp, url_prefix='/api/v1/users')
     app.register_blueprint(tokens_bp, url_prefix='/api/v1/tokens')
+    
+    # Add a health check endpoint
+    @app.route('/health')
+    def health_check():
+        """Health check endpoint to verify the application is running."""
+        health_status = {"status": "ok", "version": "1.0.0"}
+        
+        # Check Supabase connection
+        if hasattr(app, 'supabase'):
+            try:
+                response = app.supabase.table("companies").select("count").limit(1).execute()
+                health_status["database"] = "connected"
+            except Exception as e:
+                health_status["database"] = "error"
+                health_status["database_error"] = str(e)
+        else:
+            health_status["database"] = "not_configured"
+        
+        return jsonify(health_status)
     
     return app 
