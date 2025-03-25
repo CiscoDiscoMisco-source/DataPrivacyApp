@@ -104,8 +104,8 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ searchTerm }) => {
   };
   
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6 pb-3 border-b border-primary-300/20">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center pb-4 border-b border-primary-glow/20">
         <h2 className="glass-heading text-2xl">Companies with your data</h2>
         <button 
           className="glass-button" 
@@ -127,30 +127,30 @@ const CompaniesPage: React.FC<CompaniesPageProps> = ({ searchTerm }) => {
       
       {loading && !isAddingCompany && (
         <div className="flex justify-center py-10">
-          <div className="inline-block animate-spin h-10 w-10 border-4 border-primary-300 border-t-transparent rounded-full" role="status">
+          <div className="inline-block animate-spin h-10 w-10 border-4 border-primary-light border-t-transparent rounded-full" role="status">
             <span className="sr-only">Loading...</span>
           </div>
         </div>
       )}
       
       {error && (
-        <div className="glass-dark p-4 mb-4 text-red-100 rounded-lg" role="alert">
-          {error}
+        <div className="glass-container bg-red-500/20 border-red-500/50 p-4" role="alert">
+          <span className="font-medium text-red-100">{error}</span>
         </div>
       )}
       
       {!loading && !error && companies.length === 0 && !isAddingCompany && (
-        <div className="glass p-4 mb-4 text-primary-100 rounded-lg" role="alert">
-          No companies found. You can add a company manually using the button above.
+        <div className="glass-container p-4" role="alert">
+          <p className="glass-text">No companies found. You can add a company manually using the button above.</p>
         </div>
       )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {companies.map(company => (
-          <div className="glass-card p-5" key={company.id}>
-            <h3 className="glass-heading text-xl mb-2">{company.name}</h3>
-            <p className="glass-text mb-4">{company.description || 'No description available'}</p>
-            <div className="flex justify-between mt-4 pt-3 border-t border-primary-300/20">
+          <div className="glass-container p-6" key={company.id}>
+            <h3 className="glass-heading text-xl mb-3">{company.name}</h3>
+            <p className="glass-text mb-6">{company.description || 'No description available'}</p>
+            <div className="flex justify-between pt-4 border-t border-primary-glow/20">
               <button 
                 className="glass-button"
                 onClick={() => handleViewDetails(company.id)}

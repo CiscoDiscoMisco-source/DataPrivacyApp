@@ -12,12 +12,12 @@ const Navigation = () => {
   ];
 
   return (
-    <nav className="bg-white border-b border-gray-200">
+    <nav className="glass-nav">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <span className="text-xl font-semibold text-primary-600">Data Privacy App</span>
+              <span className="glass-heading text-xl">Data Privacy App</span>
             </Link>
           </div>
           <div className="flex items-center space-x-4">
@@ -25,10 +25,10 @@ const Navigation = () => {
               <Link
                 key={item.path}
                 href={item.path}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                   router.pathname === item.path
-                    ? 'bg-primary-50 text-primary-700'
-                    : 'text-gray-600 hover:text-primary-600 hover:bg-primary-50'
+                    ? 'glass-button'
+                    : 'text-primary-dark hover:text-primary-light hover:bg-primary-frosted'
                 }`}
               >
                 {item.name}

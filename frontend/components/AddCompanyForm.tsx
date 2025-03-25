@@ -78,17 +78,17 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
   };
   
   return (
-    <div className="glass-card">
+    <div className="glass-container">
       <h3 className="glass-heading text-xl mb-6">Add Company Manually</h3>
       
       {error && (
-        <div className="glass-dark p-4 mb-4 text-red-100 rounded-lg" role="alert">
-          <span className="font-medium">{error}</span>
+        <div className="glass-container bg-red-500/20 border-red-500/50 p-4 mb-4" role="alert">
+          <span className="font-medium text-red-100">{error}</span>
         </div>
       )}
       
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
           <label htmlFor="name" className="glass-text block font-semibold mb-2">Company Name *</label>
           <input 
             type="text" 
@@ -101,7 +101,7 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           />
         </div>
         
-        <div className="mb-4">
+        <div>
           <label htmlFor="industry" className="glass-text block font-semibold mb-2">Industry</label>
           <input 
             type="text" 
@@ -113,7 +113,7 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           />
         </div>
         
-        <div className="mb-4">
+        <div>
           <label htmlFor="website" className="glass-text block font-semibold mb-2">Website</label>
           <input 
             type="url" 
@@ -126,7 +126,7 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           />
         </div>
         
-        <div className="mb-4">
+        <div>
           <label htmlFor="description" className="glass-text block font-semibold mb-2">Description</label>
           <textarea 
             className="glass-input resize-none" 
@@ -138,7 +138,7 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           />
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label htmlFor="size_range" className="glass-text block font-semibold mb-2">Company Size</label>
             <select 
@@ -172,7 +172,7 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label htmlFor="city" className="glass-text block font-semibold mb-2">City</label>
             <input 
@@ -198,7 +198,7 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           </div>
         </div>
         
-        <div className="mb-4">
+        <div>
           <label htmlFor="logo" className="glass-text block font-semibold mb-2">Logo URL</label>
           <input 
             type="url" 
@@ -211,7 +211,7 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           />
         </div>
         
-        <div className="flex justify-end gap-4 mt-6 pt-4 border-t border-primary-300/20">
+        <div className="flex justify-end gap-4 pt-6 border-t border-primary-glow/20">
           <button 
             type="button" 
             className="glass-button" 
@@ -227,7 +227,7 @@ const AddCompanyForm: React.FC<AddCompanyFormProps> = ({ onSuccess, onCancel }) 
           >
             {loading ? (
               <>
-                <span className="inline-block animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" role="status" aria-hidden="true"></span>
+                <span className="inline-block animate-spin h-4 w-4 mr-2 border-2 border-primary-light border-t-transparent rounded-full" role="status" aria-hidden="true"></span>
                 Saving...
               </>
             ) : 'Add Company'}

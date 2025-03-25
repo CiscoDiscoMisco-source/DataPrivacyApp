@@ -92,56 +92,56 @@ const SettingsPage: React.FC = () => {
   if (loading && !settings) {
     return (
       <div className="flex justify-center py-10">
-        <div className="inline-block animate-spin h-10 w-10 border-4 border-primary-300 border-t-transparent rounded-full"></div>
+        <div className="inline-block animate-spin h-10 w-10 border-4 border-primary-light border-t-transparent rounded-full"></div>
       </div>
     );
   }
   
   if (error && !settings) {
     return (
-      <div className="glass-dark p-4 mb-4 text-red-100 rounded-lg" role="alert">
-        <span className="block sm:inline">{error}</span>
+      <div className="glass-container bg-red-500/20 border-red-500/50 p-4" role="alert">
+        <span className="font-medium text-red-100">{error}</span>
       </div>
     );
   }
   
   if (!settings) {
     return (
-      <div className="glass p-4 mb-4 text-primary-100 rounded-lg" role="alert">
-        <span className="block sm:inline">No settings found. Please try again later.</span>
+      <div className="glass-container p-4" role="alert">
+        <p className="glass-text">No settings found. Please try again later.</p>
       </div>
     );
   }
   
   return (
-    <div>
-      <h2 className="glass-heading text-2xl mb-6">Settings</h2>
+    <div className="space-y-8">
+      <h2 className="glass-heading text-2xl">Settings</h2>
       
-      <div className="glass-card p-6 mb-8">
+      <div className="glass-container p-6">
         {/* Account Section */}
         <div className="mb-8">
           <h3 className="glass-heading text-xl mb-4">Account Settings</h3>
           <div className="space-y-4">
             {saveSuccess && (
-              <div className="glass p-4 text-green-100 rounded-lg" role="alert">
-                <span className="block sm:inline font-medium">Settings saved successfully!</span>
+              <div className="glass-container bg-green-500/20 border-green-500/50 p-4" role="alert">
+                <span className="font-medium text-green-100">Settings saved successfully!</span>
               </div>
             )}
             
             {error && (
-              <div className="glass-dark p-4 text-red-100 rounded-lg" role="alert">
-                <span className="block sm:inline font-medium">{error}</span>
+              <div className="glass-container bg-red-500/20 border-red-500/50 p-4" role="alert">
+                <span className="font-medium text-red-100">{error}</span>
               </div>
             )}
             
-            <div className="mb-4 p-4 glass">
+            <div className="glass-container p-4">
               <div className="flex items-center mb-2">
                 <input
                   type="checkbox"
                   id="notificationsEnabled"
                   checked={settings.notificationsEnabled}
                   onChange={(e) => handleChange('notificationsEnabled', e.target.checked)}
-                  className="h-5 w-5 text-primary-300 focus:ring-primary-300 border-primary-300/30 rounded"
+                  className="h-5 w-5 text-primary-glow focus:ring-primary-glow border-primary-glow/30 rounded"
                 />
                 <label htmlFor="notificationsEnabled" className="ml-3 block glass-text font-semibold">
                   Enable notifications
@@ -150,7 +150,7 @@ const SettingsPage: React.FC = () => {
               <p className="glass-text text-sm ml-8">Receive notifications about privacy changes from companies.</p>
             </div>
             
-            <div className="mb-4 p-4 glass">
+            <div className="glass-container p-4">
               <label htmlFor="emailFrequency" className="block glass-text font-semibold mb-2">
                 Email frequency
               </label>
@@ -167,14 +167,14 @@ const SettingsPage: React.FC = () => {
               </select>
             </div>
             
-            <div className="mb-4 p-4 glass">
+            <div className="glass-container p-4">
               <div className="flex items-center">
                 <input
                   type="checkbox"
                   id="darkMode"
                   checked={settings.darkMode}
                   onChange={(e) => handleChange('darkMode', e.target.checked)}
-                  className="h-5 w-5 text-primary-300 focus:ring-primary-300 border-primary-300/30 rounded"
+                  className="h-5 w-5 text-primary-glow focus:ring-primary-glow border-primary-glow/30 rounded"
                 />
                 <label htmlFor="darkMode" className="ml-3 block glass-text font-semibold">
                   Dark mode
@@ -188,14 +188,14 @@ const SettingsPage: React.FC = () => {
         <div className="mb-8">
           <h3 className="glass-heading text-xl mb-4">Notification Settings</h3>
           <div className="space-y-4">
-            <div className="p-4 glass">
+            <div className="glass-container p-4">
               <div className="flex items-center mb-2">
                 <input
                   type="checkbox"
                   id="emailNotifications"
                   checked={settings.emailNotifications}
                   onChange={(e) => handleChange('emailNotifications', e.target.checked)}
-                  className="h-5 w-5 text-primary-300 focus:ring-primary-300 border-primary-300/30 rounded"
+                  className="h-5 w-5 text-primary-glow focus:ring-primary-glow border-primary-glow/30 rounded"
                 />
                 <label htmlFor="emailNotifications" className="ml-3 block glass-text font-semibold">
                   Email notifications
@@ -204,14 +204,14 @@ const SettingsPage: React.FC = () => {
               <p className="glass-text text-sm ml-8">Receive email notifications about your privacy settings.</p>
             </div>
             
-            <div className="p-4 glass">
+            <div className="glass-container p-4">
               <div className="flex items-center mb-2">
                 <input
                   type="checkbox"
                   id="pushNotifications"
                   checked={settings.pushNotifications}
                   onChange={(e) => handleChange('pushNotifications', e.target.checked)}
-                  className="h-5 w-5 text-primary-300 focus:ring-primary-300 border-primary-300/30 rounded"
+                  className="h-5 w-5 text-primary-glow focus:ring-primary-glow border-primary-glow/30 rounded"
                 />
                 <label htmlFor="pushNotifications" className="ml-3 block glass-text font-semibold">
                   Push notifications
@@ -226,14 +226,14 @@ const SettingsPage: React.FC = () => {
         <div className="mb-8">
           <h3 className="glass-heading text-xl mb-4">Security Settings</h3>
           <div className="space-y-4">
-            <div className="p-4 glass">
+            <div className="glass-container p-4">
               <div className="flex items-center mb-2">
                 <input
                   type="checkbox"
                   id="twoFactorAuth"
                   checked={settings.twoFactorAuth}
                   onChange={(e) => handleChange('twoFactorAuth', e.target.checked)}
-                  className="h-5 w-5 text-primary-300 focus:ring-primary-300 border-primary-300/30 rounded"
+                  className="h-5 w-5 text-primary-glow focus:ring-primary-glow border-primary-glow/30 rounded"
                 />
                 <label htmlFor="twoFactorAuth" className="ml-3 block glass-text font-semibold">
                   Two-factor authentication
@@ -242,14 +242,14 @@ const SettingsPage: React.FC = () => {
               <p className="glass-text text-sm ml-8">Add an extra layer of security to your account.</p>
             </div>
             
-            <div className="p-4 glass">
+            <div className="glass-container p-4">
               <div className="flex items-center mb-2">
                 <input
                   type="checkbox"
                   id="loginNotifications"
                   checked={settings.loginNotifications}
                   onChange={(e) => handleChange('loginNotifications', e.target.checked)}
-                  className="h-5 w-5 text-primary-300 focus:ring-primary-300 border-primary-300/30 rounded"
+                  className="h-5 w-5 text-primary-glow focus:ring-primary-glow border-primary-glow/30 rounded"
                 />
                 <label htmlFor="loginNotifications" className="ml-3 block glass-text font-semibold">
                   Login notifications
@@ -264,17 +264,22 @@ const SettingsPage: React.FC = () => {
         <div className="mb-8">
           <h3 className="glass-heading text-xl mb-4">Data Management</h3>
           <div className="space-y-4">
-            <div className="p-4 glass">
+            <div className="glass-container p-4">
               <button
                 onClick={exportUserData}
                 disabled={exportLoading}
                 className="glass-button"
               >
-                {exportLoading ? 'Exporting...' : 'Export My Data'}
+                {exportLoading ? (
+                  <>
+                    <span className="inline-block animate-spin h-4 w-4 mr-2 border-2 border-primary-light border-t-transparent rounded-full"></span>
+                    Exporting...
+                  </>
+                ) : 'Export My Data'}
               </button>
             </div>
             
-            <div className="p-4 glass">
+            <div className="glass-container p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="glass-text font-semibold mb-2">Delete Account</h4>
@@ -282,7 +287,7 @@ const SettingsPage: React.FC = () => {
                 </div>
                 <button
                   onClick={() => setDeleteAccountConfirm(true)}
-                  className="glass-button"
+                  className="glass-button bg-red-500/20 border-red-500/50 hover:bg-red-500/30"
                 >
                   Delete Account
                 </button>
@@ -292,16 +297,47 @@ const SettingsPage: React.FC = () => {
         </div>
         
         {/* Save Button */}
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-6 border-t border-primary-glow/20">
           <button
             onClick={saveSettings}
             disabled={loading}
             className="glass-button"
           >
-            {loading ? 'Saving...' : 'Save Changes'}
+            {loading ? (
+              <>
+                <span className="inline-block animate-spin h-4 w-4 mr-2 border-2 border-primary-light border-t-transparent rounded-full"></span>
+                Saving...
+              </>
+            ) : 'Save Changes'}
           </button>
         </div>
       </div>
+      
+      {/* Delete Account Confirmation Modal */}
+      {deleteAccountConfirm && (
+        <div className="glass-modal">
+          <div className="glass-modal-content">
+            <h3 className="glass-heading text-xl mb-4">Delete Account</h3>
+            <p className="glass-text mb-6">
+              Are you sure you want to delete your account? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setDeleteAccountConfirm(false)}
+                className="glass-button"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={deleteAccount}
+                className="glass-button bg-red-500/20 border-red-500/50 hover:bg-red-500/30"
+              >
+                Delete Account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
