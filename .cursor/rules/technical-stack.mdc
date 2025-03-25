@@ -13,9 +13,9 @@ alwaysApply: true
 
 - Python for backend
 - Next.jsTypescript with Tailwind CSS for the frontend
-- PostgreSQL databases, never JSON file storage
+- PostgreSQL Supabase databases, never JSON file storage
 - Separate databeses for dev, test, and prod
 - Elasticsearch for search, using elastic.co hosting
 - Elastic.co will have dev and prod indexes
 - Python tests
-
+- Build in Vercel
