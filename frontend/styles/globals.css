@@ -7,6 +7,7 @@
     @apply bg-primary-600 text-primary-100;
     background: linear-gradient(135deg, #1e9061 0%, #4debac 100%);
     min-height: 100vh;
+    padding-top: 4rem; /* Add padding to account for fixed header */
   }
 }
 
@@ -157,7 +158,7 @@
   }
 
   .glass-nav {
-    @apply fixed top-0 left-0 right-0 z-50;
+    @apply fixed top-0 left-0 right-0 z-50 h-16;
     background: rgba(215, 235, 227, 0.1);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(77, 235, 172, 0.3);

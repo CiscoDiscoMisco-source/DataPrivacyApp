@@ -12,16 +12,18 @@ const Layout: React.FC<LayoutProps> = ({
   title = 'Data Privacy App' 
 }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-dark to-primary-light">
+    <div className="min-h-screen bg-gradient-to-br from-primary-600 to-primary-500">
       <Head>
         <title>{title}</title>
         <meta name="description" content="Manage your data privacy settings across companies" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       
-      <Navigation />
+      <header>
+        <Navigation />
+      </header>
       
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <main className="container max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="glass-container">
           {children}
         </div>
