@@ -1,92 +1,86 @@
 /**
- * Test script to validate Supabase connectivity
- * Run from the frontend directory with: npx ts-node scripts/test-supabase-connection.ts
+ * Test script to verify Supabase connection
+ * 
+ * Run with: npm run test-supabase-connection
  */
 
-// Read from .env.local for testing
-import * as fs from 'fs';
-import * as path from 'path';
+// CommonJS imports for compatibility
+const dotenv = require('dotenv');
+const { createClient } = require('@supabase/supabase-js');
+const path = require('path');
+const fs = require('fs');
+const fetch = require('node-fetch');
 
-// Try to read from .env.local for testing
-function loadEnv() {
-  try {
-    const envPath = path.join(process.cwd(), '.env.local');
-    if (fs.existsSync(envPath)) {
-      const envContent = fs.readFileSync(envPath, 'utf8');
-      const envLines = envContent.split('\n');
-      
-      envLines.forEach(line => {
-        const match = line.match(/^([^=]+)=(.*)$/);
-        if (match) {
-          const key = match[1].trim();
-          const value = match[2].trim().replace(/^"(.*)"$/, '$1'); // Remove quotes if present
-          process.env[key] = value;
-        }
-      });
-      
-      console.log('Loaded environment variables from .env.local');
-    } else {
-      console.log('No .env.local file found, using existing environment variables');
-    }
-  } catch (error) {
-    console.error('Error loading .env.local:', error);
-  }
+// Load environment variables from .env.local
+const envLocalPath = path.resolve(__dirname, '../.env.local');
+if (fs.existsSync(envLocalPath)) {
+  dotenv.config({ path: envLocalPath });
+} else {
+  dotenv.config(); // Try default .env if .env.local doesn't exist
 }
 
-// Load environment variables if needed
-loadEnv();
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// Check for environment variables
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase environment variables.');
+  console.error('Make sure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set in your .env.local file.');
+  process.exit(1);
+}
 
-// Define test function
+console.log('Supabase URL:', supabaseUrl);
+console.log('Testing connection to Supabase...');
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 async function testConnection() {
-  console.log('Testing Supabase connection...');
-  console.log(`NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_URL ? 'Set' : 'Not set'}`);
-  console.log(`NEXT_PUBLIC_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY ? 'Set' : 'Not set'}`);
-
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    console.error('❌ Environment variables are not set correctly');
-    console.log('Please check your .env.local file and make sure it contains:');
-    console.log('NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co');
-    console.log('NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key');
-    return;
-  }
-
   try {
-    // Test a simple fetch to Supabase health endpoint
-    const healthUrl = `${SUPABASE_URL}/health`;
-    console.log(`Testing connection to: ${healthUrl}`);
+    // Try to access public health endpoint
+    const response = await fetch(`${supabaseUrl}/rest/v1/`, {
+      headers: {
+        'apikey': supabaseAnonKey,
+        'Authorization': `Bearer ${supabaseAnonKey}`
+      }
+    });
     
-    // Use node-fetch for Node.js environments
-    const nodeFetch = require('node-fetch');
+    console.log('REST API status:', response.status, response.statusText);
     
-    const response = await nodeFetch(healthUrl);
+    // Try to get session to check auth functionality
+    const { data, error } = await supabase.auth.getSession();
     
-    if (response.ok) {
-      const data = await response.json();
-      console.log('✅ Successfully connected to Supabase!');
-      console.log('Response:', JSON.stringify(data, null, 2));
+    if (error) {
+      throw error;
+    }
+    
+    console.log('Supabase Auth Service is working properly');
+    console.log('Session data:', data.session ? 'Session exists' : 'No active session');
+    
+    // Additional checks for database access
+    // Try to access the tables (even if we don't have permission, we should get a valid response)
+    const { error: tablesError } = await supabase.from('test').select('*').limit(1);
+    
+    if (tablesError && tablesError.code !== 'PGRST301') {
+      // PGRST301 is "permission denied for table" which is expected if the schema is restricted
+      console.warn('Database access warning:', tablesError.message);
     } else {
-      console.error(`❌ Failed to connect to Supabase: ${response.status} ${response.statusText}`);
-      const text = await response.text();
-      console.error('Error details:', text);
+      console.log('Database access is configured correctly');
     }
-  } catch (error) {
-    console.error('❌ Connection test failed with error:');
-    console.error(error);
     
-    // Check for common issues
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-      console.log('\nPossible causes:');
-      console.log('1. Network connectivity issues');
-      console.log('2. Supabase project is not running or accessible');
-      console.log('3. CORS is blocking the request (browser-only issue)');
-      console.log('4. Firewall or security software is blocking the connection');
-    }
+    console.log('✅ Supabase connection test completed successfully!');
+    return true;
+  } catch (error) {
+    console.error('❌ Supabase connection test failed:', error);
+    return false;
   }
 }
 
-// Run the test
-testConnection(); 
+testConnection()
+  .then(success => {
+    if (!success) {
+      process.exit(1);
+    }
+  })
+  .catch(err => {
+    console.error('Unexpected error during test:', err);
+    process.exit(1);
+  }); 

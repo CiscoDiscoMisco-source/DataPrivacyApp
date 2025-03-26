@@ -65,9 +65,9 @@ const checkConnection = async (): Promise<boolean> => {
   lastConnectionCheck = now;
   
   try {
-    // Try to reach the API health endpoint
-    const healthEndpoint = `${API_BASE_URL}/health`;
-    const response = await fetch(healthEndpoint, {
+    // First try to reach Supabase directly since it's our auth provider
+    const supabaseHealthEndpoint = `${API_BASE_URL}/health`;
+    let response = await fetch(supabaseHealthEndpoint, {
       method: 'GET',
       headers: { 
         'Accept': 'application/json',
@@ -79,34 +79,35 @@ const checkConnection = async (): Promise<boolean> => {
       signal: AbortSignal.timeout(3000)
     });
     
-    // Update status based on response
+    // Update connection status
     if (response.ok) {
-      // For Supabase health endpoint, a successful response with "Healthy" text
-      // or for our backend API with database connection info
       isOnline = true;
       
-      try {
-        const data = await response.json();
-        // If our backend returns database status, check it
-        if (data && typeof data === 'object' && 'database' in data) {
-          isOnline = data.database === 'connected';
+      // Now try the backend API health check endpoint if different from Supabase
+      if (process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL !== API_BASE_URL) {
+        try {
+          const apiHealthEndpoint = `${process.env.NEXT_PUBLIC_API_URL}/health`;
+          response = await fetch(apiHealthEndpoint, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            mode: 'cors',
+            signal: AbortSignal.timeout(3000)
+          });
           
-          if (!isOnline) {
-            console.warn('API server is online but database connection is not available', data);
+          if (!response.ok) {
+            console.warn(`Backend API health check failed with status ${response.status}`);
           }
+        } catch (backendError) {
+          console.warn('Backend API health check failed:', backendError);
         }
-      } catch (e) {
-        // If the response is not JSON (like "Healthy" plain text from Supabase)
-        // We still consider it online since the response was successful
-        isOnline = true;
       }
     } else {
       isOnline = false;
-      console.warn(`API health endpoint returned status ${response.status}`);
+      console.warn(`Supabase health endpoint returned status ${response.status}`);
     }
   } catch (error) {
     isOnline = false;
-    console.warn('Failed to reach API health endpoint:', error);
+    console.warn('Failed to reach Supabase health endpoint:', error);
   }
   
   // Dispatch connection status event

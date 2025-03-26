@@ -3,3 +3,8 @@ Author: vicente <vicente.carrasco@leprcon.com>
 Date:   Tue Mar 25 18:29:15 2025 -0300
 
     Fix Supabase authentication and implement Row Level Security (RLS) policies
+[33mcommit 2c7fc0c13183bfedafe979c2715c57cea522d30b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: vicente <vicente.carrasco@leprcon.com>
+Date:   Tue Mar 25 20:53:35 2025 -0300
+
+    Fix login network connection error by improving Supabase health endpoint handling

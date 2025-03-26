@@ -18,9 +18,19 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
+  // Only run auth related code on the client side
   useEffect(() => {
+    setIsMounted(true);
+    
+    // Skip auth checks during SSR
+    if (typeof window === 'undefined') {
+      setIsLoading(false);
+      return;
+    }
+    
     // Check for existing session and validate on initial load
     const checkAuth = async () => {
       try {
@@ -111,31 +121,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('dp_access_token', data.session.access_token);
         // Store user ID for later use
         localStorage.setItem('dp_user_id', data.user.id);
+        // Store refresh token
+        localStorage.setItem('dp_refresh_token', data.session.refresh_token);
         
         try {
           // Get user profile data from our API
           const userData = await ApiService.get<User>('/auth/me');
           setUser(userData);
           
-          try {
-            // Use replace instead of push to avoid issues with Next.js navigation
-            await router.replace('/companies');
-          } catch (routerError) {
-            console.error('Navigation error:', routerError);
-            // If router.replace fails, try a full page navigation
-            window.location.href = '/companies';
-          }
+          // Use router for navigation within client-side for better UX
+          router.push('/companies');
         } catch (apiError) {
           console.error('Error fetching user data:', apiError);
           // Still consider login successful but with limited functionality
-          try {
-            // Use replace instead of push to avoid issues with Next.js navigation
-            await router.replace('/companies');
-          } catch (routerError) {
-            console.error('Navigation error:', routerError);
-            // If router.replace fails, try a full page navigation
-            window.location.href = '/companies';
-          }
+          router.push('/companies');
         }
       }
     } catch (error) {
@@ -149,6 +148,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signup = async (email: string, password: string, userData: Partial<User>) => {
     setIsLoading(true);
     try {
+      // Check connection first
+      const isConnected = await ApiService.checkHealth();
+      if (!isConnected) {
+        throw new Error('No network connection available. Please check your internet connection and try again.');
+      }
+      
       // Sign up with Supabase
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -156,14 +161,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         options: {
           data: {
             full_name: userData.name,
-            // Include any other metadata you want to store with the user
+            // Use optional fields safely
+            ...(userData as any), // Cast to any to avoid TypeScript errors with dynamic properties
           },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
       
       if (error) throw error;
       
       if (data.user) {
+        // Store the session info if available
+        if (data.session) {
+          localStorage.setItem('dp_access_token', data.session.access_token);
+          localStorage.setItem('dp_refresh_token', data.session.refresh_token);
+          localStorage.setItem('dp_user_id', data.user.id);
+        }
+        
         // Create user profile in our API
         await ApiService.post('/auth/register', {
           ...userData,
@@ -171,8 +185,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: data.user.id,
         });
         
-        // No need to set user or redirect here as the onAuthStateChange handler will do that
-        // This prevents duplicate API calls
+        // Set user data if we have a session
+        if (data.session) {
+          try {
+            const userResponse = await ApiService.get<User>('/auth/me');
+            setUser(userResponse);
+            // Navigate to main page
+            router.push('/companies');
+          } catch (err) {
+            // If can't get user data, still redirect
+            router.push('/companies');
+          }
+        } else {
+          // Some Supabase configurations require email verification
+          // Redirect to login with a message
+          router.push('/login?registered=true');
+        }
       }
     } catch (error) {
       console.error('Signup failed:', error);
@@ -191,7 +219,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.removeItem('dp_access_token');
       localStorage.removeItem('dp_user_id');
       setUser(null);
-      router.push('/login');
+      // Use full page navigation to avoid hydration issues
+      window.location.href = '/login';
     } catch (error) {
       console.error('Logout failed:', error);
       throw error;
@@ -199,6 +228,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(false);
     }
   };
+
+  // Default auth context value for server-side rendering
+  const defaultContextValue: AuthContextType = {
+    user: null,
+    isLoading: !isMounted,
+    isAuthenticated: false,
+    login: async () => { throw new Error('Not initialized'); },
+    signup: async () => { throw new Error('Not initialized'); },
+    logout: async () => { throw new Error('Not initialized'); }
+  };
+
+  // If we're server-side, provide default values that will be overridden on client
+  if (!isMounted) {
+    return (
+      <AuthContext.Provider value={defaultContextValue}>
+        {children}
+      </AuthContext.Provider>
+    );
+  }
 
   return (
     <AuthContext.Provider

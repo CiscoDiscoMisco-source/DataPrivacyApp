@@ -17,25 +17,39 @@ const SignupPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    // Validate form
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long');
-      return;
-    }
-
     setIsSubmitting(true);
 
+    // Validate password match
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      await signup(email, password, { name });
-      router.push('/login?registered=true');
+      // Build user data with fields beyond just email/password
+      const userData = {
+        name: `${name}`.trim(),
+        first_name: name.split(' ')[0],
+        last_name: name.split(' ')[1],
+        // Add any other user profile data here
+      };
+      
+      await signup(email, password, userData);
+      // Redirect is handled in the signup function
     } catch (err: any) {
-      setError(err.message || 'Failed to register. Please try again.');
+      console.error('Signup error:', err);
+      
+      // Handle specific error types with user-friendly messages
+      if (err.message?.includes('network connection')) {
+        setError('Cannot connect to the server. Please check your internet connection and try again.');
+      } else if (err.message?.includes('email') && err.message?.includes('already')) {
+        setError('This email is already registered. Please use a different email or sign in.');
+      } else if (err.message?.includes('weak password')) {
+        setError('Please use a stronger password with at least 8 characters, including numbers and special characters.');
+      } else {
+        setError(err.message || 'Failed to create account. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }

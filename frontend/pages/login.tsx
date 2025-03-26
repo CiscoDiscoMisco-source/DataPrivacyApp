@@ -18,6 +18,11 @@ const LoginPage: React.FC = () => {
     if (router.query.registered === 'true') {
       setSuccessMessage('Account created successfully! You can now log in.');
     }
+    
+    // Check for auth errors
+    if (router.query.error) {
+      setError(router.query.error as string);
+    }
   }, [router.query]);
 
   const handleSubmit = async (e: React.FormEvent) => {

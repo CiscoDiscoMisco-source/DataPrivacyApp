@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { AuthProvider } from '../contexts/AuthContext';
 import { AppProps } from 'next/app';
 import Head from 'next/head';
@@ -6,10 +6,11 @@ import Navigation from '../components/Navigation';
 import '../styles/globals.css';
 
 export default function App({ Component, pageProps }: AppProps) {
-  // Client-side only
-  if (typeof window === 'undefined') {
-    return null;
-  }
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   
   return (
     <AuthProvider>
@@ -21,7 +22,7 @@ export default function App({ Component, pageProps }: AppProps) {
       <div className="min-h-screen bg-gradient-to-br from-primary-600 to-primary-500">
         <Navigation />
         <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <Component {...pageProps} />
+          {isClient ? <Component {...pageProps} /> : null}
         </main>
       </div>
     </AuthProvider>
