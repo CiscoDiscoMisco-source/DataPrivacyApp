@@ -9,7 +9,6 @@ const dotenv = require('dotenv');
 const { createClient } = require('@supabase/supabase-js');
 const path = require('path');
 const fs = require('fs');
-const fetch = require('node-fetch');
 
 // Load environment variables from .env.local
 const envLocalPath = path.resolve(__dirname, '../.env.local');
