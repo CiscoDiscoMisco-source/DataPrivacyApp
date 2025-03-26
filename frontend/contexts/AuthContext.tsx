@@ -52,6 +52,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const authListener = supabase.auth.onAuthStateChange(
         async (event, session) => {
           if (event === 'SIGNED_IN' && session) {
+            // Store the access token in localStorage for API requests
+            localStorage.setItem('dp_access_token', session.access_token);
+            // Store user ID for later use
+            if (session.user) {
+              localStorage.setItem('dp_user_id', session.user.id);
+            }
+            
             try {
               const userData = await ApiService.get<User>('/auth/me');
               setUser(userData);
@@ -59,6 +66,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               console.error('Failed to get user data after sign in:', error);
             }
           } else if (event === 'SIGNED_OUT') {
+            // Clear tokens on sign out
+            localStorage.removeItem('dp_access_token');
+            localStorage.removeItem('dp_user_id');
             setUser(null);
           }
         }
@@ -96,7 +106,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) throw error;
       
-      if (data.user) {
+      if (data.user && data.session) {
+        // Store the access token in localStorage for API requests
+        localStorage.setItem('dp_access_token', data.session.access_token);
+        // Store user ID for later use
+        localStorage.setItem('dp_user_id', data.user.id);
+        
         try {
           // Get user profile data from our API
           const userData = await ApiService.get<User>('/auth/me');
@@ -158,6 +173,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // Sign out from Supabase
       await supabase.auth.signOut();
+      // Clear tokens
+      localStorage.removeItem('dp_access_token');
+      localStorage.removeItem('dp_user_id');
       setUser(null);
       router.push('/login');
     } catch (error) {

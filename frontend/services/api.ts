@@ -127,17 +127,19 @@ const buildHeaders = (customHeaders: Record<string, string> = {}): Record<string
     ...customHeaders
   };
   
+  // Always include the Supabase anon key as apikey
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (anonKey) {
+    headers['apikey'] = anonKey;
+  }
+  
+  // Then add auth token if available
   const token = getAuthToken();
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
-  } else {
+  } else if (anonKey) {
     // Use anon key for unauthenticated requests
-    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (anonKey) {
-      headers['apikey'] = anonKey;
-      // Also set the Authorization header with the anon key for backend compatibility
-      headers['Authorization'] = `Bearer ${anonKey}`;
-    }
+    headers['Authorization'] = `Bearer ${anonKey}`;
   }
   
   return headers;
@@ -157,8 +159,13 @@ const buildApiUrl = (endpoint: string): string => {
   const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
   
   // Special endpoints that don't need versioning
-  if (cleanEndpoint === 'health' || cleanEndpoint.startsWith('auth/')) {
+  if (cleanEndpoint === 'health') {
     return `${baseUrl}/${cleanEndpoint}`;
+  }
+  
+  // Auth endpoints need the /api/v1 prefix
+  if (cleanEndpoint.startsWith('auth/')) {
+    return `${baseUrl}/api/${API_VERSION}/${cleanEndpoint}`;
   }
   
   // Add version prefix for all other endpoints
