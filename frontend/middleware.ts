@@ -7,6 +7,10 @@ const publicRoutes = ['/login', '/signup', '/auth', '/privacy', '/terms'];
 
 // Check if the route is public
 const isPublicRoute = (path: string) => {
+  // Check if it's a data route for Next.js /_next/data paths
+  if (path.startsWith('/_next/')) {
+    return true;
+  }
   return publicRoutes.some(route => 
     path === route || path.startsWith(`${route}/`)
   );
@@ -57,7 +61,7 @@ export async function middleware(request: NextRequest) {
 // Specify which routes this middleware should be applied to
 export const config = {
   matcher: [
-    // Apply to all routes except for static files, api routes, etc.
-    '/((?!_next/static|_next/image|favicon.ico|api/).*)',
+    // Apply to all routes except for static files, image files, favicon, and api routes
+    '/((?!_next/static|_next/image|_next/data|favicon.ico|api/).*)',
   ],
 }; 

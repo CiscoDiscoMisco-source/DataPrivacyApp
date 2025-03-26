@@ -116,12 +116,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Get user profile data from our API
           const userData = await ApiService.get<User>('/auth/me');
           setUser(userData);
-          router.push('/companies');
+          
+          try {
+            // Use replace instead of push to avoid issues with Next.js navigation
+            await router.replace('/companies');
+          } catch (routerError) {
+            console.error('Navigation error:', routerError);
+            // If router.replace fails, try a full page navigation
+            window.location.href = '/companies';
+          }
         } catch (apiError) {
           console.error('Error fetching user data:', apiError);
           // Still consider login successful but with limited functionality
-          // We'll retry fetching user data later via the auth state listener
-          router.push('/companies');
+          try {
+            // Use replace instead of push to avoid issues with Next.js navigation
+            await router.replace('/companies');
+          } catch (routerError) {
+            console.error('Navigation error:', routerError);
+            // If router.replace fails, try a full page navigation
+            window.location.href = '/companies';
+          }
         }
       }
     } catch (error) {
