@@ -67,6 +67,8 @@ const checkConnection = async (): Promise<boolean> => {
   try {
     // First try to reach Supabase directly since it's our auth provider
     const supabaseHealthEndpoint = `${API_BASE_URL}/health`;
+    console.log('Checking Supabase health at:', supabaseHealthEndpoint);
+    
     let response = await fetch(supabaseHealthEndpoint, {
       method: 'GET',
       headers: { 
@@ -75,30 +77,37 @@ const checkConnection = async (): Promise<boolean> => {
         'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''}`
       },
       mode: 'cors',
-      // Short timeout to quickly detect connection issues
-      signal: AbortSignal.timeout(3000)
+      // Increase timeout to 5 seconds for better reliability
+      signal: AbortSignal.timeout(5000)
     });
     
     // Update connection status
     if (response.ok) {
       isOnline = true;
+      console.log('Supabase health check successful');
       
       // Now try the backend API health check endpoint if different from Supabase
       if (process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL !== API_BASE_URL) {
         try {
           const apiHealthEndpoint = `${process.env.NEXT_PUBLIC_API_URL}/health`;
+          console.log('Checking backend API health at:', apiHealthEndpoint);
+          
           response = await fetch(apiHealthEndpoint, {
             method: 'GET',
             headers: { 'Accept': 'application/json' },
             mode: 'cors',
-            signal: AbortSignal.timeout(3000)
+            signal: AbortSignal.timeout(5000)
           });
           
           if (!response.ok) {
             console.warn(`Backend API health check failed with status ${response.status}`);
+            isOnline = false;
+          } else {
+            console.log('Backend API health check successful');
           }
         } catch (backendError) {
           console.warn('Backend API health check failed:', backendError);
+          isOnline = false;
         }
       }
     } else {
@@ -108,6 +117,14 @@ const checkConnection = async (): Promise<boolean> => {
   } catch (error) {
     isOnline = false;
     console.warn('Failed to reach Supabase health endpoint:', error);
+    // Log more details about the error
+    if (error instanceof TypeError) {
+      console.warn('Network error details:', {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      });
+    }
   }
   
   // Dispatch connection status event
